@@ -1,5 +1,4 @@
 {
-  "public": "dist/wwwroot",
   "cleanUrls": true,
   "rewrites": [
     {
