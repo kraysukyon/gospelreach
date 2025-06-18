@@ -131,7 +131,7 @@ a,p {
 
 .content2 {
     margin: 0 4rem;
-    margin-top: -2rem;
+    margin-top: 4rem;
     background-color: #FFF;
     border-radius: 50px;
     box-shadow: 4px 4px 25px rgba(0,0,0,0.1);
@@ -153,7 +153,7 @@ a,p {
 }
 
 .second {
-    margin: 4rem 0;
+    margin-bottom: 4rem;
     padding: 4rem 8rem;
     background-color: #242424;
 }

@@ -132,7 +132,7 @@ a[b-bnnrgsuo1f],p[b-bnnrgsuo1f] {
 
 .content2[b-bnnrgsuo1f] {
     margin: 0 4rem;
-    margin-top: -2rem;
+    margin-top: 4rem;
     background-color: #FFF;
     border-radius: 50px;
     box-shadow: 4px 4px 25px rgba(0,0,0,0.1);
@@ -154,7 +154,7 @@ a[b-bnnrgsuo1f],p[b-bnnrgsuo1f] {
 }
 
 .second[b-bnnrgsuo1f] {
-    margin: 4rem 0;
+    margin-bottom: 4rem;
     padding: 4rem 8rem;
     background-color: #242424;
 }
@@ -466,6 +466,7 @@ a[b-bnnrgsuo1f],p[b-bnnrgsuo1f] {
         font-size: 12px;
     }
 }
+/* /Layout/LandingLayout.razor.rz.scp.css */
 /* /Layout/MainLayout.razor.rz.scp.css */
 .page[b-zdfrj9bmm7] {
     position: relative;
