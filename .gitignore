@@ -1,0 +1,23 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.resharper
+*.dotSettings
+
+# Build artifacts
+bin/
+obj/
+
+# Other common exclusions for .NET projects
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.exe
+*.dll
+*.pdb
+*.cache
+
+# Vercel specific (if you don't want to commit these config files)
+.vercel/
