@@ -1,0 +1,127 @@
+﻿<div class="side-parent">
+    <div class="side-parent-content">
+        <nav class="w-100">
+            <!--Pages Section-->
+            <div class="@GetClass(0, "link")" @onclick="() => SetActive(0)">
+                <i class="bi bi-house-door"></i>
+                <a href="dashboard" class="text-decoration-none c2">Dashboard</a>
+            </div>
+
+
+            <!--Management-->
+            <h3 class="sidebar-heading">MANAGEMENT</h3>
+
+            <!--Admin-->
+            <div class="@GetClass(1, "link")" @onclick="() => SetActive(1)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person"></i>
+                </div>
+                <a href="admin" class="text-decoration-none c2">Pastor/Admin</a>
+            </div>
+
+            <!--Departments-->
+            <div class="@GetClass(2, "link")" @onclick="() => SetActive(2)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-building"></i>
+                </div>
+                <a href="departments" class="text-decoration-none c2">Departments</a>
+            </div>
+
+            <!--Member Management-->
+            <div class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-people"></i>
+                </div>
+                <a href="membermanagement" class="text-decoration-none c2">Member<br />Management</a>
+            </div>
+
+            <!--Tracking-->
+            <h3 class="sidebar-heading">TRACKING</h3>
+
+            <!--Attendance-->
+            <div class="@GetClass(4, "link")" @onclick="() => SetActive(4)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-bar-chart"></i>
+                </div>
+                <a href="attendance" class="text-decoration-none c2">Attendance</a>
+            </div>
+
+            <!--Finance-->
+            <div class="@GetClass(5, "link")" @onclick="() => SetActive(5)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-piggy-bank"></i>
+                </div>
+                <a href="finance" class="text-decoration-none c2">Finance</a>
+            </div>
+
+            <!--Content-->
+            <h3 class="sidebar-heading">CONTENT</h3>
+
+            <!--Media Files-->
+            <div class="@GetClass(6, "link")" @onclick="() => SetActive(6)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-film"></i>
+                </div>
+                <a href="media" class="text-decoration-none c2">Media Files</a>
+            </div>
+
+            <!--Music-->
+            <div class="@GetClass(7, "link")" @onclick="() => SetActive(7)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-music-note"></i>
+                </div>
+                <a href="music" class="text-decoration-none c2">Music</a>
+            </div>
+
+            <!--Planning-->
+            <h3 class="sidebar-heading">PLANNING</h3>
+
+            <!--Events-->
+            <div class="@GetClass(8, "link")" @onclick="() => SetActive(8)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <a href="events" class="text-decoration-none c2">Events</a>
+            </div>
+
+            <!--Schedules-->
+            <div class="@GetClass(9, "link")" @onclick="() => SetActive(9)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <a href="schedules" class="text-decoration-none c2">Schedules</a>
+            </div>
+        </nav>
+    </div>
+
+    <!--Users Section-->
+    <div class="side-foot d-flex align-items-center gap-2">
+        <div>
+            <img src="https://i.pravatar.cc/150?img=3" style="width:40px;" />
+        </div>
+        <div>
+            <p class="fs-6 m-0">John Doe</p>
+            <p class="c2 m-0" style="font-size:12px;">Administrator</p>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public EventCallback OnActiveChanged { get; set; }
+
+
+    private int activeIndex = 0;
+
+    private async Task SetActive(int index)
+    {
+        activeIndex = index;
+        await OnActiveChanged.InvokeAsync(); //Notify the homelayout
+    }
+
+    private string GetClass(int index, string baseClass)
+    {
+        return $"{baseClass}{(activeIndex == index ? " active" : "")}";
+    }
+}

@@ -1,0 +1,86 @@
+﻿@page "/finance"
+@layout LandingLayout
+
+<PageTitle>Finance</PageTitle>
+
+
+<div class="page">
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Financial Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Track church finances, donations, and expenses.</p>
+        </div>
+
+        <div>
+            <a href="" class="btn btn-primary p-2 text-white link">Add Entry</a>
+        </div>
+    </div>
+
+    <!--Quick Stats Section-->
+    <div class="d-flex flex-column mt-4 mb-2">
+        <div class="d-md-flex d-block justify-content-evenly gap-4">
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Total Income</p>
+                <h3 class="m-0 c2 text-success fw-bold">$8120.50</h3>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Total Expenses</p>
+                <h3 class="m-0 c2 text-danger fw-bold">$5521.00</h3>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
+                <h3 class="m-0 c2 text-success fw-bold">$2599.50</h3>
+            </div>
+        </div>
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+
+        <!--Search Section-->
+        <div class="position-relative mb-4">
+            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+            <input type="text" class="form-control border search" placeholder="Search members..." />
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead">Date</th>
+                        <th class="thead">Category</th>
+                        <th class="thead">Description</th>
+                        <th class="thead">Amount</th>
+                        <th class="thead">Type</th>
+                        <th class="thead">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell" style="font-weight:500;">2025-04-20</td>
+                            <td class="table-cell c2">Tithes</td>
+                            <td class="table-cell c2">Sunday Collection</td>
+                            <td class="table-cell c2">$3520.50</td>
+                            <td class="table-cell c2">Income</td>
+                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                <!--Edit-->
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
+                                    <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</a>
+                                </div>
+
+                                <!--Delete-->
+                                <button class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

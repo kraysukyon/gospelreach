@@ -1,0 +1,135 @@
+﻿@page "/music"
+@layout LandingLayout
+
+<PageTitle>Music</PageTitle>
+
+
+<div class="page">
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Music Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Organize and manage worship music and audio files.</p>
+        </div>
+
+        <div>
+            <a href="" class="btn btn-primary p-2 text-white link w-100">Add Music</a>
+        </div>
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+        <div class="container">
+            <!--Search Section-->
+            <div class="d-flex flex-column flex-md-row gap-2 mb-4">
+                <div class="position-relative flex-grow-1">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input type="text" class="form-control border search" placeholder="Search by title, artist or album..." />
+                </div>
+
+                <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
+                    <button class="btn btn-primary p-2 w-100 text-white"><span><i class="bi bi-calendar-check text-white"></i></span> Filter</button>
+                    @* <button class="btn btn-primary p-2 text-white w-100 text-nowrap"><span><i class="bi bi-file-earmark-text text-white"></i></span> Generate Report</button> *@
+                </div>
+            </div>
+        </div>
+        
+        
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead"></th>
+                        <th class="thead">Title</th>
+                        <th class="thead">Artist</th>
+                        <th class="thead">Album</th>
+                        <th class="thead">Duration</th>
+                        <th class="thead">File Type</th>
+                        <th class="thead">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell c2 link"><i class="bi bi-play-circle fs-6"></i></td>
+                            <td class="table-cell" style="font-weight:500;">Amazing Grace</td>
+                            <td class="table-cell c2">Hillsong</td>
+                            <td class="table-cell c2">United</td>
+                            <td class="table-cell c2">4:35</td>
+                            <td class="table-cell c2">MP3</td>
+                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none; width: auto;">
+                                <!--Download-->
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border flex-grow-1" style="border-radius: 10px; padding: 5px 12px;">
+                                    <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-download"></i></span> Download</a>
+                                </div>
+
+                                <!--Delete-->
+                                <button class="btn btn-danger text-white flex-grow-1" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--Playlist Section-->
+    <div class="d-flex flex-column mt-4">
+        <div class="d-flex align-items-center">
+            <h5 class="fw-bold m-0 mb-3">Recent Playists</h5>
+        </div>
+
+        <div class="playlist">
+            <div class="card p-4 cards gap-3">
+                <div class="d-flex gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-music-note-beamed text-primary fs-5"></i>
+                    </div>
+                    <h5 class="mb-1">Sunday Worship</h5>
+                </div>
+
+                <p class="c2" style="font-size:14px;">12 songs · 58 minutes</p>
+                <p class="c2" style="font-size:14px;">Last used: April 21, 2025</p>
+
+                <div class="w-100 d-flex justify-content-end">
+                    <a href="" class="btn btn-light border border-1 p-2 w-auto justify-content-end" style="font-size: 14px;">View Playlist</a>
+                </div>
+            </div>
+
+            <div class="card p-4 cards gap-3">
+                <div class="d-flex gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-music-note-beamed text-primary fs-5"></i>
+                    </div>
+                    <h5 class="mb-1">Easter Service</h5>
+                </div>
+
+                <p class="c2" style="font-size:14px;">8 songs · 42 minutes</p>
+                <p class="c2" style="font-size:14px;">Last used: April 21, 2025</p>
+
+                <div class="w-100 d-flex justify-content-end">
+                    <a href="" class="btn btn-light border border-1 p-2 w-auto justify-content-end" style="font-size: 14px;">View Playlist</a>
+                </div>
+            </div>
+
+            <div class="card p-4 cards gap-3">
+                <div class="d-flex gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-music-note-beamed text-primary fs-5"></i>
+                    </div>
+                    <h5 class="mb-1">Youth Night</h5>
+                </div>
+
+                <p class="c2" style="font-size:14px;">12 songs · 58 minutes</p>
+                <p class="c2" style="font-size:14px;">Last used: April 21, 2025</p>
+
+                <div class="w-100 d-flex justify-content-end">
+                    <a href="" class="btn btn-light border border-1 p-2 w-auto justify-content-end" style="font-size: 14px;">View Playlist</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

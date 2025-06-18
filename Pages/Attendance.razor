@@ -1,0 +1,99 @@
+﻿@page "/attendance"
+@layout LandingLayout
+
+<PageTitle>Attendance</PageTitle>
+
+
+<div class="page">
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Attendance Tracking</h4>
+            <p class="m-0 c2" style="font-size: 14px">Track and manage church attendance records.</p>
+        </div>
+
+        <div>
+            <a href="" class="btn btn-primary p-2 text-white link">Add Headcount</a>
+        </div>
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+        <div class="container">
+            <!--Search Section-->
+            <div class="d-flex flex-column flex-md-row gap-2 mb-4">
+                <div class="position-relative flex-grow-1">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input type="text" class="form-control border search" placeholder="Search by date or services..." />
+                </div>
+
+                <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
+                    <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><span><i class="bi bi-calendar-check"></i></span> Filter by Date</button>
+                    <button class="btn btn-primary p-2 text-white w-100 text-nowrap"><span><i class="bi bi-file-earmark-text text-white"></i></span> Generate Report</button>
+                </div>
+            </div>
+        </div>
+        
+        
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead">Date</th>
+                        <th class="thead">Service</th>
+                        <th class="thead">Members</th>
+                        <th class="thead">Non-members</th>
+                        <th class="thead">Total</th>
+                        <th class="thead">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell" style="font-weight:500;">2025-04-20</td>
+                            <td class="table-cell c2">Holiness Meeting</td>
+                            <td class="table-cell c2">36</td>
+                            <td class="table-cell c2">20</td>
+                            <td class="table-cell c2">56</td>
+                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                <!--Edit-->
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
+                                    <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</a>
+                                </div>
+
+                                <!--Delete-->
+                                <button class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--Quick Stats Section-->
+    <div class="d-flex flex-column mt-4">
+        <div class="d-md-flex d-block justify-content-evenly gap-4">
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <h5 class="mb-2">Average Sunday Attendance</h5>
+                <h3 class="m-2 c2 text-primary fw-bold">245</h3>
+                <p class="c2" style="font-size:14px;">Last 4 weeks</p>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <h5 class="mb-2">Growth Rate</h5>
+                <h3 class="m-2 c2 text-success fw-bold">+5.2%</h3>
+                <p class="c2" style="font-size:14px;">Month over month</p>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <h5 class="mb-2">First-Time Visitors</h5>
+                <h3 class="m-2 c2 text-danger fw-bold">3</h3>
+                <p class="c2" style="font-size:14px;">This month</p>
+            </div>
+        </div>
+    </div>
+</div>

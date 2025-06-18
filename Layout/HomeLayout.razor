@@ -1,7 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 
-
 <div class="home">
     <!--Login Modal-->
     <div class="loginModal @(isLoginModalVisible ? "open" : "")" @onclick="showLogin">
@@ -245,6 +244,7 @@
 
     private void ValidateLogin()
     {
-        NavigationManager.NavigateTo("/dashboard");
+        NavigationManager.NavigateTo("/dashboard"); // Redirect to dashboard after login
     }
+
 }

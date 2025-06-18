@@ -1,0 +1,108 @@
+﻿@page "/media"
+@layout LandingLayout
+
+<PageTitle>Media Files</PageTitle>
+
+
+<div class="page">
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Media File Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Upload, organize, and manage church media files.</p>
+        </div>
+
+        <div class="w-auto">
+            <button class="btn btn-primary p-2 text-white link">Upload File</button>
+        </div>
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+        <div class="container">
+            <!--Search Section-->
+            <div class="d-flex flex-column flex-md-row gap-2 mb-4">
+                <div class="position-relative flex-grow-1">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input type="text" class="form-control border search" placeholder="Search files..." />
+                </div>
+
+                <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
+                    <button class="btn btn-primary p-2 px-3 w-100 text-nowrap text-white">All</button>
+                    <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-film"></i> Videos</button>
+                    <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-music-note-beamed"></i> Audio</button>
+                    <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-file-earmark-text"></i> Documents</button>
+                    <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-image"></i> Images</button>
+                </div>
+            </div>
+
+            <!--File Section-->
+            <div class="file">
+                <div class="card p-4 mb-3 cards d-flex flex-column align-items-start justify-content-center">
+                    <div class="d-flex gap-3">
+                        <div class="flex-shrink-0">
+                            <div class="p-2" style="background-color: lavender; border-radius: 6px;">
+                                <i class="bi bi-film text-primary"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">Easter Sunday Service 2025</h5>
+                            <p class="c2" style="font-size:14px;">1.2 GBUploaded on 2025-04-21</p>
+                            <p class="c2" style="font-size:14px;">By John Smith</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mt-3 gap-2 align-self-end">
+                        <button class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</button>
+                        <button class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
+                    </div>
+                </div>
+
+                <div class="card p-4 mb-3 cards d-flex flex-column align-items-start justify-content-center">
+                    <div class="d-flex gap-3">
+                        <div class="flex-shrink-0">
+                            <div class="p-2" style="background-color: lavender; border-radius: 6px;">
+                                <i class="bi bi-music-note-beamed text-danger"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">Worship Team</h5>
+                            <p class="c2" style="font-size:14px;">85 MBUploaded on 2025-04-18</p>
+                            <p class="c2" style="font-size:14px;">By Sarah Johnson</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mt-3 gap-2 align-self-end">
+                        <button class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</button>
+                        <button class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
+                    </div>
+                </div>
+
+                <div class="card p-4 mb-3 cards d-flex flex-column align-items-start justify-content-center">
+                    <div class="d-flex gap-3">
+                        <div class="flex-shrink-0">
+                            <div class="p-2" style="background-color: lavender; border-radius: 6px;">
+                                <i class="bi bi-file-earmark-text text-success"></i>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h5 class="mb-1">Churchasdasdasdasd Newsletter - April 2025</h5>
+                            <p class="c2" style="font-size:14px;">2.5 MBUploaded on 2025-04-10</p>
+                            <p class="c2" style="font-size:14px;">By Jessica Wilson</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mt-3 gap-2 align-self-end">
+                        <button class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</button>
+                        <button class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
+    </div>
+</div>

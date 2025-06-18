@@ -1,0 +1,93 @@
+﻿@page "/schedules"
+@layout LandingLayout
+
+<PageTitle>Schedule Management</PageTitle>
+
+
+<div class="page">
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Schedule Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Create and manage church schedules and assignments.</p>
+        </div>
+
+        <div>
+            <button class="btn btn-primary p-2 text-white link w-100">Add Schedule</button>
+        </div>
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+        <div class="container">
+            <!--Search Section-->
+            <div class="d-flex flex-column flex-md-row gap-2 mb-4">
+                <div class="position-relative flex-grow-1">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input type="text" class="form-control border search" placeholder="Search schedules..." />
+                </div>
+
+                <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
+                    <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-calendar"></i> Calendar View</button>
+                </div>
+            </div>
+
+            <!--File Section-->
+            <div class="wrapper">
+                <div class="events">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <div class="card p-4 cards">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="mb-1">Worship Team Practice</h5>
+                                <div class="pill c2">
+                                    <p>Scheduled</p>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column gap-2">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <i class="bi bi-calendar"></i>
+                                    <p class="m-0 c2" style="font-size: 14px">2025-04-21</p>
+                                </div>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <i class="bi bi-clock"></i>
+                                    <p class="m-0 c2" style="font-size: 14px">10:00 AM - 12:00 PM</p>
+                                </div>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <p class="m-0 c2" style="font-size: 14px">Main Sanctuary</p>
+                                </div>
+
+                                <div class="wrapper">
+                                    <div class="sub w-auto">
+                                        <p class="pill2 text-nowrap">Daniel Lewis</p>
+                                        @* <p class="pill2 text-nowrap">Maria Rodriguez</p> *@
+                                        <p class="pill2 text-nowrap">Thomas Jackson</p>
+                                        <p class="pill2 text-nowrap">Sophia Garcia</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+
+                            <div class="d-flex align-items-center justify-content-between mt-5">
+                                <p class="m-0 c2" style="font-size:14px;">Worship • Sanctuary</p>
+
+                                <div class="d-flex gap-2">
+                                    <!--Edit-->
+                                    <div class="d-flex align-items-center justify-content-center gap-1w-auto border flex-grow-1" style="border-radius: 10px; padding: 5px 24px;">
+                                        <a href="" class="text-decoration-none" style="font-size: 13px;">Edit</a>
+                                    </div>
+
+                                    <!--Delete-->
+                                    <button class="btn btn-danger text-white flex-grow-1 text-nowrap" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
