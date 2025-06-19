@@ -1,0 +1,27 @@
+﻿@page "/add-user"
+@inject IJSRuntime JS
+@layout LandingLayout
+@using GospelReachCapstone.Models
+@inherits ProtectedPageBase
+
+<h3>Register New User</h3>
+
+<input @bind="user.Email" placeholder="Email" />
+<input @bind="user.Password" placeholder="Password" type="password" />
+<select @bind="user.Role">
+    <option value="Admin">Admin</option>
+    <option value="Department Head">Department Head</option>
+</select>
+<button @onclick="RegisterUser">Register</button>
+
+@code {
+    private User user = new();
+
+    private async Task RegisterUser()
+    {
+        user.CreatedAt = DateTime.Now;
+        // NOTE: You should hash the password before saving in production
+        await JS.InvokeVoidAsync("firestoreFunctions.addUser", user);
+        user = new();
+    }
+}

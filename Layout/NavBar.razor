@@ -1,4 +1,8 @@
-﻿<div class="side-parent">
+﻿@inject IJSRuntime JS;
+@inject NavigationManager Nav
+@inject GospelReachCapstone.Services.FirebaseAuthenticationService AuthService
+
+<div class="side-parent">
     <div class="side-parent-content">
         <nav class="w-100">
             <!--Pages Section-->
@@ -103,6 +107,7 @@
             <p class="fs-6 m-0">John Doe</p>
             <p class="c2 m-0" style="font-size:12px;">Administrator</p>
         </div>
+        <button class="btn btn-danger" @onclick="Logout">Logout</button>
     </div>
 </div>
 
@@ -123,5 +128,11 @@
     private string GetClass(int index, string baseClass)
     {
         return $"{baseClass}{(activeIndex == index ? " active" : "")}";
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        Nav.NavigateTo("/");
     }
 }
