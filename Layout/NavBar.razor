@@ -99,15 +99,18 @@
     </div>
 
     <!--Users Section-->
-    <div class="side-foot d-flex align-items-center gap-2">
-        <div>
-            <img src="https://i.pravatar.cc/150?img=3" style="width:40px;" />
+    <div class="side-foot d-flex align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <div>
+                <img src="https://i.pravatar.cc/150?img=3" style="width:40px;" />
+            </div>
+            <div>
+                <p class="fs-6 m-0">John Doe</p>
+                <p class="c2 m-0" style="font-size:12px;">Administrator</p>
+            </div>
         </div>
-        <div>
-            <p class="fs-6 m-0">John Doe</p>
-            <p class="c2 m-0" style="font-size:12px;">Administrator</p>
-        </div>
-        <button class="btn btn-danger" @onclick="Logout">Logout</button>
+        
+        <button class="btn p-0" @onclick="Logout"><i class="bi bi-box-arrow-right fs-4"></i></button>
     </div>
 </div>
 

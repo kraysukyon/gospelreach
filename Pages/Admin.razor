@@ -1,11 +1,124 @@
 ﻿@page "/admin"
 @layout LandingLayout
-@inherits ProtectedPageBase
+@using GospelReachCapstone.Models
+@inject GospelReachCapstone.Services.FirebaseAuthenticationService Authentication
+@inject GospelReachCapstone.Services.FirestoreService Firestore
+@inject IJSRuntime _js
+@* @inherits ProtectedPageBase *@
+
+
 
 <PageTitle>Admin</PageTitle>
 
 
 <div class="page">
+
+    <!--Add User Model-->
+    <div @onclick="ToggleAddUserModal" class="addUserModal @(isAddUserModalVisible ? "show" : "")">
+        <div class="addUser d-none" @onclick:stopPropagation>
+            <h4 class="fw-bold">
+                Add User
+            </h4>
+            <p style="font-size:14px;">Create and Manage Users and Access Control.</p>
+
+            <div class="userFields">
+                <div class="input">
+                    <p>First Name</p>
+                    <input @bind="user.firstName" type="text" class="form-control p-2 mt-2" placeholder="First Name"/>
+                </div>
+
+                <div class="input">
+                    <p>Last Name</p>
+                    <input @bind="user.lastName" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
+                </div>
+            </div>
+
+            <div class="input mt-3">
+                <p>Email</p>
+                <input @bind="user.email" type="email" class="form-control p-2 mt-2" placeholder="Email" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Password</p>
+                <input @bind="user.password" type="password" class="form-control p-2 mt-2" placeholder="Password" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Contact Number</p>
+                <input @bind="user.contact" type="text" class="form-control p-2 mt-2" placeholder="Contact Number" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Role</p>
+                <select @bind="user.role" class="form-select p-2 mt-2">
+                    <option value="Administrator">Admin</option>
+                    <option value="Department Head - Mens">Department Head - Mens</option>
+                    <option value="Department Head - Homeleague">Department Head - Homeleague</option>
+                    <option value="Department Head - Youth">Department Head - Youth</option>
+                    <option value="Department Head - Finance">Department Head - Finance</option>
+                </select>
+            </div>
+
+            <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
+                <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddUser">Create</button>
+            </div>
+        </div>
+
+        <!--Edit User-->
+        <div class="addUser" @onclick:stopPropagation>
+            <h4 class="fw-bold">
+                Edit User
+            </h4>
+            <p style="font-size:14px;">Create and Manage Users and Access Control.</p>
+
+            <div class="userFields">
+                <div class="input">
+                    <p>First Name</p>
+                    <input @bind="account.firstName" type="text" class="form-control p-2 mt-2" placeholder="First Name" />
+                </div>
+
+                <div class="input">
+                    <p>Last Name</p>
+                    <input @bind="account.lastName" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
+                </div>
+            </div>
+
+            <div class="input mt-3">
+                <p>Email</p>
+                <input @bind="account.email" type="email" class="form-control p-2 mt-2" placeholder="Email" />
+            </div>
+
+            @* <div class="input mt-3">
+                <p>Password</p>
+                <input @bind="user.password" type="password" class="form-control p-2 mt-2" placeholder="Password" />
+            </div> *@
+
+            <div class="input mt-3">
+                <p>Contact Number</p>
+                <input @bind="account.contact" type="text" class="form-control p-2 mt-2" placeholder="Contact Number" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Role</p>
+                <select @bind="account.role" class="form-select p-2 mt-2">
+                    <option value="Administrator">Admin</option>
+                    <option value="Department Head - Mens">Department Head - Mens</option>
+                    <option value="Department Head - Homeleague">Department Head - Homeleague</option>
+                    <option value="Department Head - Youth">Department Head - Youth</option>
+                    <option value="Department Head - Finance">Department Head - Finance</option>
+                </select>
+            </div>
+
+            <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
+                <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="UpdateUser">Update</button>
+            </div>
+        </div>
+    </div>
+
+    
+
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
         <div>
@@ -14,7 +127,7 @@
         </div>
 
         <div>
-            <a href="add-user" class="btn btn-primary p-2 text-white link">Add Admin</a>
+            <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleAddUserModal">Add User</button>
         </div>
     </div>
 
@@ -35,27 +148,40 @@
                         <th class="thead">Email</th>
                         <th class="thead">Role</th>
                         <th class="thead">Phone</th>
+                        <th class="thead">Status</th>
                         <th class="thead">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    @for (int i = 0; i < 4; i++)
+                    @foreach (var items in accounts)
                     {
                         <tr class="table-row">
-                            <td class="table-cell" style="font-weight:500;">Pastor John Smith</td>
-                            <td class="table-cell c2">john.smith@church.org</td>
-                            <td class="table-cell c2">Senior Pastor</td>
-                            <td class="table-cell c2">123-456-7890</td>
+                            <td class="table-cell" style="font-weight:500;">@items.firstName @items.lastName</td>
+                            <td class="table-cell c2">@items.email</td>
+                            <td class="table-cell c2">@items.role</td>
+                            <td class="table-cell c2">@items.contact</td>
+                            <td class="table-cell c2">@items.stats</td>
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
                                 <!--Edit-->
                                 <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</a>
+                                    @* <button class="btn " style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</button> *@
+                                    <button class="btn btn-outline-light px-4 py-1" style="font-size: 13px;" @onclick="@(()=> ToggleUpdateModal(items.id))"><span><i class="bi bi-pencil-square"></i></span> Edit</button>
                                 </div>
 
-                                <!--Delete-->
-                                <button class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                <!--Check account status-->
+                                @if (items.stats != "Disabled")
+                                {
+                                    <!--Disable-->
+                                    <button @onclick="@(() => DisableUser(items.id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Disable</button>
+                                }
+                                else
+                                {
+                                    <!--Enable-->
+                                    <button @onclick="@(() => EnableUser(items.id))" class="btn btn-success text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Enable</button>
+                                }
                             </td>
+                                
                         </tr>
                     }
                 </tbody>
@@ -63,3 +189,108 @@
         </div>
     </div>
 </div>
+
+@code{
+    private bool isAddUserModalVisible = false;
+    private User user = new();
+    private Accounts account = new();
+    private List<Accounts> accounts = new();
+    private List<Accounts> accountToBeUpdated = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        accounts = await Firestore.GetAccountAsync(); // Fetch accounts on initialization
+    }
+
+    private async Task ToggleUpdateModal(string docId)
+    {
+        isAddUserModalVisible = !isAddUserModalVisible;
+        var accountToUpdate = accounts.FirstOrDefault(u => u.id == docId);
+        if (accountToUpdate != null)
+        {
+            account = accountToUpdate;
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "No such document");
+        }
+
+    }
+
+
+    private void ToggleAddUserModal()
+    {
+        isAddUserModalVisible = !isAddUserModalVisible;
+        user = new();
+    }
+
+    private async Task AddUser()
+    {
+        var result = await Authentication.RegisterAsync(user.email, user.password, user);
+
+        if (result.Success)
+        {
+            await _js.InvokeVoidAsync("alert", "Account Successfully Created");
+            accounts = new();
+            accounts = await Firestore.GetAccountAsync(); // Refresh the accounts list
+            ToggleAddUserModal();
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Message);
+        }
+    }
+
+    private async Task UpdateUser()
+    {
+        try
+        {
+            await Firestore.UpdateAccountAsync(account.id, account);
+            await _js.InvokeVoidAsync("alert", "User updated successfully");
+            account = new(); // Reset the account object after update
+            accounts.Clear();
+            accounts = await Firestore.GetAccountAsync();
+            isAddUserModalVisible = false; // Hide the modal after update
+
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Error updating user: {ex.Message}");
+            return;
+        }
+    }
+
+    private async Task DisableUser(string docId)
+    {
+        try
+        {
+            await Firestore.DisableAccountAsync(docId);
+            await _js.InvokeVoidAsync("alert", "User disabled successfully");
+            accounts.Clear();
+            accounts = await Firestore.GetAccountAsync(); // Refresh the accounts list
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Error disabling user: {ex.Message}");
+            return;
+        }
+    }
+
+    //Enable Accoubt
+    private async Task EnableUser(string docId)
+    {
+        try
+        {
+            await Firestore.EnableAccountAsync(docId);
+            await _js.InvokeVoidAsync("alert", "User enabled successfully");
+            accounts.Clear();
+            // Refresh the accounts list
+            accounts = await Firestore.GetAccountAsync(); 
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Error enabling user: {ex.Message}");
+            return;
+        }
+    }
+}

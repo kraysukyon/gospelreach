@@ -3,25 +3,49 @@
 @layout LandingLayout
 @using GospelReachCapstone.Models
 @inherits ProtectedPageBase
+@inject GospelReachCapstone.Services.FirebaseAuthenticationService AuthService
 
 <h3>Register New User</h3>
+<div>
+    <input @bind="user.firstName" class="form-control" placeholder="First Name" />
+    <input @bind="user.lastName" class="form-control" placeholder="Last Name" />
+    <input @bind="user.email" class="form-control" placeholder="Email" />
+    <input @bind="user.password" placeholder="Password" type="password" />
+    <select @bind="user.role">
+        <option value="Admin">Admin</option>
+        <option value="Department Head">Department Head</option>
+    </select>
+    <input @bind="user.contact" type="text" class="form-control" placeholder="Contact number" />
+    <button @onclick="RegisterUser">Register</button>
+</div>
 
-<input @bind="user.Email" placeholder="Email" />
-<input @bind="user.Password" placeholder="Password" type="password" />
-<select @bind="user.Role">
-    <option value="Admin">Admin</option>
-    <option value="Department Head">Department Head</option>
-</select>
-<button @onclick="RegisterUser">Register</button>
+
 
 @code {
     private User user = new();
 
     private async Task RegisterUser()
     {
-        user.CreatedAt = DateTime.Now;
-        // NOTE: You should hash the password before saving in production
-        await JS.InvokeVoidAsync("firestoreFunctions.addUser", user);
-        user = new();
+        string? email = user.email;
+        string? password = user.email;
+
+        if (user.role != null)
+        {
+            var result = await AuthService.RegisterAsync(email, password, user);
+
+            if (result.Success)
+            {
+                await JS.InvokeVoidAsync("alert", "Success");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", result.Message);
+            }
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Please select a role for the user.");
+        }
+
     }
 }

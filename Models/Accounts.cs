@@ -1,14 +1,15 @@
 ﻿namespace GospelReachCapstone.Models
 {
-    public class User
+    public class Accounts
     {
+        public string id { get; set; } // Firebase document ID
         public string firstName { get; set; }
         public string lastName { get; set; }
         public string email { get; set; }
-        public string password { get; set; } // Store hashed passwords!
         public string contact { get; set; }
         public string role { get; set; } = "Admin";
-        public string stats { get; set; } = "Active"; // Default status
+        public string stats { get; set; } = "Active";
         public string dateOfCreation { get; set; } = DateTime.Now.ToString();
     }
+
 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.JSInterop;
+﻿using GospelReachCapstone.Models;
+using Microsoft.JSInterop;
+using System.ComponentModel.DataAnnotations;
 
 namespace GospelReachCapstone.Services
 {
@@ -12,10 +14,9 @@ namespace GospelReachCapstone.Services
             _jsRuntime = jSRuntime;
             _authState = authstate;
         }
-
-        public async Task<(bool Success, string Message)> RegisterAsync(string email, string password)
+        public async Task<(bool Success, string Message)> RegisterAsync(string email, string password, User user)
         {
-            var result = await _jsRuntime.InvokeAsync<RegisterResult>("firebaseAuth.register", email, password);
+            var result = await _jsRuntime.InvokeAsync<RegisterResult>("firebaseAuth.register", email, password, user);
             return result.Success ? (true, "Account Added Successful") : (false, result.Error);
         }
 

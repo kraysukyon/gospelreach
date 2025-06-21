@@ -2,7 +2,9 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService FirebaseAuthService
+@inject GospelReachCapstone.Services.FirestoreService Firestore
 @inject GospelReachCapstone.Services.AuthState Auth
+@using GospelReachCapstone.Models;
 
 <PageTitle>Home</PageTitle>
 
@@ -232,6 +234,7 @@
     //variables for authentication
     private string email = string.Empty;
     private string password = string.Empty;
+    private List<Accounts> accounts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -260,16 +263,34 @@
 
     private async Task ValidateLogin()
     {
-        var result = await FirebaseAuthService.LoginAsync(email, password);
-        if (result.Success)
+        try
         {
-            await JSRuntime.InvokeVoidAsync("alert", result.Message);
-            NavigationManager.NavigateTo("/dashboard"); // Redirect to dashboard after login
+            var result = await FirebaseAuthService.LoginAsync(email, password);
+            if (result.Success)
+            {
+                accounts = new(); // Reset accounts list
+                accounts = await Firestore.GetAccountAsync(); // Fetch accounts from Firebase
+
+                var userStatus = accounts.FirstOrDefault(u => u.email == email && u.stats == "Disabled");
+                if (userStatus != null)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Your account is disabled. Please contact the administrator."); // Show alert for disabled accounts
+                    return;
+                }
+
+                await JSRuntime.InvokeVoidAsync("alert", result.Message);
+                NavigationManager.NavigateTo("/dashboard"); // Redirect to dashboard after login
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", result.Message); // Show error message
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", result.Message); // Show error message
+            await JSRuntime.InvokeVoidAsync("alert", $"An error occurred: {ex.Message}"); // Handle any exceptions
         }
+
     }
 
 }
