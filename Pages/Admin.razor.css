@@ -26,10 +26,23 @@
     border-radius:25px;
 }
 
+.editUser {
+    display: flex;
+    flex-direction: column;
+    width: 550px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+}
+
 .show {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.hide{
+    display: none;
 }
 
 .userFields{

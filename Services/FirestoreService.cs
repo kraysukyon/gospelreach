@@ -27,6 +27,7 @@ namespace GospelReachCapstone.Services
             }
             
         }
+        
 
         //Update Accounts
         public async Task UpdateAccountAsync(string docId,Accounts accounts)
@@ -45,5 +46,41 @@ namespace GospelReachCapstone.Services
         {
             await _jsRuntime.InvokeVoidAsync("firestoreFunctions.enableAccount", docId);
         }
+
+        //Getting the Attendance List
+        public async Task<List<Attendance>> GetAttendanceAsync()
+        {
+            var result =  await _jsRuntime.InvokeAsync<Attendance[]>("firestoreFunctions.getAttendance");
+            return result.ToList();
+        }
+
+        
+        //Add Attendance
+        public async Task<(bool Success, string Message)> AddAttendanceAsync(Attendance attendance)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<AttendanceResult>("firestoreFunctions.addAttendance", attendance);
+                return result.Success ? (true, "Attendance added successfully") : (false, result.Error ?? "Failed to add attendance");
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", $"Error adding attendance: {ex.Message}");
+                return (false, "Error adding attendance");
+            }
+
+        }
+
+        public async Task UpdateAttendanceAsync(string docId, Attendance attendance)
+        {
+            await _jsRuntime.InvokeVoidAsync("firestoreFunctions.editAttendance", docId, attendance);
+        }
+    }
+
+    public class AttendanceResult
+    {
+        public bool Success { get; set; }
+        public string Id { get; set; }
+        public string Error { get; set; }
     }
 }

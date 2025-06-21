@@ -4,7 +4,7 @@
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService Authentication
 @inject GospelReachCapstone.Services.FirestoreService Firestore
 @inject IJSRuntime _js
-@* @inherits ProtectedPageBase *@
+@inherits ProtectedPageBase
 
 
 
@@ -15,9 +15,9 @@
 
     <!--Add User Model-->
     <div @onclick="ToggleAddUserModal" class="addUserModal @(isAddUserModalVisible ? "show" : "")">
-        <div class="addUser d-none" @onclick:stopPropagation>
+        <div class="addUser" @onclick:stopPropagation>
             <h4 class="fw-bold">
-                Add User
+                @title
             </h4>
             <p style="font-size:14px;">Create and Manage Users and Access Control.</p>
 
@@ -38,10 +38,14 @@
                 <input @bind="user.email" type="email" class="form-control p-2 mt-2" placeholder="Email" />
             </div>
 
-            <div class="input mt-3">
-                <p>Password</p>
-                <input @bind="user.password" type="password" class="form-control p-2 mt-2" placeholder="Password" />
-            </div>
+            @if (title == "Add User")
+            {
+                <div class="input mt-3">
+                    <p>Password</p>
+                    <input @bind="user.password" type="password" class="form-control p-2 mt-2" placeholder="Password" />
+                </div>
+            }
+            
 
             <div class="input mt-3">
                 <p>Contact Number</p>
@@ -51,7 +55,7 @@
             <div class="input mt-3">
                 <p>Role</p>
                 <select @bind="user.role" class="form-select p-2 mt-2">
-                    <option value="Administrator">Admin</option>
+                    <option value="Administrator">Administrator</option>
                     <option value="Department Head - Mens">Department Head - Mens</option>
                     <option value="Department Head - Homeleague">Department Head - Homeleague</option>
                     <option value="Department Head - Youth">Department Head - Youth</option>
@@ -59,61 +63,21 @@
                 </select>
             </div>
 
-            <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
-                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
-                <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddUser">Create</button>
-            </div>
-        </div>
-
-        <!--Edit User-->
-        <div class="addUser" @onclick:stopPropagation>
-            <h4 class="fw-bold">
-                Edit User
-            </h4>
-            <p style="font-size:14px;">Create and Manage Users and Access Control.</p>
-
-            <div class="userFields">
-                <div class="input">
-                    <p>First Name</p>
-                    <input @bind="account.firstName" type="text" class="form-control p-2 mt-2" placeholder="First Name" />
+            @if (title == "Add User")
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddUser">Create</button>
                 </div>
-
-                <div class="input">
-                    <p>Last Name</p>
-                    <input @bind="account.lastName" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
+            }
+            else
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="UpdateUser">Update</button>
                 </div>
-            </div>
-
-            <div class="input mt-3">
-                <p>Email</p>
-                <input @bind="account.email" type="email" class="form-control p-2 mt-2" placeholder="Email" />
-            </div>
-
-            @* <div class="input mt-3">
-                <p>Password</p>
-                <input @bind="user.password" type="password" class="form-control p-2 mt-2" placeholder="Password" />
-            </div> *@
-
-            <div class="input mt-3">
-                <p>Contact Number</p>
-                <input @bind="account.contact" type="text" class="form-control p-2 mt-2" placeholder="Contact Number" />
-            </div>
-
-            <div class="input mt-3">
-                <p>Role</p>
-                <select @bind="account.role" class="form-select p-2 mt-2">
-                    <option value="Administrator">Admin</option>
-                    <option value="Department Head - Mens">Department Head - Mens</option>
-                    <option value="Department Head - Homeleague">Department Head - Homeleague</option>
-                    <option value="Department Head - Youth">Department Head - Youth</option>
-                    <option value="Department Head - Finance">Department Head - Finance</option>
-                </select>
-            </div>
-
-            <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
-                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
-                <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="UpdateUser">Update</button>
-            </div>
+            }
+            
         </div>
     </div>
 
@@ -165,7 +129,6 @@
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
                                 <!--Edit-->
                                 <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    @* <button class="btn " style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</button> *@
                                     <button class="btn btn-outline-light px-4 py-1" style="font-size: 13px;" @onclick="@(()=> ToggleUpdateModal(items.id))"><span><i class="bi bi-pencil-square"></i></span> Edit</button>
                                 </div>
 
@@ -192,6 +155,7 @@
 
 @code{
     private bool isAddUserModalVisible = false;
+    private string title = "Add User";
     private User user = new();
     private Accounts account = new();
     private List<Accounts> accounts = new();
@@ -199,12 +163,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        user.role = "Administrator";
         accounts = await Firestore.GetAccountAsync(); // Fetch accounts on initialization
     }
 
     private async Task ToggleUpdateModal(string docId)
     {
         isAddUserModalVisible = !isAddUserModalVisible;
+        title = "Edit User";
         var accountToUpdate = accounts.FirstOrDefault(u => u.id == docId);
         if (accountToUpdate != null)
         {
@@ -221,6 +187,7 @@
     private void ToggleAddUserModal()
     {
         isAddUserModalVisible = !isAddUserModalVisible;
+        title = "Add User";
         user = new();
     }
 

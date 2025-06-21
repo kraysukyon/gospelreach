@@ -1,0 +1,225 @@
+﻿@page "/attendance"
+@layout LandingLayout
+@* @inherits ProtectedPageBase *@
+@inject GospelReachCapstone.Services.FirestoreService Firestore
+@using GospelReachCapstone.Models
+@inject IJSRuntime _js
+
+<PageTitle>Attendance</PageTitle>
+
+
+<div class="page">
+    <!--Add User Model-->
+    <div @onclick="ToggleModal" class="addAttendanceModal @(isAddModalVisible ? "show" : "")">
+        <div class="addAttendance" @onclick:stopPropagation>
+            <h4 class="fw-bold">
+                @title
+            </h4>
+            <p style="font-size:14px;">Create and Manage Attendance.</p>
+
+            <div class="input mt-3">
+                <p>Date</p>
+                <input @bind="date" type="date" class="form-control p-2 mt-2" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Service</p>
+                <select @bind="attendance.Service" class="form-select p-2 mt-2">
+                    <option value="Holiness Meeting">Holiness Meeting</option>
+                    <option value="Bible Study">Bible Study</option>
+                    <option value="Prayer Meeting">Prayer Meeting</option>
+                    <option value="Torchbearer">Torchbearer</option>
+                    <option value="Homeleague">Homeleague</option>
+                    <option value="Mens">Mens</option>
+                </select>
+            </div>
+
+            <div class="input mt-3">
+                <p>Attendance</p>
+                <input @bind="attendance.Count" type="number" class="form-control p-2 mt-2" placeholder="Count" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Seekers</p>
+                <input @bind="attendance.Seekers" type="number" class="form-control p-2 mt-2" placeholder="Seekers" />
+            </div>
+
+            @if (title == "Add Attendance")
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddAttendance">Create</button>
+                </div>
+            }
+            else
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="UpdateAttendance">Update</button>
+                </div>
+            }
+            
+        </div>
+    </div>
+
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Attendance Tracking</h4>
+            <p class="m-0 c2" style="font-size: 14px">Track and manage church attendance records.</p>
+        </div>
+
+        <div>
+            <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleModal">Add Attendance</button>
+        </div>
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+        <div class="container">
+            <!--Search Section-->
+            <div class="d-flex flex-column flex-md-row gap-2 mb-4">
+                <div class="position-relative flex-grow-1">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input type="text" class="form-control border search" placeholder="Search by date or services..." />
+                </div>
+
+                <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
+                    <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><span><i class="bi bi-calendar-check"></i></span> Filter by Date</button>
+                    <button class="btn btn-primary p-2 text-white w-100 text-nowrap"><span><i class="bi bi-file-earmark-text text-white"></i></span> Generate Report</button>
+                </div>
+            </div>
+        </div>
+        
+        
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead">Date</th>
+                        <th class="thead">Service</th>
+                        <th class="thead">Attendance</th>
+                        <th class="thead">Seekers</th>
+                        <th class="thead">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var items in attendanceList)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell" style="font-weight:500;">@items.Date</td>
+                            <td class="table-cell c2">@items.Service</td>
+                            <td class="table-cell c2">@items.Count</td>
+                            <td class="table-cell c2">@items.Seekers</td>
+                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                <!--Edit-->
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
+                                    <button @onclick="@(() => OpenEdit(items.Id))" class="btn btn-outline-light px-4 py-1 w-auto" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</button>
+                                </div>
+
+                                <!--Delete-->
+                                <button class="btn btn-danger text-white px-4 py-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--Quick Stats Section-->
+    <div class="d-flex flex-column mt-4">
+        <div class="d-md-flex d-block justify-content-evenly gap-4">
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <h5 class="mb-2">Average Sunday Attendance</h5>
+                <h3 class="m-2 c2 text-primary fw-bold">245</h3>
+                <p class="c2" style="font-size:14px;">Last 4 weeks</p>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <h5 class="mb-2">Growth Rate</h5>
+                <h3 class="m-2 c2 text-success fw-bold">+5.2%</h3>
+                <p class="c2" style="font-size:14px;">Month over month</p>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <h5 class="mb-2">First-Time Visitors</h5>
+                <h3 class="m-2 c2 text-danger fw-bold">3</h3>
+                <p class="c2" style="font-size:14px;">This month</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    bool isAddModalVisible = false;
+    private DateTime date = DateTime.Now;
+    private Attendance attendance = new();
+    private List<Attendance> attendanceList = new List<Attendance>();
+    private string title = "Add Attendance";
+
+    protected override async Task OnInitializedAsync()
+    {
+        attendance = new();
+        attendance.Service = "Holiness Meeting";
+        attendanceList = await Firestore.GetAttendanceAsync();
+    }
+
+    private void ToggleModal()
+    {
+        isAddModalVisible = !isAddModalVisible;
+        title = "Add Attendance";
+        attendance = new();
+    }
+
+    private async Task AddAttendance()
+    {
+        try
+        {
+            attendance.Date = date.ToString();
+            await Firestore.AddAttendanceAsync(attendance);
+            attendanceList.Clear();
+            attendanceList = await Firestore.GetAttendanceAsync();
+            await _js.InvokeVoidAsync("alert", "Attendance Added Successfuly");
+            attendance = new();
+            attendance.Service = "Holiness Meeting";
+            ToggleModal();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+
+    }
+
+    private void OpenEdit(string docId)
+    {
+        ToggleModal();
+        title = "Update Attendance";
+        var att = attendanceList.FirstOrDefault(u => u.Id == docId);
+        if (att != null)
+        {
+            attendance = att;
+        }
+    }
+
+    private async Task UpdateAttendance()
+    {
+        try
+        {
+            await Firestore.UpdateAttendanceAsync(attendance.Id, attendance);
+            attendanceList.Clear();
+            attendanceList = await Firestore.GetAttendanceAsync();
+            await _js.InvokeVoidAsync("alert", "Attendance Updated Successfully");
+            ToggleModal();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Error updating attendance: {ex.Message}");
+            return;
+        }
+    
+    }
+}
