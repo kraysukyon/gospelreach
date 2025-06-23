@@ -1,6 +1,6 @@
 ﻿@page "/attendance"
 @layout LandingLayout
-@* @inherits ProtectedPageBase *@
+@inherits ProtectedPageBase
 @inject GospelReachCapstone.Services.FirestoreService Firestore
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
@@ -94,7 +94,7 @@
         
 
         <div class="table-container">
-            <table class="table">
+            <table class="table table-striped">
                 <thead>
                     <tr>
                         <th class="thead">Date</th>
@@ -109,18 +109,16 @@
                     @foreach (var items in attendanceList)
                     {
                         <tr class="table-row">
-                            <td class="table-cell" style="font-weight:500;">@items.Date</td>
-                            <td class="table-cell c2">@items.Service</td>
-                            <td class="table-cell c2">@items.Count</td>
-                            <td class="table-cell c2">@items.Seekers</td>
-                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                            <td class="table-cell c2 align-content-center">@items.Date</td>
+                            <td class="table-cell c2 align-content-center">@items.Service</td>
+                            <td class="table-cell c2 align-content-center">@items.Count</td>
+                            <td class="table-cell c2 align-content-center">@items.Seekers</td>
+                            <td class="" style="display: flex; gap: 10px; width: 100%;">
                                 <!--Edit-->
-                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <button @onclick="@(() => OpenEdit(items.Id))" class="btn btn-outline-light px-4 py-1 w-auto" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</button>
-                                </div>
+                                <button @onclick="@(() => OpenEdit(items.Id))" class="btn btn-outline-light px-4 py-1 border border-1" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</button>
 
                                 <!--Delete-->
-                                <button class="btn btn-danger text-white px-4 py-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                <button @onclick="@(() => RemoveAttendance(items.Id))" class="btn btn-danger text-white px-4 py-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
                             </td>
                         </tr>
                     }
@@ -220,6 +218,21 @@
             await _js.InvokeVoidAsync("alert", $"Error updating attendance: {ex.Message}");
             return;
         }
-    
+
+    }
+
+    private async Task RemoveAttendance(string docId)
+    {
+        try
+        {
+            await Firestore.DeleteAttendanceAsync(docId);
+            attendanceList.Clear();
+            attendanceList = await Firestore.GetAttendanceAsync();
+            await _js.InvokeVoidAsync("alert", "Attendance Deleted Successfully");
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Error deleting attendance: {ex.Message}");
+        }
     }
 }

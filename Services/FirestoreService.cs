@@ -1,5 +1,6 @@
 ﻿using GospelReachCapstone.Models;
 using Microsoft.JSInterop;
+using System.Text.Json;
 
 namespace GospelReachCapstone.Services
 {
@@ -74,6 +75,47 @@ namespace GospelReachCapstone.Services
         public async Task UpdateAttendanceAsync(string docId, Attendance attendance)
         {
             await _jsRuntime.InvokeVoidAsync("firestoreFunctions.editAttendance", docId, attendance);
+        }
+        
+        public async Task DeleteAttendanceAsync(string docId)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.deleteAttendance", docId);
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", $"Error deleting attendancesssss: {ex.Message}");
+            }
+            
+        }
+
+        public async Task<List<Member>> GetMembersAsync()
+        {
+            try
+            {
+                var memberList =  await _jsRuntime.InvokeAsync<Member[]>("firestoreFunctions.getMembers");
+                return memberList.ToList();
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", $"Error fetching members: {ex.Message}");
+                return new List<Member>();
+            }
+        }
+
+        public async Task<bool> AddMemberAsync(Member member)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<JsonElement>("firestoreFunctions.addMember", member);
+                await _jsRuntime.InvokeVoidAsync("alert", "Member Successfuly added!");
+                return result.GetProperty("success").GetBoolean();
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 

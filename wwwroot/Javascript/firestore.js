@@ -59,17 +59,55 @@
                 count: attendance.count,
                 seekers: attendance.seekers
             });
-            return { success: true, id: attendanceToAdd.id }
+            return { success: true }
         } catch (error) {
-            return { success: false, error: error.message}
+            return { success: false }
         }
-        
     },
 
     async editAttendance(docId, attendance) {
         try {
             await db.collection("Attendance").doc(docId).set(attendance);
         } catch (error) {
+            alert(error)
+        }
+    },
+
+    async deleteAttendance(docId) {
+        try {
+            await db.collection("Attendance").doc(docId).delete();
+        } catch (error) {
+            alert(error)
+        }
+    },
+
+
+    //============================================Member Management Section============================================//
+    async getMembers() {
+        try {
+            const membersTable = await db.collection("Members").get();
+            return membersTable.docs.map(items => ({id: items.id, ...items.data()}));
+        } catch (error) {
+            alert(error)
+        }
+    },
+
+    async addMember(member) {
+        try {
+            await db.collection("Members").add({
+                firstName: member.firstName,
+                middleName: member.middleName,
+                lastName: member.lastName,
+                email: member.email,
+                contact: member.contact,
+                birthdate: member.birthdate,
+                dateOfSoldiership: member.dateOfSoldiership,
+                classification: member.classification,
+                status: member.status,
+            });
+            return { success: true }
+        } catch (error) {
+            return { success: false }
             alert(error)
         }
     }

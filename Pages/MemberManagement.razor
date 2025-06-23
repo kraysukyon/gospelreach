@@ -1,11 +1,96 @@
 ﻿@page "/membermanagement"
 @layout LandingLayout
-@inherits ProtectedPageBase
+@* @inherits ProtectedPageBase *@
+@inject GospelReachCapstone.Services.FirestoreService Firestore
+@using GospelReachCapstone.Models
+@inject IJSRuntime _js
 
 <PageTitle>Member Management</PageTitle>
 
 
 <div class="page">
+    <!--Add Member Model-->
+    <div @onclick="ToggleModal" class="addMemberModal @(isAddModalVisible ? "show" : "")">
+        <div class="addMember" @onclick:stopPropagation>
+            <h4 class="fw-bold">
+                @title
+            </h4>
+            <p style="font-size:14px;">Create and Manage Members.</p>
+            
+            <div class="input mt-3">
+                <p>First Name</p>
+                <input @bind="member.FirstName" type="text" class="form-control p-2 mt-2" placeholder="First Name" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Middle Name</p>
+                <input @bind="member.MiddleName" type="text" class="form-control p-2 mt-2" placeholder="Middle Name" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Last Name</p>
+                <input @bind="member.LastName" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Email</p>
+                <input @bind="member.Email" type="text" class="form-control p-2 mt-2" placeholder="Email" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Contact</p>
+                <input @bind="member.Contact" type="text" class="form-control p-2 mt-2" placeholder="Contact Number" />
+            </div>
+
+            <div class="userFields mt-3">
+                <div class="input">
+                    <p>Birthdate</p>
+                    <input @bind="dateOfBirth" type="date" class="form-control p-2 mt-2" />
+                </div>
+
+                <div class="input">
+                    <p>Date Of Soldiership</p>
+                    <input @bind="dateOfSoldiership" type="date" class="form-control p-2 mt-2" />
+                </div>
+            </div>
+
+            <div class="userFields mt-3">
+                <div class="input">
+                    <p>Classfication</p>
+                    <select @bind="member.Classification" class="form-select p-2 mt-2">
+                        <option value="Soldier">Soldier</option>
+                        <option value="Adherent">Adherent</option>
+                    </select>
+                </div>
+
+                <div class="input">
+                    <p>Status</p>
+                    <select @bind="member.Status" class="form-select p-2 mt-2">
+                        <option value="Active">Active</option>
+                        <option value="InActive">InActive</option>
+                    </select>
+                </div>
+            </div>
+            
+
+            @if (title == "Add Member")
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addMember">Create</button>
+                </div>
+            }
+            else
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="updateMember">Update</button>
+                </div>
+            }
+
+        </div>
+    </div>
+
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
         <div>
@@ -14,7 +99,7 @@
         </div>
 
         <div>
-            <a href="" class="btn btn-primary p-2 text-white link">Add Member</a>
+            <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleModal">Add Member</button>
         </div>
     </div>
 
@@ -31,24 +116,33 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th class="thead">Name</th>
-                        <th class="thead">Contact Info</th>
-                        <th class="thead">Address</th>
-                        <th class="thead">Join Date</th>
+                        <th class="thead">First Name</th>
+                        <th class="thead">Middle Name</th>
+                        <th class="thead">Last Name</th>
+                        <th class="thead">Email</th>
+                        <th class="thead">Contact</th>
+                        <th class="thead">Birthdate</th>
+                        <th class="thead">Date of Soldiership</th>
+                        <th class="thead">Classification</th>
                         <th class="thead">Status</th>
                         <th class="thead">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    @for (int i = 0; i < 4; i++)
+                    @foreach (var items in membersList)
                     {
                         <tr class="table-row">
-                            <td class="table-cell" style="font-weight:500;">Pastor John Smith</td>
-                            <td class="table-cell c2">john.smith@church.org</td>
-                            <td class="table-cell c2">Senior Pastor</td>
-                            <td class="table-cell c2">123-456-7890</td>
-                            <td class="table-cell c2">2023-01-15</td>
+                            <td class="table-cell c2">@items.FirstName</td>
+                            <td class="table-cell c2">@items.MiddleName</td>
+                            <td class="table-cell c2">@items.LastName</td>
+                            <td class="table-cell c2">@items.Email</td>
+                            <td class="table-cell c2">@items.Contact</td>
+                            <td class="table-cell c2">@items.Birthdate</td>
+                            <td class="table-cell c2">@items.DateOfSoldiership</td>
+                            <td class="table-cell c2">@items.Classification</td>
+                            <td class="table-cell c2">@items.Status</td>
+
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
                                 <!--Edit-->
                                 <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
@@ -90,3 +184,59 @@
         </div>
     </div>
 </div>
+
+@code{
+    private List<Member> membersList = new();
+    private Member member = new();
+    private bool isAddModalVisible = false;
+    private string title = "Add Member";
+    private DateTime dateOfBirth = DateTime.Now;
+    private DateTime dateOfSoldiership = DateTime.Now;
+
+    protected override async Task OnInitializedAsync()
+    {
+        member.Classification = "Soldier";
+        member.Status = "Active";
+        try
+        {
+            await getMembers();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", "Unable to fetch Members List");
+        }
+    }
+
+    private async Task getMembers()
+    {
+        membersList = new();
+        membersList = await Firestore.GetMembersAsync();
+    }
+
+    private async Task addMember()
+    {
+        try
+        {
+            member.Birthdate = dateOfBirth.ToString();
+            member.DateOfSoldiership = dateOfSoldiership.ToString();
+            await Firestore.AddMemberAsync(member);
+            ToggleModal();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private async Task updateMember()
+    {
+
+    }
+
+    private void ToggleModal()
+    {
+        isAddModalVisible = !isAddModalVisible;
+        member = new();
+        title = "Add Member";
+    }
+}
