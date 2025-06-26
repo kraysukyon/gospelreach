@@ -57,6 +57,18 @@ a {
     gap:10px;
 }
 
+.wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.files {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+    width: 100%;
+}
+
 /*.text {
     overflow: hidden;
     text-wrap: wrap;
@@ -93,6 +105,10 @@ a {
         flex-direction: column;
         gap: .3rem;
         margin-top: .3rem;
+    }
+
+    .files {
+        grid-template-columns: repeat(1,1fr);
     }
 
     .searchBtn button{

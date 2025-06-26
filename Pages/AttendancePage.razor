@@ -94,7 +94,7 @@
         
 
         <div class="table-container">
-            <table class="table table-striped">
+            <table class="table">
                 <thead>
                     <tr>
                         <th class="thead">Date</th>
@@ -113,7 +113,7 @@
                             <td class="table-cell c2 align-content-center">@items.Service</td>
                             <td class="table-cell c2 align-content-center">@items.Count</td>
                             <td class="table-cell c2 align-content-center">@items.Seekers</td>
-                            <td class="" style="display: flex; gap: 10px; width: 100%;">
+                            <td class="table-cell" style="display: flex; gap: 10px; width: 100%; border-bottom: none;">
                                 <!--Edit-->
                                 <button @onclick="@(() => OpenEdit(items.Id))" class="btn btn-outline-light px-4 py-1 border border-1" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</button>
 
@@ -160,9 +160,21 @@
 
     protected override async Task OnInitializedAsync()
     {
-        attendance = new();
-        attendance.Service = "Holiness Meeting";
-        attendanceList = await Firestore.GetAttendanceAsync();
+        await GetAttendance();
+    }
+
+    private async Task GetAttendance()
+    {
+        try
+        {
+            attendance = new();
+            var list = await Firestore.GetAttendanceAsync();
+            attendanceList = list.OrderByDescending(a => a.Date).ToList();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Error fetching attendance: {ex.Message}");
+        }
     }
 
     private void ToggleModal()

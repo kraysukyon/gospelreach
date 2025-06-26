@@ -28,6 +28,10 @@
     overflow-y: auto;
 }
 
+/*.addMember::-webkit-scrollbar{
+    display:none;
+}*/
+
 .show {
     display: flex;
     align-items: center;
@@ -92,6 +96,7 @@ a {
 .table-container {
     overflow-x: auto;
 }
+
 
 .thead {
     background-color: rgb(249,250,251);

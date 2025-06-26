@@ -125,6 +125,40 @@
     private async Task SetActive(int index)
     {
         activeIndex = index;
+        switch (index)
+        {
+            case 0:
+                Nav.NavigateTo("dashboard");
+                break;
+            case 1:
+                Nav.NavigateTo("admin");
+                break;
+            case 2:
+                Nav.NavigateTo("departments");
+                break;
+            case 3:
+                Nav.NavigateTo("membermanagement");
+                break;
+            case 4:
+                Nav.NavigateTo("attendance");
+                break;
+            case 5:
+                Nav.NavigateTo("finance");
+                break;
+            case 6:
+                Nav.NavigateTo("media");
+                break;
+            case 7:
+                Nav.NavigateTo("music");
+                break;
+            case 8:
+                Nav.NavigateTo("events");
+                break;
+            case 9:
+                Nav.NavigateTo("schedules");
+                break;
+
+        }
         await OnActiveChanged.InvokeAsync(); //Notify the homelayout
     }
 
