@@ -38,7 +38,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
 
     <script>
         // Your web app's Firebase configuration
@@ -51,14 +50,12 @@
             appId: "1:199203547088:web:dc1fc54cb156ddabf07bd5"
         };
 
-        // ✅ Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        //// ✅ Initialize Firebase
+        //firebase.initializeApp(firebaseConfig);
 
-        // ✅ Make accessible to your JS interop
-        window.firebase = firebase;
-        window.db = db;
-        window.firebaseAuth = firebase.auth();
+        // ✅ Make accessible to JS interop
+        window.firebase = firebase.initializeApp(firebaseConfig); //Initialize firebase
+        window.db = firebase.firestore();
     </script>
 
     <!-- Your JS interop file must come AFTER the Firebase initialization -->

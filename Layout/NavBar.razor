@@ -1,6 +1,7 @@
 ﻿@inject IJSRuntime JS;
-@inject NavigationManager Nav
+@inject NavigationManager Navs
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService AuthService
+@inject AuthState auth
 
 <div class="side-parent">
     <div class="side-parent-content">
@@ -102,11 +103,13 @@
     <div class="side-foot d-flex align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2">
             <div>
+                @* <img src="https://drive.google.com/uc?id=1Gfx1XQoj6dpA1wxR7PLNbUdKKqdzjrki" style="width: 40px;" /> *@
+
                 <img src="https://i.pravatar.cc/150?img=3" style="width:40px;" />
             </div>
             <div>
-                <p class="fs-6 m-0">John Doe</p>
-                <p class="c2 m-0" style="font-size:12px;">Administrator</p>
+                <p class="fs-6 m-0">@auth.DisplayName</p>
+                <p class="c2 m-0" style="font-size:12px;">@auth.Role</p>
             </div>
         </div>
         
@@ -128,34 +131,34 @@
         switch (index)
         {
             case 0:
-                Nav.NavigateTo("dashboard");
+                Navs.NavigateTo("dashboard");
                 break;
             case 1:
-                Nav.NavigateTo("admin");
+                Navs.NavigateTo("admin");
                 break;
             case 2:
-                Nav.NavigateTo("departments");
+                Navs.NavigateTo("departments");
                 break;
             case 3:
-                Nav.NavigateTo("membermanagement");
+                Navs.NavigateTo("membermanagement");
                 break;
             case 4:
-                Nav.NavigateTo("attendance");
+                Navs.NavigateTo("attendance");
                 break;
             case 5:
-                Nav.NavigateTo("finance");
+                Navs.NavigateTo("finance");
                 break;
             case 6:
-                Nav.NavigateTo("media");
+                Navs.NavigateTo("media");
                 break;
             case 7:
-                Nav.NavigateTo("music");
+                Navs.NavigateTo("music");
                 break;
             case 8:
-                Nav.NavigateTo("events");
+                Navs.NavigateTo("events");
                 break;
             case 9:
-                Nav.NavigateTo("schedules");
+                Navs.NavigateTo("schedules");
                 break;
 
         }
@@ -170,6 +173,6 @@
     private async Task Logout()
     {
         await AuthService.LogoutAsync();
-        Nav.NavigateTo("/");
+        Navs.NavigateTo("/");
     }
 }

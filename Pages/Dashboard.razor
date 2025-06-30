@@ -3,6 +3,7 @@
 @inject NavigationManager Navs
 @inject IJSRuntime JS
 @inherits ProtectedPageBase
+@inject GospelReachCapstone.Services.AuthState Auths
 
 
 <PageTitle>Home</PageTitle>
@@ -12,7 +13,7 @@
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
         <div>
-            <h4 class="m-0 fw-bold">Welcome, John Doe</h4>
+            <h4 class="m-0 fw-bold">Welcome, @Auths.DisplayName</h4>
             <p class="m-0 c2" style="font-size: 14px">Here's what's happening at TSA Mandaue today</p>
         </div>
 

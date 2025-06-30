@@ -117,6 +117,37 @@ namespace GospelReachCapstone.Services
                 return false;
             }
         }
+
+        //=========================Events Section========================================//
+        public async Task<List<Event>> getEventsAsync()
+        {
+            try
+            {
+                var events = await _jsRuntime.InvokeAsync<Event[]>("firestoreFunctions.getEvents");
+                return events.ToList();
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", "Failed to fetch list:" + ex.Message);
+                return new List<Event>();
+            }
+        }
+
+        public async Task<bool> addEventAsync(Event events)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<JsonElement>("firestoreFunctions.addEvent", events);
+                await _jsRuntime.InvokeVoidAsync("alert", "Event Successfuly added!");
+                return result.GetProperty("success").GetBoolean();
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", "Failed to add event: " + ex.Message);
+                return false;
+            }
+            
+        }
     }
 
     public class AttendanceResult

@@ -25,10 +25,23 @@ namespace GospelReachCapstone.Services
             var result = await _jsRuntime.InvokeAsync<LoginResult>("firebaseAuth.login", email, password);
             if (result.Success)
             {
+                var accounts = await _jsRuntime.InvokeAsync<Accounts[]>("firestoreFunctions.getAccounts");
+
+                if (accounts != null)
+                {
+                    var userAccount = accounts.FirstOrDefault(a => a.id == result.Uid);
+
+                    if (userAccount != null)
+                    {
+                        _authState.DisplayName = userAccount.firstName;
+                        _authState.Role = userAccount.role;
+                    }
+                }
+
                 _authState.IsLoggedIn = true;
                 _authState.UserId = result.Uid;
                 _authState.Email = email;
-                return (true, "Login successful");
+                return (true, $"Login successful: {_authState.DisplayName} + {_authState.Role}");
             }
             return (false, result.Error ?? "Login failed");
         }
@@ -41,6 +54,8 @@ namespace GospelReachCapstone.Services
                 _authState.IsLoggedIn = false;
                 _authState.UserId = null;
                 _authState.Email = null;
+                _authState.DisplayName = "User";
+                _authState.Role = "Administrator";
             }
             catch (Exception ex)
             {
