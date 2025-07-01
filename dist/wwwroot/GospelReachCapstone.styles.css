@@ -1364,6 +1364,45 @@ a[b-uetvsxzv00] {
     font-family: "Inter", sans-serif;
 }
 
+.addEventModal[b-hxt7hpi7kw] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0,0,0,.5);
+    display: none;
+}
+
+.addEvent[b-hxt7hpi7kw] {
+    display: flex;
+    flex-direction: column;
+    width: 550px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+}
+
+.show[b-hxt7hpi7kw] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+.userFields[b-hxt7hpi7kw] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.input p[b-hxt7hpi7kw] {
+    font-size: 14px;
+}
+
 
 .c2[b-hxt7hpi7kw] {
     color: #4b5563;

@@ -53,7 +53,7 @@
     //Adding Attendance
     async addAttendance(attendance) {
         try {
-            const attendanceToAdd = await db.collection("Attendance").add({
+            await db.collection("Attendance").add({
                 date: attendance.date,
                 service: attendance.service,
                 count: attendance.count,
@@ -110,5 +110,50 @@
             return { success: false }
             alert(error)
         }
-    }
+    },
+
+    //============================================Event Management Section============================================//
+    async getEvents() {
+        try {
+            const eventsTable = await db.collection("Events").get();
+            return eventsTable.docs.map(items => ({ id: items.id, ...items.data() }));
+        } catch (error) {
+            alert(error)
+        }
+    },
+
+    async addEvent(event) {
+        try {
+            await db.collection("Events").add({
+                eventName: event.eventName,
+                date: event.date,
+                tag: event.tag,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                location: event.location,
+                description: event.description
+            });
+            return { success: true }
+        } catch (error) {
+            return { success: false }
+            alert(error)
+        }
+    },
+
+    async editEvent(eventId, events) {
+        try {
+            await db.collection("Events").doc(eventId).set(events);
+        } catch (error) {
+            alert(error)
+        }
+    },
+
+    async deleteEvent(eventId) {
+        try {
+            await db.collection("Events").doc(eventId).delete();
+        } catch (error) {
+            alert(error);
+        }
+    },
+    
 }
