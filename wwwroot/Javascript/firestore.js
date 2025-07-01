@@ -138,6 +138,22 @@
             return { success: false }
             alert(error)
         }
-    }
+    },
+
+    async editEvent(eventId, events) {
+        try {
+            await db.collection("Events").doc(eventId).set(events);
+        } catch (error) {
+            alert(error)
+        }
+    },
+
+    async deleteEvent(eventId) {
+        try {
+            await db.collection("Events").doc(eventId).delete();
+        } catch (error) {
+            alert(error);
+        }
+    },
     
 }

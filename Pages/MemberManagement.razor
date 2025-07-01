@@ -220,6 +220,7 @@
             member.Birthdate = dateOfBirth.ToString();
             member.DateOfSoldiership = dateOfSoldiership.ToString();
             await Firestore.AddMemberAsync(member);
+            await getMembers();
             ToggleModal();
         }
         catch (Exception ex)

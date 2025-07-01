@@ -75,7 +75,7 @@
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
-                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
+                    <button @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
                 </div>
             }
 
@@ -145,12 +145,10 @@
 
                             <div class="d-flex gap-2">
                                 <!--Edit-->
-                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border flex-grow-1" style="border-radius: 10px; padding: 5px 24px;">
-                                    <a href="" class="text-decoration-none" style="font-size: 13px;">Edit</a>
-                                </div>
+                                <button @onclick="@(() => OpenEdit(items.Id))" class="btn btn-outline-light px-4 py-1 border border-1" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</button>
 
                                 <!--Delete-->
-                                <button class="btn btn-danger text-white flex-grow-1" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                <button @onclick="@(() => deleteEvent(items.Id))" class="btn btn-danger text-white flex-grow-1" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
                             </div>
                         </div>
                     </div>
@@ -210,6 +208,57 @@
         catch (Exception ex)
         {
             await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private async Task OpenEdit(string Id)
+    {
+        ToggleModal();
+        title = "Edit Event";
+        var editEvent = eventsList.FirstOrDefault(u => u.Id == Id);
+        if (editEvent != null)
+        {
+            events = editEvent;
+            startTime = TimeOnly.Parse(editEvent.StartTime);
+            endTime = TimeOnly.Parse(editEvent.EndTime);
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Event does not exist");
+            await getEventsList();
+        }
+    }
+
+    private async Task updateEvent()
+    {
+        try
+        {
+            events.StartTime = startTime.ToString();
+            events.EndTime = endTime.ToString();
+            events.Date = date.ToString();
+            await _firestore.editEventAsync(events.Id, events);
+            await _js.InvokeVoidAsync("alert", "Event successfuly updated");
+            ToggleModal();
+        }
+        catch
+        {
+            await _js.InvokeVoidAsync("alert", "Update Failed");
+        }
+    }
+
+    private async Task deleteEvent(string Id)
+    {
+        bool confirmed = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this event?");
+        if (!confirmed) return;
+
+        try
+        {
+            await _firestore.DeleteEventAsync(Id);
+            await getEventsList();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Error on deleting document: {ex.Message}");
         }
     }
 }

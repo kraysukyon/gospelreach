@@ -87,7 +87,6 @@ namespace GospelReachCapstone.Services
             {
                 await _jsRuntime.InvokeVoidAsync("alert", $"Error deleting attendancesssss: {ex.Message}");
             }
-            
         }
 
         public async Task<List<Member>> GetMembersAsync()
@@ -148,6 +147,32 @@ namespace GospelReachCapstone.Services
             }
             
         }
+
+        public async Task editEventAsync(string eventId,Event events)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.editEvent", eventId, events);
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
+            }
+        }
+
+        public async Task DeleteEventAsync(string Id)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.deleteEvent", Id);
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
+                //throw new Exception("Failed to delete document from Firestore", ex);
+            }
+        }
+
     }
 
     public class AttendanceResult
