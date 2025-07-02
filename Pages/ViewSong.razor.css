@@ -1,0 +1,79 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: black;
+    font-family: "Inter", sans-serif;
+}
+
+.sub-page{
+    display: flex;
+    flex-direction: column;
+    height:100%;
+    max-height: 100vh;
+}
+
+.music {
+    height: 100%;
+    overflow-y: auto;
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 24px;
+    display:flex;
+    flex-direction:column;
+}
+
+.input p {
+    font-size: 14px;
+}
+
+.userFields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+/*    margin-top: 1.5rem;*/
+}
+
+.sub-input{
+    display:flex;
+    align-items: end;
+    justify-content: space-between
+}
+
+.btns {
+    padding: .375rem .75rem;
+    border: 1px solid #ced4da;
+    background-color: #FFFFFF;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    font-size: 14px;
+}
+
+.save {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #FFFFFF;
+    padding: .375rem 1.25rem;
+}
+
+.back {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+    .back:hover {
+        color: #fff;
+        background-color: #bb2d3b;
+        border-color: #b02a37;
+    }
+
+pre, .ttl p {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+.hide {
+    display: none;
+}

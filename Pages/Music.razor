@@ -1,6 +1,9 @@
 ﻿@page "/music"
 @layout LandingLayout
-@inherits ProtectedPageBase
+@using GospelReachCapstone.Models
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject NavigationManager _nav
 
 <PageTitle>Music</PageTitle>
 
@@ -14,7 +17,7 @@
         </div>
 
         <div>
-            <a href="" class="btn btn-primary p-2 text-white link w-100">Add Music</a>
+            <a href="addSong" class="btn btn-primary p-2 text-white link w-100">Add Music</a>
         </div>
     </div>
 
@@ -41,34 +44,31 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th class="thead"></th>
                         <th class="thead">Title</th>
                         <th class="thead">Artist</th>
-                        <th class="thead">Album</th>
-                        <th class="thead">Duration</th>
-                        <th class="thead">File Type</th>
                         <th class="thead">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    @for (int i = 0; i < 4; i++)
+                    @foreach (var items in songList)
                     {
-                        <tr class="table-row">
-                            <td class="table-cell c2 link"><i class="bi bi-play-circle fs-6"></i></td>
-                            <td class="table-cell" style="font-weight:500;">Amazing Grace</td>
-                            <td class="table-cell c2">Hillsong</td>
-                            <td class="table-cell c2">United</td>
-                            <td class="table-cell c2">4:35</td>
-                            <td class="table-cell c2">MP3</td>
+                        <tr @onclick="(() => ViewSong(items.Id))" class="table-row">
+                            <td class="table-cell" style="font-weight:500;">@items.Title</td>
+                            <td class="table-cell c2">@items.Artist</td>
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none; width: auto;">
                                 <!--Download-->
-                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border flex-grow-1" style="border-radius: 10px; padding: 5px 12px;">
-                                    <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-download"></i></span> Download</a>
-                                </div>
+                                @* <div class="d-flex align-items-center justify-content-center gap-1w-auto border flex-grow-1" style="border-radius: 10px;">
+                                    
+                                </div> *@
+                                <button class="btn btn-outline-light border border-2 flex-grow-1" style="border-radius: 10px;font-size: 13px;"><span><i class="bi bi-download"></i></span></button>
+                                <!--Print-->
+                                <button class="btn btn-outline-light border border-2 text-black flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-printer text-black"></i></span></button>
+                                <!--Update-->
+                                <button @onclick="(() => GotoEditPage(items.Id))" class="btn btn-outline-light border border-2 text-black flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-pencil-square"></i></span></button>
 
                                 <!--Delete-->
-                                <button class="btn btn-danger text-white flex-grow-1" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                <button @onclick="(() => DeleteSong(items.Id))" class="btn btn-danger text-white flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span></button>
                             </td>
                         </tr>
                     }
@@ -76,61 +76,119 @@
             </table>
         </div>
     </div>
-
-    <!--Playlist Section-->
-    <div class="d-flex flex-column mt-4">
-        <div class="d-flex align-items-center">
-            <h5 class="fw-bold m-0 mb-3">Recent Playists</h5>
-        </div>
-
-        <div class="playlist">
-            <div class="card p-4 cards gap-3">
-                <div class="d-flex gap-3">
-                    <div class="flex-shrink-0">
-                        <i class="bi bi-music-note-beamed text-primary fs-5"></i>
-                    </div>
-                    <h5 class="mb-1">Sunday Worship</h5>
-                </div>
-
-                <p class="c2" style="font-size:14px;">12 songs · 58 minutes</p>
-                <p class="c2" style="font-size:14px;">Last used: April 21, 2025</p>
-
-                <div class="w-100 d-flex justify-content-end">
-                    <a href="" class="btn btn-light border border-1 p-2 w-auto justify-content-end" style="font-size: 14px;">View Playlist</a>
-                </div>
-            </div>
-
-            <div class="card p-4 cards gap-3">
-                <div class="d-flex gap-3">
-                    <div class="flex-shrink-0">
-                        <i class="bi bi-music-note-beamed text-primary fs-5"></i>
-                    </div>
-                    <h5 class="mb-1">Easter Service</h5>
-                </div>
-
-                <p class="c2" style="font-size:14px;">8 songs · 42 minutes</p>
-                <p class="c2" style="font-size:14px;">Last used: April 21, 2025</p>
-
-                <div class="w-100 d-flex justify-content-end">
-                    <a href="" class="btn btn-light border border-1 p-2 w-auto justify-content-end" style="font-size: 14px;">View Playlist</a>
-                </div>
-            </div>
-
-            <div class="card p-4 cards gap-3">
-                <div class="d-flex gap-3">
-                    <div class="flex-shrink-0">
-                        <i class="bi bi-music-note-beamed text-primary fs-5"></i>
-                    </div>
-                    <h5 class="mb-1">Youth Night</h5>
-                </div>
-
-                <p class="c2" style="font-size:14px;">12 songs · 58 minutes</p>
-                <p class="c2" style="font-size:14px;">Last used: April 21, 2025</p>
-
-                <div class="w-100 d-flex justify-content-end">
-                    <a href="" class="btn btn-light border border-1 p-2 w-auto justify-content-end" style="font-size: 14px;">View Playlist</a>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
+
+
+@code{
+    private List<Song> songList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await getSongList();
+    }
+
+
+    private async Task getSongList()
+    {
+        try
+        {
+            songList = new();
+            songList =  await _firestore.GetSongsAsync();
+            if (songList != null)
+            {
+                songList = songList.OrderByDescending(u => u.Title).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private async Task GotoEditPage(string docId)
+    {
+        // _nav.NavigateTo($"/editSong/{docId}");
+
+        try
+        {
+            List<Song> list = new();
+            list = await _firestore.GetSongsAsync();
+            if (list != null)
+            {
+                var songId = list.FirstOrDefault(u => u.Id == docId);
+                if (songId != null)
+                {
+                    _nav.NavigateTo($"/editSong/{songId.Id}");
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Song not found.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private async Task DeleteSong(string Id)
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Confirm Delete?");
+        if (!confirm) return;
+
+        try
+        {
+            await _firestore.DeleteSongAsync(Id);
+            await _js.InvokeVoidAsync("alert", "Song Successfully deleted!");
+            await getSongList();
+        }
+        catch(Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private async Task ViewSong(string docId)
+    {
+        try
+        {
+            List<Song> list = new();
+            list = await _firestore.GetSongsAsync();
+            if (list != null)
+            {
+                var songId = list.FirstOrDefault(u => u.Id == docId);
+                if (songId != null)
+                {
+                    _nav.NavigateTo($"/viewSong/{songId.Id}");
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Song not found.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    // private async void PrintOutput()
+    // {
+    //     if (!string.IsNullOrWhiteSpace(transposedOutput))
+    //     {
+    //         string safeHtml = System.Net.WebUtility.HtmlEncode(transposedOutput);
+    //         await _js.InvokeVoidAsync("printLyrics", safeHtml);
+    //     }
+    //     else
+    //     {
+    //         await _js.InvokeVoidAsync("alert", "No Output");
+    //     }
+    // }
+
+    // private async void DownloadAsPdf()
+    // {
+    //     await _js.InvokeVoidAsync("downloadPdf", transposedOutput);
+    // }
+}

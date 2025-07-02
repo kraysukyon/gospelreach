@@ -11,5 +11,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<FirebaseAuthenticationService>();
 builder.Services.AddScoped<AuthState>();
 builder.Services.AddScoped<FirestoreService>();
+builder.Services.AddScoped<ChordsFormatterService>();
 
 await builder.Build().RunAsync();

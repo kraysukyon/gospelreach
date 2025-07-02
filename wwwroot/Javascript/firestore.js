@@ -155,5 +155,62 @@
             alert(error);
         }
     },
+
+    //============================================Music Management Section============================================//
+    async getSongs() {
+        try {
+            const songTable = await db.collection("Songs").get();
+            return songTable.docs.map(items => ({ id: items.id, ...items.data() }));
+        } catch (error) {
+            alert(error)
+        }
+    },
+
+    async addSong(song) {
+        try {
+            await db.collection("Songs").add({
+                title: song.title,
+                artist: song.artist,
+                lyricsAndChords: song.lyricsAndChords
+            });
+
+            return { success: true };
+        } catch (error) {
+            return { success: false };
+            alert(error);
+        }
+    },
+
+    async updateSong(docId, song) {
+        try {
+            await db.collection("Songs").doc(docId).update({
+                title: song.title,
+                artist: song.artist,
+                lyricsAndChords: song.lyricsAndChords
+            });
+        } catch (error) {
+            alert(error)
+        }
+    },
+
+    async deleteSong(id) {
+        try {
+            await db.collection("Songs").doc(id).delete();
+        } catch (error) {
+            alert(error);
+        }
+    },
+
+    resizeTextarea(input, output) {
+        if (!input || input.value.trim() === '') {
+            input.style.height = "100px";
+            output.style.height = "100px";
+        }
+        else {
+            input.style.height = (input.scrollHeight) + "px";
+            output.style.height = input.style.height;
+        }
+        
+    }
     
 }

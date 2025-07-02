@@ -1,4 +1,5 @@
 ﻿using GospelReachCapstone.Models;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System.Text.Json;
 
@@ -117,7 +118,7 @@ namespace GospelReachCapstone.Services
             }
         }
 
-        //=========================Events Section========================================//
+        //======================================================Events Section========================================//
         public async Task<List<Event>> getEventsAsync()
         {
             try
@@ -170,6 +171,71 @@ namespace GospelReachCapstone.Services
             {
                 await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
                 //throw new Exception("Failed to delete document from Firestore", ex);
+            }
+        }
+
+        //======================================================Music Section===================================================//
+        public async Task<List<Song>> GetSongsAsync()
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<Song[]>("firestoreFunctions.getSongs");
+                return result.ToList();
+                
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
+                return new List<Song>();
+            }
+        }
+
+        public async Task<bool> AddSongAsync(Song song)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<JsonElement>("firestoreFunctions.addSong", song);
+                return result.GetProperty("success").GetBoolean();
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
+                return false;
+            }
+        }
+        public async Task UpdateSongAsync(string Id, Song song)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.updateSong", Id, song);
+            } catch(Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
+            }
+        }
+
+        public async Task DeleteSongAsync(string Id)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.deleteSong", Id);
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
+            }
+        }
+
+        //Resize textarea of input and output
+        public async Task ResizeTextArea(ElementReference input, ElementReference output)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.resizeTextarea", input, output);
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
             }
         }
 

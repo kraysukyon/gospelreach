@@ -1,0 +1,206 @@
+﻿@page "/viewSong/{Id}"
+@layout LandingLayout
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject GospelReachCapstone.Services.ChordsFormatterService _chordsFormatterService
+@using GospelReachCapstone.Models
+@inject NavigationManager _nav
+
+<div class="sub-page">
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-start justify-content-between mb-2">
+        <div>
+            <h4 class="m-0 fw-bold">View Lyrics and Chords</h4>
+            <p class="m-0 c2" style="font-size: 14px">Lyrics and chords</p>
+            <div class="d-flex align-items-center  gap-2 mt-3">
+                <p>Transpose: @(transposeStep > 0 ? $"+{transposeStep}" : transposeStep)</p>
+                <button @onclick="StepDown" class="btns"> - </button>
+                <button @onclick="StepUp" class="btns"> + </button>
+                <button @onclick="ToggleBracketlessView" class="btns">Preview without brackets</button>
+                <!--Download as pdf-->
+                <button @onclick="DownloadAsPdf" class="btns"><span><i class="bi bi-download"></i></span></button>
+                <!--Print-->
+                <button @onclick="PrintOutput" class="btns"><span><i class="bi bi-printer text-black"></i></span></button>
+            </div>
+        </div>
+
+        <div>
+            <a href="music" class="btn btn-danger p-2 px-4 text-white link w-100">Return</a>
+        </div>
+    </div>
+
+    <!--Music Section-->
+    <div class="music">
+        <div class="ttl d-flex flex-column">
+            <p>Song Title: @song.Title</p>
+            <p>Artist: @song.Artist</p>
+        </div>
+        <div class="input mt-3" hidden>
+            <div class="sub-input">
+                <div class="d-flex gap-2">
+                    <button @onclick="ToggleTransposeView" class="btns">Transpose</button>
+                    <button @onclick="AutoBracket" class="btns">Auto Bracket</button>
+                    <button @onclick="RemoveBracket" class="btns">Remove Brackets</button>
+                    <button @onclick="SaveToFirestore" class="btns save">Save</button>
+                </div>
+            </div>
+            <pre class="mt-3">@lyricsAndChords</pre>
+        </div>
+        <div class="input mt-3">
+            <pre class="mt-3">@transposedOutput</pre>
+        </div>
+    </div>
+</div>
+
+<PageTitle>View Song</PageTitle>
+
+@code {
+    [Parameter] public string Id { get; set; }
+
+    ElementReference inputTextArea;
+    ElementReference outputTextArea;
+    private string lyricsAndChords = "";
+    private bool showBracketlessPreview = false;
+    private int transposeStep = 0;
+    private string transposedOutput = "";
+    private bool isTransposeShow = false;
+    private Song song = new();
+    private List<Song> songList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        songList = await _firestore.GetSongsAsync();
+        var item = songList.FirstOrDefault(u => u.Id == Id);
+
+        if (item != null)
+        {
+            lyricsAndChords = item.LyricsAndChords;
+            song.Title = item.Title;
+            song.Artist = item.Artist;
+            transposedOutput = item.LyricsAndChords;
+        }
+
+    }
+
+    private void ToggleTransposeView()
+    {
+        isTransposeShow = !isTransposeShow;
+        TransposeChords();
+    }
+
+    private void Processed()
+    {
+        transposedOutput = lyricsAndChords;
+        TransposeChords();
+    }
+
+    private async Task ResizeTextArea()
+    {
+        try
+        {
+            await _firestore.ResizeTextArea(inputTextArea,outputTextArea);
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    //Add Bracket to the chords
+    private void AutoBracket()
+    {
+        lyricsAndChords = _chordsFormatterService.BracketChords(lyricsAndChords);
+    }
+
+    //Removes Bracket to the chords
+    private void RemoveBracket()
+    {
+        lyricsAndChords = _chordsFormatterService.RemoveBrackets(lyricsAndChords);
+    }
+
+    //makes the chords transposable
+    private void TransposeChords()
+    {
+        transposedOutput = _chordsFormatterService.TransposeAll(lyricsAndChords,transposeStep,showBracketlessPreview);
+    }
+
+    //Make the Key higher
+    private void StepUp()
+    {
+        transposeStep++;
+        TransposeChords();
+    }
+
+    //Make the key lower
+    private void StepDown()
+    {
+        transposeStep--;
+        TransposeChords();
+    }
+
+    //Show without brackets view
+    private void ToggleBracketlessView()
+    {
+        showBracketlessPreview = !showBracketlessPreview;
+        transposedOutput = _chordsFormatterService.TransposeAll(lyricsAndChords, transposeStep, showBracketlessPreview);
+    }
+
+    //Save to Firestore
+    private async Task SaveToFirestore()
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Save Changes?");
+        if (!confirm) return;
+
+        try
+        {
+            song.LyricsAndChords = lyricsAndChords;
+            await _firestore.UpdateSongAsync(Id,song);
+            await _js.InvokeVoidAsync("alert", "Song successfully updated!");
+            _nav.NavigateTo("/music");
+
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+
+    }
+
+    private async Task SaveToFirestore2()
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Save Changes?");
+        if (!confirm) return;
+
+        try
+        {
+            song.LyricsAndChords = transposedOutput;
+            await _firestore.UpdateSongAsync(Id, song);
+            await _js.InvokeVoidAsync("alert", "Song successfully updated!");
+            _nav.NavigateTo("/music");
+
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+
+    }
+
+    private async void PrintOutput()
+    {
+        if (!string.IsNullOrWhiteSpace(transposedOutput))
+        {
+            string safeHtml = System.Net.WebUtility.HtmlEncode(transposedOutput);
+            await _js.InvokeVoidAsync("printLyrics", safeHtml);
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "No Output");
+        }
+    }
+
+    private async void DownloadAsPdf()
+    {
+        await _js.InvokeVoidAsync("downloadPdf", transposedOutput, song.Title);
+    }
+}
