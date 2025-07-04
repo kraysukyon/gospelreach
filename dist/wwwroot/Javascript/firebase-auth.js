@@ -28,7 +28,8 @@ window.firebaseAuth = {
     login: async function (email,password) {
         try {
             const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            return { success: true, uid: userCredential.user.uid }
+            const idToken = await userCredential.user.getIdToken(true);
+            return { success: true, uid: userCredential.user.uid, idToken: idToken }
         } catch (error) {
             return { success: false, error: error.message}
         }

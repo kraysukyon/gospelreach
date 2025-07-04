@@ -12,5 +12,6 @@ builder.Services.AddScoped<FirebaseAuthenticationService>();
 builder.Services.AddScoped<AuthState>();
 builder.Services.AddScoped<FirestoreService>();
 builder.Services.AddScoped<ChordsFormatterService>();
+builder.Services.AddScoped<GoogleDriveService>();
 
 await builder.Build().RunAsync();

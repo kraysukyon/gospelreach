@@ -31,10 +31,7 @@
 
     <!--Music Section-->
     <div class="music">
-        <div class="ttl d-flex flex-column">
-            <p>Song Title: @song.Title</p>
-            <p>Artist: @song.Artist</p>
-        </div>
+
         <div class="input mt-3" hidden>
             <div class="sub-input">
                 <div class="d-flex gap-2">
@@ -46,9 +43,11 @@
             </div>
             <pre class="mt-3">@lyricsAndChords</pre>
         </div>
-        <div class="input mt-3">
-            <pre class="mt-3">@transposedOutput</pre>
-        </div>
+        <pre class="mt-3"><strong>Song Title:</strong> @song.Title
+<strong>Artist:</strong> @song.Artist
+
+                @transposedOutput
+            </pre>
     </div>
 </div>
 
@@ -190,7 +189,8 @@
     {
         if (!string.IsNullOrWhiteSpace(transposedOutput))
         {
-            string safeHtml = System.Net.WebUtility.HtmlEncode(transposedOutput);
+            string fullLyrics = $"{song.Title}\n{song.Artist}\n\n{transposedOutput}";
+            string safeHtml = System.Net.WebUtility.HtmlEncode(fullLyrics);
             await _js.InvokeVoidAsync("printLyrics", safeHtml);
         }
         else
@@ -201,6 +201,7 @@
 
     private async void DownloadAsPdf()
     {
-        await _js.InvokeVoidAsync("downloadPdf", transposedOutput, song.Title);
+        string fullLyrics = $"{song.Title}\n{song.Artist}\n\n{transposedOutput}";
+        await _js.InvokeVoidAsync("downloadPdf", fullLyrics, song.Title);
     }
 }

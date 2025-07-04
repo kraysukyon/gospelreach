@@ -83,7 +83,7 @@
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
-                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="updateMember">Update</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" >Update</button>
                 </div>
             }
 
@@ -226,11 +226,6 @@
         {
             await _js.InvokeVoidAsync("alert", ex.Message);
         }
-    }
-
-    private async Task updateMember()
-    {
-
     }
 
     private void ToggleModal()
