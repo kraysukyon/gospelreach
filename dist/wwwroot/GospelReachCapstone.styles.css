@@ -2398,6 +2398,18 @@ a[b-9990y649dx] {
     color: rgb(75 85 99);
 }
 
+.weblink[b-9990y649dx]{
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #000000;
+    font-weight:bold;
+}
+
+    .weblink:hover[b-9990y649dx] {
+        color: #0d6efd;
+    }
+
 .searchLayout[b-9990y649dx]{
     display: grid;
     grid-template-columns: 1fr 30%;

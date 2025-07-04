@@ -17,22 +17,30 @@
 
         <div class="w-auto d-flex gap-2 align-items-center">
             <p>@statusMessage</p>
-            <button @onclick="SignIn" class="btn btn-primary p-2 px-4 text-white link">Sign In</button>
-            <button class="btn btn-primary p-2 text-white link @(isSignIn ? "" : "hide")">Upload File</button>
+            <button @onclick="SignIn" class="btn btn-primary p-2 px-4 text-white link @(isSignIn ? "hide" : "")">Sign In</button>
+            @* <button class="btn btn-primary p-2 text-white link @(isSignIn ? "" : "hide")">Upload File</button> *@
+            <InputFile id="uploadInput" OnChange="UploadFile"/>
         </div>
+
+        @if (uploadProgress > 0 && uploadProgress < 100)
+        {
+            <div class="progress my-2">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:@uploadProgress%">
+                    @uploadProgress%
+                </div>
+            </div>
+        }
     </div>
 
-    <h4>📁 Browse Files by Folder</h4>
+    @* <h4>📁 Browse Files by Folder</h4>
     <select @onchange="LoadFilesInFolder">
         <option value="">-- Select Folder to View Files --</option>
         @foreach (var items in folderMap)
         {
             <option value="@items.Key">@items.Key.ToUpper()</option>
         }
-    </select>
+    </select> *@
 
-    @if (folderFiles?.Any() == true)
-{
         <!--Table Section-->
         <div class="card w-100 mb-3 cards @(isSignIn ? "" : "hide")">
             <div class="container">
@@ -44,15 +52,16 @@
                     </div>
 
                     <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
-                        <button class="btn btn-primary p-2 px-3 w-100 text-nowrap text-white">All</button>
-                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-film"></i> Videos</button>
-                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-music-note-beamed"></i> Audio</button>
+                        @* <button class="btn btn-primary p-2 px-3 w-100 text-nowrap text-white">All</button> *@
+                        <button @onclick="(() => LoadFilesInFolder2(video))" class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-film"></i> Videos</button>
+                        <button @onclick="(() => LoadFilesInFolder2(audio))" class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-music-note-beamed"></i> Audio</button>
                         <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-file-earmark-text"></i> Documents</button>
-                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-image"></i> Images</button>
+                        <button @onclick="(() => LoadFilesInFolder2(image))" class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-image"></i> Images</button>
                     </div>
                 </div>
-
-                <!--File Section-->
+            @if (folderFiles?.Any() == true)
+            {
+            <!--File Section-->
                 <div class="wrapper">
                     <div class="files">
                         @foreach (var item in folderFiles)
@@ -66,7 +75,7 @@
                                     </div>
 
                                     <div class="flex-grow-1">
-                                        <h5 class="mb-1">@item.Name</h5>
+                                        <a href="@item.WebViewLink" target="_blank" class="weblink">@item.Name</a>
                                         <p class="c2" style="font-size:14px;">@item.Size Uploaded on 2025-04-21</p>
                                         <p class="c2" style="font-size:14px;">By John Smith</p>
                                     </div>
@@ -80,6 +89,12 @@
                         }
                     </div>
                 </div>
+
+                }
+                else if (selectedViewFolderKey != null)
+                {
+                    <p><em>No files found or folder empty.</em></p>
+                }
             </div>
         </div>
     @* <table class="table mt-3">
@@ -107,11 +122,7 @@
         </tbody>
     </table> *@
 
-}
-else if (selectedViewFolderKey != null)
-{
-    <p><em>No files found or folder empty.</em></p>
-}
+
 </div>
 
 @code{
@@ -121,6 +132,9 @@ else if (selectedViewFolderKey != null)
     private string selectedViewFolderKey = "";
     private int uploadProgress = 0;
     private string audio = "1Hf7_22kJyu3XN37QmzOkakpboHoqd9ud";
+    private string video = "1ttpye5PnAv_57DBBRC99_4kg2hNs4Nll";
+    private string image = "1lxD-uV3AJB4-yO7m5Jf2oIkJhR2gWpbu";
+    private string fetchStatus = "";
     private List<DriveFile> folderFiles = new();
 
     [JSInvokable]
@@ -187,6 +201,55 @@ else if (selectedViewFolderKey != null)
             {
                 statusMessage = "❌ Failed to fetch files: " + ex.Message;
             }
+        }
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        uploadProgress = 0;
+
+        var file = e.File;
+        const long maxSize = 300 * 1024 * 1024;
+
+        if (file.Size > maxSize)
+        {
+            statusMessage = $"❌ File too large. Max allowed: 300MB. Selected: {FormatSize(file.Size.ToString())}";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(selectedFolderKey) || !folderMap.TryGetValue(selectedFolderKey, out var folderId))
+        {
+            statusMessage = "❌ Invalid folder selection.";
+            return;
+        }
+
+        try
+        {
+            var dotNetRef = DotNetObjectReference.Create(this);
+            await _js.InvokeVoidAsync("googleDrive.uploadFromInput", folderId, dotNetRef);
+            statusMessage = $"✅ File uploaded to '{selectedFolderKey.ToUpper()}'!";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"❌ Upload failed: {ex.Message}";
+        }
+    }
+
+
+    private async Task LoadFilesInFolder2(string key)
+    {
+        folderFiles.Clear();
+        fetchStatus = "Fetching files, please wait...";
+
+        try
+        {
+            folderFiles = await _js.InvokeAsync<List<DriveFile>>("googleDriveFunctions.listFilesInFolder", key);
+            fetchStatus = "";
+
+        }
+        catch (Exception ex)
+        {
+            statusMessage = "❌ Failed to fetch files: " + ex.Message;
         }
     }
 

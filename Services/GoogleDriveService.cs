@@ -35,7 +35,7 @@ namespace GospelReachCapstone.Services
             try
             {
                 await _js.InvokeVoidAsync("googleDriveFunctions.init", "865916552971-6aj79obahgrlk7g9ts73hs788i2l1cgu.apps.googleusercontent.com"
-                , "https://www.googleapis.com/auth/drive.file");
+                , "https://www.googleapis.com/auth/drive");
             }
             catch (Exception ex)
             {

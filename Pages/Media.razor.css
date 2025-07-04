@@ -21,6 +21,18 @@ a {
     color: rgb(75 85 99);
 }
 
+.weblink{
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #000000;
+    font-weight:bold;
+}
+
+    .weblink:hover {
+        color: #0d6efd;
+    }
+
 .searchLayout{
     display: grid;
     grid-template-columns: 1fr 30%;

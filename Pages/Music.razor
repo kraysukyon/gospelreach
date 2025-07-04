@@ -53,7 +53,7 @@
                 <tbody>
                     @foreach (var items in songList)
                     {
-                        <tr @onclick:stopPropagation @onclick="(() => ViewSong(items.Id))" class="table-row">
+                        <tr @onclick="(() => ViewSong(items.Id))" @onclick:stopPropagation class="table-row">
                             <td class="table-cell" style="font-weight:500;">@items.Title</td>
                             <td class="table-cell c2">@items.Artist</td>
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none; width: auto;">
@@ -65,10 +65,10 @@
                                 <!--Print-->
                                 <button class="btn btn-outline-light border border-2 text-black flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-printer text-black"></i></span></button>
                                 <!--Update-->
-                                <button @onclick="(() => GotoEditPage(items.Id))" class="btn btn-outline-light border border-2 text-black flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-pencil-square"></i></span></button>
+                                <button @onclick:stopPropagation @onclick="(() => GotoEditPage(items.Id))" class="btn btn-outline-light border border-2 text-black flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-pencil-square"></i></span></button>
 
                                 <!--Delete-->
-                                <button @onclick="(() => DeleteSong(items.Id))" class="btn btn-danger text-white flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span></button>
+                                <button @onclick:stopPropagation @onclick="(() => DeleteSong(items.Id))" class="btn btn-danger text-white flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span></button>
                             </td>
                         </tr>
                     }
