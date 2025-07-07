@@ -707,12 +707,8 @@ main[b-zdfrj9bmm7] {
 .side-parent[b-atphlioutm] {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     overflow: hidden;
-}
-
-.side-foot[b-atphlioutm] {
-    flex-shrink: 0;
-    padding: 20px;
 }
 
 .side-parent-content[b-atphlioutm] {
@@ -721,6 +717,12 @@ main[b-zdfrj9bmm7] {
     padding: 0px 20px;
     flex-grow: 1;
     overflow-y: auto;
+}
+
+.side-foot[b-atphlioutm] {
+/*    flex-shrink: 0;*/
+    padding: 20px;
+    border: solid 1px black;
 }
 
 .link[b-atphlioutm] {
