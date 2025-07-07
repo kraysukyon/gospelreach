@@ -119,13 +119,20 @@
 @code {
     [Parameter]
     public EventCallback OnActiveChanged { get; set; }
-    private char initialName;
-
+    private char initialName = 'A';
     private int activeIndex = 0;
+
+    protected override void OnInitialized()
+    {
+        getInitial();
+    }
 
     private void getInitial()
     {
-        initialName = auth.DisplayName[0];
+        if (auth.DisplayName != null)
+        {
+            initialName = auth.DisplayName[0];
+        }
     }
 
     private async Task SetActive(int index)

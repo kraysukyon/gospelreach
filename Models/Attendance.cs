@@ -4,7 +4,8 @@
     {
         public string Id { get; set; }
         public string Date { get; set; }
-        public string Service { get; set; } = "Holiness Meeting";
+        public string Category { get; set; }
+        public string Activity { get; set; }
         public int Count { get; set; }
         public int Seekers { get; set; }
     }

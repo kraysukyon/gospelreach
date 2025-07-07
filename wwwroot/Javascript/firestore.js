@@ -55,7 +55,8 @@
         try {
             await db.collection("Attendance").add({
                 date: attendance.date,
-                service: attendance.service,
+                category: attendance.category,
+                activity: attendance.activity,
                 count: attendance.count,
                 seekers: attendance.seekers
             });

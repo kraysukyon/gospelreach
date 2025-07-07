@@ -20,16 +20,8 @@
             <button @onclick="SignIn" class="btn btn-primary p-2 px-4 text-white link @(isSignIn ? "hide" : "")">Sign In</button>
             @* <button class="btn btn-primary p-2 text-white link @(isSignIn ? "" : "hide")">Upload File</button> *@
             <InputFile id="uploadInput" OnChange="UploadFile"/>
+            
         </div>
-
-        @if (uploadProgress > 0 && uploadProgress < 100)
-        {
-            <div class="progress my-2">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:@uploadProgress%">
-                    @uploadProgress%
-                </div>
-            </div>
-        }
     </div>
 
     @* <h4>📁 Browse Files by Folder</h4>
@@ -44,6 +36,14 @@
         <!--Table Section-->
         <div class="card w-100 mb-3 cards @(isSignIn ? "" : "hide")">
             <div class="container">
+                @if (uploadProgress > 0 && uploadProgress < 100)
+        {
+            <div class="progress my-2">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:@uploadProgress%">
+                    @uploadProgress%
+                </div>
+            </div>
+        }
                 <!--Search Section-->
                 <div class="d-flex flex-column flex-md-row gap-2 mb-4">
                     <div class="position-relative flex-grow-1">
@@ -134,6 +134,7 @@
     private string audio = "1Hf7_22kJyu3XN37QmzOkakpboHoqd9ud";
     private string video = "1ttpye5PnAv_57DBBRC99_4kg2hNs4Nll";
     private string image = "1lxD-uV3AJB4-yO7m5Jf2oIkJhR2gWpbu";
+    private string folder = "1ttpye5PnAv_57DBBRC99_4kg2hNs4Nll";
     private string fetchStatus = "";
     private List<DriveFile> folderFiles = new();
 
@@ -204,6 +205,11 @@
         }
     }
 
+    private void ToggleFolder(string id)
+    {
+        folder = id;
+    }
+
     private async Task UploadFile(InputFileChangeEventArgs e)
     {
         uploadProgress = 0;
@@ -217,17 +223,12 @@
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(selectedFolderKey) || !folderMap.TryGetValue(selectedFolderKey, out var folderId))
-        {
-            statusMessage = "❌ Invalid folder selection.";
-            return;
-        }
 
         try
         {
             var dotNetRef = DotNetObjectReference.Create(this);
-            await _js.InvokeVoidAsync("googleDrive.uploadFromInput", folderId, dotNetRef);
-            statusMessage = $"✅ File uploaded to '{selectedFolderKey.ToUpper()}'!";
+            await _js.InvokeVoidAsync("googleDriveFunctions.uploadFromInput", folder, dotNetRef);
+            statusMessage = $"✅ File uploaded!";
         }
         catch (Exception ex)
         {
@@ -240,6 +241,7 @@
     {
         folderFiles.Clear();
         fetchStatus = "Fetching files, please wait...";
+        folder = key;
 
         try
         {
