@@ -4,7 +4,7 @@
     {
         public string Id { get; set; }
         public string EventName { get; set; }
-        public string Tag { get; set; } = "Senior";
+        public string Tag { get; set; }
         public string Date { get; set; } = DateTime.Now.ToString();
         public string StartTime { get; set; }
         public string EndTime { get; set; }

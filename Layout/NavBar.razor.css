@@ -12,6 +12,7 @@
     flex-direction: column;
     justify-content: space-between;
     overflow: hidden;
+    height: 100%;
 }
 
 .side-parent-content {
@@ -23,9 +24,8 @@
 }
 
 .side-foot {
-/*    flex-shrink: 0;*/
+    flex-shrink: 0;
     padding: 20px;
-    border: solid 1px black;
 }
 
 .link {
@@ -84,8 +84,21 @@
     grid-template-columns: 40px auto;
 }
 
-    .side-foot img {
-        border-radius: 20px;
+.profile {
+    width: 40px;
+    height: 40px;
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    border: solid 1px #AEAEAE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .profile p {
+        color: rgb(31 41 55);
+        padding: 0;
+        margin: 0
     }
 
 

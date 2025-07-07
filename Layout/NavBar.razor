@@ -102,10 +102,8 @@
     <!--Users Section-->
     <div class="side-foot d-flex align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2">
-            <div>
-                @* <img src="https://drive.google.com/uc?id=1Gfx1XQoj6dpA1wxR7PLNbUdKKqdzjrki" style="width: 40px;" /> *@
-
-                <img src="https://i.pravatar.cc/150?img=3" style="width:40px;" />
+            <div class="profile">
+                <p>@initialName</p>
             </div>
             <div>
                 <p class="fs-6 m-0">@auth.DisplayName</p>
@@ -121,9 +119,14 @@
 @code {
     [Parameter]
     public EventCallback OnActiveChanged { get; set; }
-
+    private char initialName;
 
     private int activeIndex = 0;
+
+    private void getInitial()
+    {
+        initialName = auth.DisplayName[0];
+    }
 
     private async Task SetActive(int index)
     {
