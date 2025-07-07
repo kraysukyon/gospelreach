@@ -10,12 +10,8 @@
 .side-parent {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     overflow: hidden;
-}
-
-.side-foot {
-    flex-shrink: 0;
-    padding: 20px;
 }
 
 .side-parent-content {
@@ -24,6 +20,12 @@
     padding: 0px 20px;
     flex-grow: 1;
     overflow-y: auto;
+}
+
+.side-foot {
+/*    flex-shrink: 0;*/
+    padding: 20px;
+    border: solid 1px black;
 }
 
 .link {
