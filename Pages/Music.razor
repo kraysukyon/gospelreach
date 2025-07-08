@@ -21,6 +21,14 @@
         </div>
     </div>
 
+    <div class="d-none">
+        <pre class="mt-3"><strong>Song Title:</strong> @song.Title
+<strong>Artist:</strong> @song.Artist
+
+                @song.LyricsAndChords
+            </pre>
+    </div>
+
     <!--Table Section-->
     <div class="card w-100 mb-3 cards">
         <div class="container">
@@ -61,9 +69,9 @@
                                 @* <div class="d-flex align-items-center justify-content-center gap-1w-auto border flex-grow-1" style="border-radius: 10px;">
                                     
                                 </div> *@
-                                <button class="btn btn-outline-light border border-2 flex-grow-1" style="border-radius: 10px;font-size: 13px;"><span><i class="bi bi-download"></i></span></button>
+                                <button @onclick:stopPropagation @onclick="(() => getSongToDownload(items.Id))" class="btn btn-outline-light border border-2 flex-grow-1" style="border-radius: 10px;font-size: 13px;"><span><i class="bi bi-download"></i></span></button>
                                 <!--Print-->
-                                <button class="btn btn-outline-light border border-2 text-black flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-printer text-black"></i></span></button>
+                                <button @onclick:stopPropagation @onclick="(() => getSongToPrint(items.Id))" class="btn btn-outline-light border border-2 text-black flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-printer text-black"></i></span></button>
                                 <!--Update-->
                                 <button @onclick:stopPropagation @onclick="(() => GotoEditPage(items.Id))" class="btn btn-outline-light border border-2 text-black flex-grow-1" style="border-radius: 10px; font-size:13px;"><span><i class="bi bi-pencil-square"></i></span></button>
 
@@ -81,6 +89,7 @@
 
 @code{
     private List<Song> songList = new();
+    private Song song = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -174,21 +183,45 @@
         }
     }
 
-    // private async void PrintOutput()
-    // {
-    //     if (!string.IsNullOrWhiteSpace(transposedOutput))
-    //     {
-    //         string safeHtml = System.Net.WebUtility.HtmlEncode(transposedOutput);
-    //         await _js.InvokeVoidAsync("printLyrics", safeHtml);
-    //     }
-    //     else
-    //     {
-    //         await _js.InvokeVoidAsync("alert", "No Output");
-    //     }
-    // }
+    private async Task getSongToPrint(string Id)
+    {
+        var printSong = songList.FirstOrDefault(u => u.Id == Id);
 
-    // private async void DownloadAsPdf()
-    // {
-    //     await _js.InvokeVoidAsync("downloadPdf", transposedOutput);
-    // }
+        if (printSong != null)
+        {
+            song = printSong;
+            await PrintOutput();
+        }
+    }
+
+    private async Task getSongToDownload(string Id)
+    {
+        var downloadSong = songList.FirstOrDefault(u => u.Id == Id);
+
+        if (downloadSong != null)
+        {
+            song = downloadSong;
+            await DownloadAsPdf();
+        }
+    }
+
+    private async Task PrintOutput()
+    {
+        if (!string.IsNullOrWhiteSpace(song.LyricsAndChords))
+        {
+            string fullLyrics = $"{song.Title}\n{song.Artist}\n\n{song.LyricsAndChords}";
+            string safeHtml = System.Net.WebUtility.HtmlEncode(fullLyrics);
+            await _js.InvokeVoidAsync("printLyrics", safeHtml);
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "No Output");
+        }
+    }
+
+    private async Task DownloadAsPdf()
+    {
+        string fullLyrics = $"{song.Title}\n{song.Artist}\n\n{song.LyricsAndChords}";
+        await _js.InvokeVoidAsync("downloadPdf", fullLyrics, song.Title);
+    }
 }

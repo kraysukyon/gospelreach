@@ -21,13 +21,13 @@
             <div class="w-100 d-flex flex-column gap-3 mt-5">
                 <div class="input">
                     <i class="bi bi-person" style="font-size:20px;"></i>
-                    <input @bind="email" type="text" placeholder="Email" />
+                    <input readonly="@(isLogginIn ? true : false)" @bind="email" type="text" placeholder="Email" />
                 </div>
                 <div class="input">
                     <i class="bi bi-lock" style="padding:5px 12px;"></i>
-                    <input @bind="password" type="password" style="font-size:15px;" placeholder="Password" />
+                    <input readonly="@(isLogginIn ? true : false)" @bind="password" type="password" style="font-size:15px;" placeholder="Password" />
                 </div>
-                <a href="" class="text-decoration-none text-primary text-end">Forgot your password?</a>
+                @* <a href="" class="text-decoration-none text-primary text-end">Forgot your password?</a> *@
                 <button class="btn btn-primary w-100 py-2" @onclick="ValidateLogin">Sign In</button>
             </div>
         </div>
@@ -230,6 +230,7 @@
 @code {
     private bool isLoginModalVisible = false;
     private bool isSidebarVisible = false;
+    private bool isLogginIn = false;
 
     //variables for authentication
     private string email = string.Empty;
@@ -263,6 +264,7 @@
 
     private async Task ValidateLogin()
     {
+        isLogginIn = !isLogginIn;
         try
         {
             var result = await FirebaseAuthService.LoginAsync(email, password);
@@ -290,6 +292,7 @@
         {
             await JSRuntime.InvokeVoidAsync("alert", $"An error occurred: {ex.Message}"); // Handle any exceptions
         }
+        isLogginIn = !isLogginIn;
 
     }
 

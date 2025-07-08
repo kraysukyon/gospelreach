@@ -41,22 +41,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
     <script src="Javascript/printdownload.js"></script>
-
-    <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD8al1qptb_WKQGuhRvPOFvTRAZPg-J4uY",
-            authDomain: "gospel-reach-cms.firebaseapp.com",
-            projectId: "gospel-reach-cms",
-            storageBucket: "gospel-reach-cms.firebasestorage.app",
-            messagingSenderId: "199203547088",
-            appId: "1:199203547088:web:dc1fc54cb156ddabf07bd5"
-        };
-
-        // ✅ Make accessible to JS interop
-        window.firebase = firebase.initializeApp(firebaseConfig); //Initialize firebase
-        window.db = firebase.firestore();
-    </script>
+    <script src="Javascript/firebase.js"></script>
 
     <!-- Your JS interop file must come AFTER the Firebase initialization -->
     <script src="Javascript/firestore.js"></script>

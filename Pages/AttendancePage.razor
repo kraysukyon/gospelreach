@@ -141,7 +141,7 @@
                     @foreach (var items in FilteredList)
                     {
                         <tr class="table-row">
-                            <td class="table-cell c2 align-content-center">@DateTime.Parse(items.Date).ToString("MMM dd, yyyy")</td>
+                            <td class="table-cell c2 align-content-center">@DateTime.Parse(items.Date).ToString("MMM dd-yyyy")</td>
                             <td class="table-cell c2 align-content-center">@items.Activity</td>
                             <td class="table-cell c2 align-content-center">@items.Count</td>
                             <td class="table-cell c2 align-content-center">@items.Seekers</td>
