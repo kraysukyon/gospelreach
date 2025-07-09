@@ -18,7 +18,7 @@
             </h5>
             <p>Please enter credentials</p>
 
-            <div class="w-100 d-flex flex-column gap-3 mt-5">
+            <div class="w-100 d-flex flex-column gap-3 mt-3">
                 <div class="input">
                     <i class="bi bi-person" style="font-size:20px;"></i>
                     <input readonly="@(isLogginIn ? true : false)" @bind="email" type="text" placeholder="Email" />
@@ -28,7 +28,7 @@
                     <input readonly="@(isLogginIn ? true : false)" @bind="password" type="password" style="font-size:15px;" placeholder="Password" />
                 </div>
                 @* <a href="" class="text-decoration-none text-primary text-end">Forgot your password?</a> *@
-                <button class="btn btn-primary w-100 py-2" @onclick="ValidateLogin">Sign In</button>
+                <button class="btn btn-primary w-100 py-2 mt-3" @onclick="ValidateLogin">Sign In</button>
             </div>
         </div>
     </div>
@@ -273,12 +273,12 @@
                 accounts = new(); // Reset accounts list
                 accounts = await Firestore.GetAccountAsync(); // Fetch accounts from Firebase
 
-                var userStatus = accounts.FirstOrDefault(u => u.email == email && u.stats == "Disabled");
-                if (userStatus != null)
-                {
-                    await JSRuntime.InvokeVoidAsync("alert", "Your account is disabled. Please contact the administrator."); // Show alert for disabled accounts
-                    return;
-                }
+                // var userStatus = accounts.FirstOrDefault(u => u.email == email && u.stats == "Disabled");
+                // if (userStatus != null)
+                // {
+                //     await JSRuntime.InvokeVoidAsync("alert", "Your account is disabled. Please contact the administrator.");
+                //     return;
+                // }
 
                 await JSRuntime.InvokeVoidAsync("alert", result.Message);
                 NavigationManager.NavigateTo("/dashboard"); // Redirect to dashboard after login

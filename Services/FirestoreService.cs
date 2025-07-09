@@ -32,9 +32,9 @@ namespace GospelReachCapstone.Services
         
 
         //Update Accounts
-        public async Task UpdateAccountAsync(string docId,Accounts accounts)
+        public async Task UpdateAccountAsync(string docId,string role)
         {
-            await _jsRuntime.InvokeVoidAsync("firestoreFunctions.updateAccount", docId, accounts);
+            await _jsRuntime.InvokeVoidAsync("firestoreFunctions.updateAccount", docId, role);
         }
 
         //Disable Account for logging in

@@ -12,9 +12,11 @@
         }
     },
     //Update Account
-    async updateAccount(docId, account) {
+    async updateAccount(docId, newRole) {
         try {
-            await db.collection("Accounts").doc(docId).set(account);
+            await db.collection("Accounts").doc(docId).update({
+                role: newRole
+            });
         } catch (error) {
             alert(error)
         }
@@ -23,7 +25,7 @@
     //Disable Account
     async disableAccount(docId) {
         try {
-            await db.collection("Accounts").doc(docId).update({ stats: "Disabled" });
+            await db.collection("Accounts").doc(docId).update({ status: "Disabled" });
         } catch (error) {
             alert(error)
         }
@@ -31,7 +33,7 @@
     //Enable Account
     async enableAccount(docId) {
         try {
-            await db.collection("Accounts").doc(docId).update({ stats: "Active" });
+            await db.collection("Accounts").doc(docId).update({ status: "Active" });
         } catch (error) {
             alert(error)
         }

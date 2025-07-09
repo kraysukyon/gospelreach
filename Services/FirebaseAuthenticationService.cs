@@ -8,11 +8,13 @@ namespace GospelReachCapstone.Services
     {
         private readonly IJSRuntime _jsRuntime;
         private readonly AuthState _authState;
+        private readonly FirestoreService _firestore;
 
-        public FirebaseAuthenticationService(IJSRuntime jSRuntime, AuthState authstate)
+        public FirebaseAuthenticationService(IJSRuntime jSRuntime, AuthState authstate, FirestoreService firestore)
         {
             _jsRuntime = jSRuntime;
             _authState = authstate;
+            _firestore = firestore;
         }
         public async Task<(bool Success, string Message)> RegisterAsync(string email, string password, User user)
         {
@@ -31,9 +33,10 @@ namespace GospelReachCapstone.Services
                 {
                     var userAccount = accounts.FirstOrDefault(a => a.id == result.Uid);
 
+
                     if (userAccount != null)
                     {
-                        _authState.DisplayName = userAccount.firstName;
+                        //_authState.DisplayName = userAccount.firstName;
                         _authState.Role = userAccount.role;
                     }
                 }

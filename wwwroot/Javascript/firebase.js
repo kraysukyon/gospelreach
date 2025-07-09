@@ -1,13 +1,14 @@
 ﻿const firebaseConfig = {
-    apiKey: "AIzaSyD8al1qptb_WKQGuhRvPOFvTRAZPg-J4uY",
-    authDomain: "gospel-reach-cms.firebaseapp.com",
-    projectId: "gospel-reach-cms",
-    storageBucket: "gospel-reach-cms.firebasestorage.app",
-    messagingSenderId: "199203547088",
-    appId: "1:199203547088:web:dc1fc54cb156ddabf07bd5"
+    apiKey: "AIzaSyCuXJoMGNsbGubbWtKsBaCSt7OVwXrefgs",
+    authDomain: "gospel-reach-tsa-cms.firebaseapp.com",
+    projectId: "gospel-reach-tsa-cms",
+    storageBucket: "gospel-reach-tsa-cms.firebasestorage.app",
+    messagingSenderId: "810722788803",
+    appId: "1:810722788803:web:ecdfa0cd2b116aa6c22976",
+    measurementId: "G-CQ3ST5ZG3P"
 };
 
 
 // ✅ Make accessible to JS interop
-window.firebase = firebase.initializeApp(fireFunction.getKey); //Initialize firebase
+window.firebase = firebase.initializeApp(firebaseConfig); //Initialize firebase
 window.db = firebase.firestore();

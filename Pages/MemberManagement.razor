@@ -55,7 +55,7 @@
 
             <div class="userFields mt-3">
                 <div class="input">
-                    <p>Classfication</p>
+                    <p>Classification</p>
                     <select @bind="member.Classification" class="form-select p-2 mt-2">
                         <option value="Soldier">Soldier</option>
                         <option value="Adherent">Adherent</option>
@@ -100,18 +100,20 @@
         <div>
             <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleModal">Add Member</button>
         </div>
+        
     </div>
 
     <!--Table Section-->
     <div class="card w-100 mb-3 cards">
 
         <!--Search Section-->
-        <div class="position-relative mb-4">
+        <div class="position-relative">
             <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
             <input type="text" class="form-control border search" placeholder="Search members..." />
         </div>
+        <p class="mb-4 ms-1 @(isLoad ? "" : "d-none")"><em>@load</em></p>
 
-        <div class="table-container">
+        <div class="table-container mt-4">
             <table class="table">
                 <thead>
                     <tr>
@@ -138,6 +140,8 @@
                             <td class="table-cell c2">@items.Email</td>
                             <td class="table-cell c2">@items.Contact</td>
                             <td class="table-cell c2">@items.Birthdate</td>
+                            <td class="table-cell c2">@items.DateOfSoldiership</td>
+                            <td class="table-cell c2">@items.Classification</td>
                             <td class="table-cell c2">@items.Status</td>
 
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
@@ -183,6 +187,8 @@
 </div>
 
 @code{
+    private string load = "Fetching Files...";
+    private bool isLoad = false;
     private List<Member> membersList = new();
     private Member member = new();
     private bool isAddModalVisible = false;
@@ -192,6 +198,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        isLoad = !isLoad;
         member.Classification = "Soldier";
         member.Status = "Active";
         try
@@ -202,6 +209,7 @@
         {
             await _js.InvokeVoidAsync("alert", "Unable to fetch Members List");
         }
+        isLoad = !isLoad;
     }
 
     private async Task getMembers()
@@ -214,8 +222,8 @@
     {
         try
         {
-            member.Birthdate = dateOfBirth.ToString();
-            member.DateOfSoldiership = dateOfSoldiership.ToString();
+            member.Birthdate = dateOfBirth.ToString("MMM dd, yyyy");
+            member.DateOfSoldiership = dateOfSoldiership.ToString("MMM dd, yyyy");
             await Firestore.AddMemberAsync(member);
             await getMembers();
             ToggleModal();

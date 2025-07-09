@@ -2,7 +2,7 @@
 @layout LandingLayout
 @using GospelReachCapstone.Models
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService Authentication
-@inject GospelReachCapstone.Services.FirestoreService Firestore
+@inject GospelReachCapstone.Services.FirestoreService _firestore
 @inject IJSRuntime _js
 
 
@@ -20,40 +20,37 @@
             </h4>
             <p style="font-size:14px;">Create and Manage Users and Access Control.</p>
 
-            <div class="userFields">
-                <div class="input">
-                    <p>First Name</p>
-                    <input @bind="user.firstName" type="text" class="form-control p-2 mt-2" placeholder="First Name"/>
+            @if (title == "Add User")
+            {
+                <div class="input mt-3">
+                    <p>Member</p>
+                    <select value="@memberId" @onchange="OnMemberChange" class="form-select p-2 mt-2">
+                        <option value="">- - Select Member - -</option>
+                        @foreach (var item in memberList)
+                        {
+                            <option value="@item.Id">@item.FirstName @item.LastName</option>
+                        }
+                    </select>
                 </div>
-
-                <div class="input">
-                    <p>Last Name</p>
-                    <input @bind="user.lastName" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
-                </div>
-            </div>
+            }
+            
 
             <div class="input mt-3">
                 <p>Email</p>
-                <input @bind="user.email" type="email" class="form-control p-2 mt-2" placeholder="Email" />
+                <input readonly @bind="user.Email" type="email" class="form-control p-2 mt-2" placeholder="Email" />
             </div>
 
             @if (title == "Add User")
             {
                 <div class="input mt-3">
                     <p>Password</p>
-                    <input @bind="user.password" type="password" class="form-control p-2 mt-2" placeholder="Password" />
+                    <input readonly="@(isValid ? false : true)" @bind="user.Password" type="password" class="form-control p-2 mt-2" placeholder="Password" />
                 </div>
             }
-            
-
-            <div class="input mt-3">
-                <p>Contact Number</p>
-                <input @bind="user.contact" type="text" class="form-control p-2 mt-2" placeholder="Contact Number" />
-            </div>
-
+           
             <div class="input mt-3">
                 <p>Role</p>
-                <select @bind="user.role" class="form-select p-2 mt-2">
+                <select disabled="@(isValid ? false : true)" @bind="role" class="form-select p-2 mt-2">
                     <option value="Administrator">Administrator</option>
                     <option value="Department Head - Mens">Department Head - Mens</option>
                     <option value="Department Head - Homeleague">Department Head - Homeleague</option>
@@ -66,7 +63,7 @@
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
-                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddUser">Create</button>
+                    <button disabled="@(isValid ? false : true)" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddUser">Create</button>
                 </div>
             }
             else
@@ -90,7 +87,7 @@
         </div>
 
         <div>
-            <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleAddUserModal">Add User</button>
+            <button class="btn btn-primary px-4 py-2 text-white" @onclick="OpenModal">Add User</button>
         </div>
     </div>
 
@@ -98,49 +95,46 @@
     <div class="card w-100 mb-3 cards">
 
         <!--Search Section-->
-        <div class="position-relative mb-4">
+        <div class="position-relative">
             <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
             <input type="text" class="form-control border search" placeholder="Search by name, email, or role..."/>
         </div>
+        <p class="mb-4 ms-1 @(isLoad ? "" : "d-none")"><em>@load</em></p>
 
         <div class="table-container">
             <table class="table">
                 <thead>
                     <tr>
-                        <th class="thead">Name</th>
                         <th class="thead">Email</th>
                         <th class="thead">Role</th>
-                        <th class="thead">Phone</th>
                         <th class="thead">Status</th>
                         <th class="thead">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    @foreach (var items in accounts)
+                    @foreach (var items in accountsDTOs)
                     {
                         <tr class="table-row">
-                            <td class="table-cell c2" style="font-weight:500;">@items.firstName @items.lastName</td>
-                            <td class="table-cell c2">@items.email</td>
-                            <td class="table-cell c2">@items.role</td>
-                            <td class="table-cell c2">@items.contact</td>
-                            <td class="table-cell c2">@items.stats</td>
+                            <td class="table-cell c2">@items.Email</td>
+                            <td class="table-cell c2">@items.Role</td>
+                            <td class="table-cell c2">@items.Status</td>
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
                                 <!--Edit-->
                                 <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <button class="btn btn-outline-light px-4 py-1" style="font-size: 13px;" @onclick="@(()=> ToggleUpdateModal(items.id))"><span><i class="bi bi-pencil-square"></i></span> Edit</button>
+                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(()=> ToggleUpdateModal(items.Id))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
                                 </div>
 
                                 <!--Check account status-->
-                                @if (items.stats != "Disabled")
+                                @if (items.Status != "Disabled")
                                 {
                                     <!--Disable-->
-                                    <button @onclick="@(() => DisableUser(items.id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Disable</button>
+                                    <button @onclick="@(() => DisableUser(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Disable</button>
                                 }
                                 else
                                 {
                                     <!--Enable-->
-                                    <button @onclick="@(() => EnableUser(items.id))" class="btn btn-success text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Enable</button>
+                                    <button @onclick="@(() => EnableUser(items.Id))" class="btn btn-success text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Enable</button>
                                 }
                             </td>
                                 
@@ -153,27 +147,116 @@
 </div>
 
 @code{
+    private string load = "Fetching Files...";
+    private bool isLoad = false;
+    private bool isValid = false;
     private bool isAddUserModalVisible = false;
     private string title = "Add User";
     private User user = new();
     private Accounts account = new();
     private List<Accounts> accounts = new();
+    private List<AccountsDTO> accountsDTOs = new();
     private List<Accounts> accountToBeUpdated = new();
+    private List<Member> memberList = new();
+    private string memberId = string.Empty;
+    private string role = "Administrator";
+    private string member = string.Empty;
 
+
+    //On startup
     protected override async Task OnInitializedAsync()
     {
-        user.role = "Administrator";
-        accounts = await Firestore.GetAccountAsync(); // Fetch accounts on initialization
+
+        role = "Administrator";
+        await GetAccounts();
+
+        // accounts = await _firestore.GetAccountAsync();
+    }
+
+    //Get Accounts
+    private async Task GetAccounts()
+    {
+        isLoad = !isLoad;
+        try
+        {
+            accountsDTOs.Clear();
+            List<Accounts> acc = await _firestore.GetAccountAsync();
+            List<Member> mem = await _firestore.GetMembersAsync();
+
+            var joinedList = acc.Join(mem, a => a.memberId, b => b.Id, (a,b) => new AccountsDTO
+            {
+                Id = a.id,
+                MemberId = a.memberId,
+                Email = b.Email,
+                Role = a.role,
+                Status = a.status,
+
+            }).ToList();
+
+            accountsDTOs = joinedList;
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+        isLoad = !isLoad;
+    }
+
+    //On member Selection
+    private void OnMemberChange(ChangeEventArgs e)
+    {
+        memberId = e.Value?.ToString();
+
+        if (!string.IsNullOrEmpty(memberId))
+        {
+            user.Email = memberList.FirstOrDefault(u => u.Id == memberId).Email;
+            isValid = true;
+        }
+        else
+        {
+            isValid = false;
+            user.Email = string.Empty;
+        }
+    }
+
+    protected async Task OpenModal()
+    {
+        ToggleAddUserModal();
+        await GetMemberList();
+    }
+
+    private async Task GetMemberList()
+    {
+        try
+        {
+            List<Member> mem = await _firestore.GetMembersAsync();
+            List<Accounts> acc = await _firestore.GetAccountAsync();
+
+            memberList = mem.Where(u => u.Status == "Active" && !string.IsNullOrEmpty(u.Email) && !acc.Any(a => a.memberId == u.Id)).ToList();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
     }
 
     private async Task ToggleUpdateModal(string docId)
     {
         isAddUserModalVisible = !isAddUserModalVisible;
         title = "Edit User";
-        var accountToUpdate = accounts.FirstOrDefault(u => u.id == docId);
+        var accountToUpdate = accountsDTOs.FirstOrDefault(u => u.Id == docId);
         if (accountToUpdate != null)
         {
-            account = accountToUpdate;
+            user = new User
+                {
+                    Id = accountToUpdate.Id,
+                    MemberId = accountToUpdate.MemberId,
+                    Role = accountToUpdate.Role,
+                    Status = accountToUpdate.Status,
+                    Email = accountToUpdate.Email
+                };
+
+            role = user.Role;
         }
         else
         {
@@ -187,18 +270,27 @@
     {
         isAddUserModalVisible = !isAddUserModalVisible;
         title = "Add User";
+        memberId = string.Empty;
+        isValid = false;
+        user.Email = string.Empty;
+        role = "Administrator";
         user = new();
     }
 
     private async Task AddUser()
     {
-        var result = await Authentication.RegisterAsync(user.email, user.password, user);
+        user.Role = role;
+        user.MemberId = memberId;
+        var result = await Authentication.RegisterAsync(user.Email, user.Password, user);
 
         if (result.Success)
         {
             await _js.InvokeVoidAsync("alert", "Account Successfully Created");
+            user = new();
+            memberId = string.Empty;
             accounts = new();
-            accounts = await Firestore.GetAccountAsync(); // Refresh the accounts list
+            role = "Administrator";
+            await GetAccounts();
             ToggleAddUserModal();
         }
         else
@@ -211,13 +303,14 @@
     {
         try
         {
-            await Firestore.UpdateAccountAsync(account.id, account);
-            await _js.InvokeVoidAsync("alert", "User updated successfully");
-            account = new(); // Reset the account object after update
-            accounts.Clear();
-            accounts = await Firestore.GetAccountAsync();
+            await _firestore.UpdateAccountAsync(user.Id, role);
             isAddUserModalVisible = false; // Hide the modal after update
-
+            user = new();
+            memberId = string.Empty;
+            accounts = new();
+            role = "Administrator";
+            await GetAccounts();
+            await _js.InvokeVoidAsync("alert", "User updated successfully");
         }
         catch (Exception ex)
         {
@@ -230,10 +323,9 @@
     {
         try
         {
-            await Firestore.DisableAccountAsync(docId);
+            await _firestore.DisableAccountAsync(docId);
             await _js.InvokeVoidAsync("alert", "User disabled successfully");
-            accounts.Clear();
-            accounts = await Firestore.GetAccountAsync(); // Refresh the accounts list
+            await GetAccounts();
         }
         catch (Exception ex)
         {
@@ -247,11 +339,9 @@
     {
         try
         {
-            await Firestore.EnableAccountAsync(docId);
+            await _firestore.EnableAccountAsync(docId);
             await _js.InvokeVoidAsync("alert", "User enabled successfully");
-            accounts.Clear();
-            // Refresh the accounts list
-            accounts = await Firestore.GetAccountAsync(); 
+            await GetAccounts();
         }
         catch (Exception ex)
         {

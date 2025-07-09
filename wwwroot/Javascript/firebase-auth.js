@@ -1,7 +1,7 @@
 ﻿const auth = firebase.auth();
 
 window.firebaseAuth = {
-    register: async function (email, password, user) {
+    register: async function (email, password, account) {
         try {
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             const uid = userCredential.user.uid;
@@ -9,13 +9,9 @@ window.firebaseAuth = {
             const db = firebase.firestore();
             //await db.collection("Accounts").add(user);
             await db.collection("Accounts").doc(uid).set({
-                email: user.email || "",
-                firstName: user.firstName || "",
-                lastName: user.lastName || "",
-                contact: user.contact || "",
-                role: user.role || "",
-                status: user.stats || "Active",
-                dateOfCreation: user.dateOfCreation || "",
+                memberId: account.memberId,
+                role: account.role,
+                status: account.status,
             });
 
             return { success: true, uid: userCredential.user.uid }
