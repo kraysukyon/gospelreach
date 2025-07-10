@@ -3,6 +3,8 @@
 @inject GospelReachCapstone.Services.FirestoreService Firestore
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
+@inject GospelReachCapstone.Services.GeneralFunctions _gen
+@using System.Text.RegularExpressions
 
 <PageTitle>Member Management</PageTitle>
 
@@ -17,28 +19,41 @@
             <p style="font-size:14px;">Create and Manage Members.</p>
             
             <div class="input mt-3">
-                <p>First Name</p>
-                <input @bind="member.FirstName" type="text" class="form-control p-2 mt-2" placeholder="First Name" />
+                <div class="d-flex align-items-center gap-2">
+                    <p>First Name</p>
+                    <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p>
+                </div>
+                
+                <input spellcheck="false" @bind="member.FirstName" @onblur="(() => CheckIfValid(nameof(member.FirstName)))" type="text" class="form-control p-2 mt-2 @(validFirstname ? "" : "border-danger")" placeholder="First Name" />
             </div>
 
             <div class="input mt-3">
-                <p>Middle Name</p>
-                <input @bind="member.MiddleName" type="text" class="form-control p-2 mt-2" placeholder="Middle Name" />
+                <div class="d-flex align-items-center gap-1">
+                    <p>Middle Name</p>
+                    <p style="font-size: 12px; padding: 0; margin: 0; color:gray;">(optional)</p>
+                </div>
+                <input spellcheck="false" @bind="member.MiddleName" type="text" class="form-control p-2 mt-2" placeholder="Middle Name" />
             </div>
 
             <div class="input mt-3">
-                <p>Last Name</p>
-                <input @bind="member.LastName" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
+                <div class="d-flex align-items-center gap-2">
+                    <p>Last Name</p>
+                    <p class="text-danger fw-bold @(validLastName ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p>
+                </div>
+                <input spellcheck="false" @bind="member.LastName" @onblur="(() => CheckIfValid(nameof(member.LastName)))" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
             </div>
 
             <div class="input mt-3">
-                <p>Email</p>
-                <input @bind="member.Email" type="text" class="form-control p-2 mt-2" placeholder="Email" />
+                <div class="d-flex align-items-center gap-2">
+                    <p>Email</p>
+                    <p class="text-danger fw-bold @(validEmail ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">@emailError</p>
+                </div>
+                <input spellcheck="false" @bind="member.Email" @onblur="(() => CheckIfValidEmail())" type="text" class="form-control p-2 mt-2" placeholder="Email" />
             </div>
 
             <div class="input mt-3">
                 <p>Contact</p>
-                <input @bind="member.Contact" type="text" class="form-control p-2 mt-2" placeholder="Contact Number" />
+                <input spellcheck="false" @bind="member.Contact" type="text" class="form-control p-2 mt-2" placeholder="Contact Number" />
             </div>
 
             <div class="userFields mt-3">
@@ -76,7 +91,7 @@
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
-                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addMember">Create</button>
+                    <button disabled="@(isValid ? false : true)" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addMember">Create</button>
                 </div>
             }
             else
@@ -187,6 +202,7 @@
 </div>
 
 @code{
+    private bool isValid = false;
     private string load = "Fetching Files...";
     private bool isLoad = false;
     private List<Member> membersList = new();
@@ -195,6 +211,11 @@
     private string title = "Add Member";
     private DateTime dateOfBirth = DateTime.Now;
     private DateTime dateOfSoldiership = DateTime.Now;
+    private bool validFirstname = true;
+    private bool validLastName = true;
+    private bool validEmail = true;
+    private string emailError = string.Empty;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -239,5 +260,62 @@
         isAddModalVisible = !isAddModalVisible;
         member = new();
         title = "Add Member";
+    }
+
+    private void CheckIfValid(string fieldName)
+    {
+        switch (fieldName)
+        {
+            case nameof(member.FirstName):
+                validFirstname = !string.IsNullOrWhiteSpace(member.FirstName);
+                break;
+            case nameof(member.LastName):
+                validLastName = !string.IsNullOrWhiteSpace(member.LastName);
+                break;
+        }
+    }
+
+    private async Task CheckIfValidEmail()
+    {
+        if (string.IsNullOrEmpty(member.Email))
+        {
+            validEmail = true;
+            emailError = string.Empty;
+        }
+        else
+        {
+            if (IsValidEmail(member.Email))
+            {
+                var list = await Firestore.GetMembersAsync();
+                if (list != null)
+                {
+                    bool check = list.Any(u => u.Email == member.Email);
+
+                    if (check)
+                    {
+                        validEmail = false;
+                        emailError = "Email already exists.";
+                        return;
+                    }
+
+                    validEmail = true;
+                }
+
+            }
+            else
+            {
+                validEmail = false;
+                emailError = "Enter valid email";
+            }
+        }
+    }
+
+    public bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+        return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
     }
 }

@@ -1011,11 +1011,47 @@ textarea[b-b4v8oy0z24] {
     border-radius: 25px;
 }
 
+.pword[b-mo8ga5ih3o] {
+    display: flex;
+    width: 100%;
+    padding: .5rem .75rem;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.valid[b-mo8ga5ih3o] {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+}
+
 .show[b-mo8ga5ih3o] {
     display: flex;
     align-items: center;
     justify-content: center;
+    align-items: center;
+    justify-content: center;
 }
+
+.show input[b-mo8ga5ih3o]{
+    border: none;
+    width:100%;
+    margin-right: .75rem;
+}
+
+.show input:focus[b-mo8ga5ih3o]{
+    border: none;
+    outline: none;
+
+}
+
+    .show input:focus .show[b-mo8ga5ih3o] {
+        color: #212529;
+        background-color: #fff;
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 .25rem rgba(13,110,253,.25)
+    }
 
 .hide[b-mo8ga5ih3o]{
     display: none;

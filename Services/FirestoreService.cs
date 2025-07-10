@@ -238,7 +238,6 @@ namespace GospelReachCapstone.Services
                 await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
             }
         }
-
     }
 
     public class AttendanceResult

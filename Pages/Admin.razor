@@ -44,7 +44,11 @@
             {
                 <div class="input mt-3">
                     <p>Password</p>
-                    <input readonly="@(isValid ? false : true)" @bind="user.Password" type="password" class="form-control p-2 mt-2" placeholder="Password" />
+                    <div class="pword mt-2 @(isValid ? "" : "valid")">
+                        <input readonly="@(isValid ? false : true )" class="@(isValid ? "" : "valid")" @bind="user.Password" type="@(isPasswordShow ? "text" : "password")" placeholder="Password" />
+                        <i @onclick="TogglePassword" class="@(isPasswordShow ? "bi bi-eye-slash" : "bi bi-eye")"></i>
+                    </div>
+                    @* <input readonly="@(isValid ? false : true)" @bind="user.Password" type="password" class="form-control p-2 mt-2" placeholder="Password" /> *@
                 </div>
             }
            
@@ -150,6 +154,7 @@
     private string load = "Fetching Files...";
     private bool isLoad = false;
     private bool isValid = false;
+    private bool isPasswordShow = false;
     private bool isAddUserModalVisible = false;
     private string title = "Add User";
     private User user = new();
@@ -200,6 +205,16 @@
             await _js.InvokeVoidAsync("alert", ex.Message);
         }
         isLoad = !isLoad;
+    }
+
+    //Toggle Password
+    private void TogglePassword()
+    {
+        if (isValid)
+        {
+            isPasswordShow = !isPasswordShow;
+        }
+        
     }
 
     //On member Selection

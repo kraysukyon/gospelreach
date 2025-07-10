@@ -35,11 +35,47 @@
     border-radius: 25px;
 }
 
+.pword {
+    display: flex;
+    width: 100%;
+    padding: .5rem .75rem;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.valid {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+}
+
 .show {
     display: flex;
     align-items: center;
     justify-content: center;
+    align-items: center;
+    justify-content: center;
 }
+
+.show input{
+    border: none;
+    width:100%;
+    margin-right: .75rem;
+}
+
+.show input:focus{
+    border: none;
+    outline: none;
+
+}
+
+    .show input:focus .show {
+        color: #212529;
+        background-color: #fff;
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 .25rem rgba(13,110,253,.25)
+    }
 
 .hide{
     display: none;
