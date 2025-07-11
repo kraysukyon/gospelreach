@@ -52,7 +52,10 @@
             </div>
 
             <div class="input mt-3">
-                <p>Contact</p>
+                <div class="d-flex align-items-center gap-1">
+                    <p>Contact</p>
+                    <p style="font-size: 12px; padding: 0; margin: 0; color:gray;">(optional)</p>
+                </div>
                 <input spellcheck="false" @bind="member.Contact" type="text" class="form-control p-2 mt-2" placeholder="Contact Number" />
             </div>
 
@@ -73,6 +76,7 @@
                     <p>Classification</p>
                     <select @bind="member.Classification" class="form-select p-2 mt-2">
                         <option value="Soldier">Soldier</option>
+                        <option value="Junior Soldier">Junior Soldier</option>
                         <option value="Adherent">Adherent</option>
                     </select>
                 </div>
@@ -91,7 +95,7 @@
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
-                    <button disabled="@(isValid ? false : true)" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addMember">Create</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addMember">Create</button>
                 </div>
             }
             else

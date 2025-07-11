@@ -101,7 +101,7 @@
         <!--Search Section-->
         <div class="position-relative">
             <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-            <input type="text" class="form-control border search" placeholder="Search by name, email, or role..."/>
+            <input @bind="searchedActivity" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name, email, or role..."/>
         </div>
         <p class="mb-4 ms-1 @(isLoad ? "" : "d-none")"><em>@load</em></p>
 
@@ -117,7 +117,7 @@
                 </thead>
 
                 <tbody>
-                    @foreach (var items in accountsDTOs)
+                    @foreach (var items in FilteredDTOs)
                     {
                         <tr class="table-row">
                             <td class="table-cell c2">@items.Email</td>
@@ -166,6 +166,8 @@
     private string memberId = string.Empty;
     private string role = "Administrator";
     private string member = string.Empty;
+    private string searchedActivity = string.Empty;
+    private IEnumerable<AccountsDTO> FilteredDTOs => accountsDTOs.Where(u => string.IsNullOrWhiteSpace(searchedActivity) || u.Email.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Role.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Status.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase)).ToList();
 
 
     //On startup

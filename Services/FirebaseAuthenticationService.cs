@@ -27,24 +27,32 @@ namespace GospelReachCapstone.Services
             var result = await _jsRuntime.InvokeAsync<LoginResult>("firebaseAuth.login", email, password);
             if (result.Success)
             {
-                //var accounts = await _jsRuntime.InvokeAsync<Accounts[]>("firestoreFunctions.getAccounts");
+                List<Accounts> acc = await _firestore.GetAccountAsync();
+                List<Member> mem = await _firestore.GetMembersAsync();
 
-                //if (accounts != null)
-                //{
-                //    var userAccount = accounts.FirstOrDefault(a => a.id == result.Uid);
+                var joinedList = acc.Join(mem, a => a.memberId, b => b.Id, (a,b) => new AccountsDTO
+                {
+                    Id = a.id,
+                    MemberId = a.memberId,
+                    FirstName = b.FirstName,
+                    Role = a.role,
+                    Status = a.status,
+                    Email = b.Email,
+                }).ToList();
 
+                var user = joinedList.FirstOrDefault(a => a.Email == email);
 
-                //    if (userAccount != null)
-                //    {
-                //        //_authState.DisplayName = userAccount.firstName;
-                //        _authState.Role = userAccount.role;
-                //    }
-                //}
+                if (user.Status != "Active")
+                {
+                    return (false,"Login failed: Your account is disabled, Please contact administrator.");
+                }
 
-                //_authState.IsLoggedIn = true;
-                //_authState.UserId = result.Uid;
-                //_authState.Email = email;
-                return (true, $"Login successful: {_authState.DisplayName} + {_authState.Role}");
+                _authState.IsLoggedIn = true;
+                _authState.UserId = result.Uid;
+                _authState.Email = email;
+                _authState.DisplayName = user?.FirstName ?? "User";
+                _authState.Role = user?.Role ?? "User";
+                return (true, $"Login successful");
             }
             return (false, result.Error ?? "Login failed");
         }
