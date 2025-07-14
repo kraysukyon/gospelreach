@@ -128,7 +128,7 @@
         <!--Search Section-->
         <div class="position-relative">
             <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-            <input type="text" class="form-control border search" placeholder="Search members..." />
+            <input @bind="searchstring" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search members..." />
         </div>
         <p class="mb-4 ms-1 @(isLoad ? "" : "d-none")"><em>@load</em></p>
 
@@ -150,7 +150,7 @@
                 </thead>
 
                 <tbody>
-                    @foreach (var items in membersList)
+                    @foreach (var items in FilteredMember)
                     {
                         <tr class="table-row">
                             <td class="table-cell c2">@items.FirstName</td>
@@ -184,22 +184,17 @@
         <div class="d-md-flex d-block justify-content-evenly gap-4">
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">Total Members</p>
-                <h3 class="m-0 c2 text-primary fw-bold">245</h3>
+                <h3 class="m-0 c2 text-primary fw-bold">@totalMembers</h3>
             </div>
 
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">Active Members</p>
-                <h3 class="m-0 c2 text-success fw-bold">178</h3>
+                <h3 class="m-0 c2 text-success fw-bold">@activeMembers</h3>
             </div>
 
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">New This Month</p>
-                <h3 class="m-0 c2 text-danger fw-bold">3</h3>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">Families</p>
-                <h3 class="m-0 c2 text-primary fw-bold">12</h3>
+                <h3 class="m-0 c2 text-danger fw-bold">@newMembers</h3>
             </div>
         </div>
     </div>
@@ -207,6 +202,9 @@
 
 @code{
     private bool isValid = false;
+    private int totalMembers = 0;
+    private int activeMembers = 0;
+    private int newMembers = 0;
     private string load = "Fetching Files...";
     private bool isLoad = false;
     private List<Member> membersList = new();
@@ -219,6 +217,8 @@
     private bool validLastName = true;
     private bool validEmail = true;
     private string emailError = string.Empty;
+    private string searchstring = string.Empty;
+    private List<Member> FilteredMember => membersList.Where(u => string.IsNullOrWhiteSpace(searchstring) || u.FirstName.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.MiddleName) && u.MiddleName.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || u.LastName.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.Email) && u.Email.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.Contact) && u.Contact.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.Classification) && u.Classification.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.Status) && u.Status.Contains(searchstring, StringComparison.OrdinalIgnoreCase)).ToList();
 
 
     protected override async Task OnInitializedAsync()
@@ -240,7 +240,16 @@
     private async Task getMembers()
     {
         membersList = new();
+        totalMembers = 0;
+        activeMembers = 0;
+        newMembers = 0;
         membersList = await Firestore.GetMembersAsync();
+
+        if (membersList != null)
+        {
+            totalMembers = membersList.Count;
+            activeMembers = membersList.Where(u => u.Status == "Active").Count();
+        }
     }
 
     private async Task addMember()

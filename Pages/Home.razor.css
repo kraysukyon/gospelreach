@@ -50,6 +50,15 @@ a, p {
     border-radius: 12px;
 }
 
+.inputs {
+    background-color: #F3F4F6;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    padding: .2rem;
+    border-radius: 12px;
+}
+
     .input i {
         padding: 5px 10px;
     }

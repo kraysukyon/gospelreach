@@ -19,13 +19,16 @@
             <p>Please enter credentials</p>
 
             <div class="w-100 d-flex flex-column gap-3 mt-3">
-                <div class="input">
+                <div class="input inputs">
                     <i class="bi bi-person" style="font-size:20px;"></i>
-                    <input readonly="@(isLogginIn ? true : false)" @bind="email" type="text" placeholder="Email" />
+                    <input readonly="@(isLogginIn ? true : false)" @bind="email" type="text" placeholder="Email"/>
+                    <i class="bi bi-eye opacity-0"></i>
                 </div>
-                <div class="input">
+                <div class="input inputs">
                     <i class="bi bi-lock" style="padding:5px 12px;"></i>
-                    <input readonly="@(isLogginIn ? true : false)" @bind="password" type="password" style="font-size:15px;" placeholder="Password" />
+                    <input readonly="@(isLogginIn ? true : false)" @bind="password" type="@(isPasswordShow ? "text" : "password")" style="font-size:15px;" placeholder="Password" />
+                    <i @onclick="TogglePassword" class="@(isPasswordShow ? "bi bi-eye-slash" : "bi bi-eye")" style="cursor:pointer"></i>
+
                 </div>
                 @* <a href="" class="text-decoration-none text-primary text-end">Forgot your password?</a> *@
                 <button class="btn btn-primary w-100 py-2 mt-3" @onclick="ValidateLogin">Sign In</button>
@@ -231,6 +234,7 @@
     private bool isLoginModalVisible = false;
     private bool isSidebarVisible = false;
     private bool isLogginIn = false;
+    private bool isPasswordShow = false;
 
     //variables for authentication
     private string email = string.Empty;
@@ -243,6 +247,11 @@
         {
             await FirebaseAuthService.LogoutAsync(); // Ensure user is logged out on initialization
         }
+    }
+
+    private void TogglePassword()
+    {
+        isPasswordShow = !isPasswordShow;
     }
 
     private void showOption()

@@ -1,4 +1,8 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+﻿@inject HttpClient Http
+@inject IJSRuntime JS
+@inject GospelReachCapstone.Services.FirebaseConfigService FirebaseService
+
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(HomeLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
@@ -10,3 +14,11 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await FirebaseService.LoadConfig(Http);
+        await JS.InvokeVoidAsync("initializeFirebase", FirebaseService.Config);
+    }
+}

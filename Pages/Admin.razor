@@ -46,7 +46,7 @@
                     <p>Password</p>
                     <div class="pword mt-2 @(isValid ? "" : "valid")">
                         <input readonly="@(isValid ? false : true )" class="@(isValid ? "" : "valid")" @bind="user.Password" type="@(isPasswordShow ? "text" : "password")" placeholder="Password" />
-                        <i @onclick="TogglePassword" class="@(isPasswordShow ? "bi bi-eye-slash" : "bi bi-eye")"></i>
+                        <i @onclick="TogglePassword" class="@(isPasswordShow ? "bi bi-eye-slash" : "bi bi-eye")" style="cursor:pointer"></i>
                     </div>
                     @* <input readonly="@(isValid ? false : true)" @bind="user.Password" type="password" class="form-control p-2 mt-2" placeholder="Password" /> *@
                 </div>
@@ -176,8 +176,6 @@
 
         role = "Administrator";
         await GetAccounts();
-
-        // accounts = await _firestore.GetAccountAsync();
     }
 
     //Get Accounts
