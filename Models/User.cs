@@ -3,11 +3,9 @@
     public class User
     {
         public string Id { get; set; }
-        public string MemberId { get; set; }
-        public string Role { get; set; }
-        public string Status { get; set; } = "Active";
         public string Email { get; set; }
         public string Password { get; set; }
-
+        public string Role { get; set; }
+        public string Status { get; set; } = "Active";
     }
 }

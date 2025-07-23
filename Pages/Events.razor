@@ -101,7 +101,7 @@
             <div class="d-flex flex-column flex-md-row gap-2 mb-4">
                 <div class="position-relative flex-grow-1">
                     <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                    <input type="text" class="form-control border search" placeholder="Search events..." />
+                    <input @bind="searchEvent" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search events..." />
                 </div>
 
                 <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
@@ -111,7 +111,7 @@
 
             <!--File Section-->
             <div class="events">
-                @foreach (var items in eventsList)
+                @foreach (var items in FilteredEvents)
                 {
                     <div class="card p-4 cards">
                         <div class="d-flex justify-content-between mb-2">
@@ -168,6 +168,8 @@
     private DateTime date = DateTime.Now;
     private TimeOnly startTime;
     private TimeOnly endTime;
+    private string searchEvent = string.Empty;
+    private IEnumerable<Event> FilteredEvents => eventsList.Where(u => string.IsNullOrWhiteSpace(searchEvent) || u.EventName.Contains(searchEvent, StringComparison.OrdinalIgnoreCase)).ToList();
 
     protected override async Task OnInitializedAsync()
     {

@@ -239,10 +239,11 @@
     //variables for authentication
     private string email = string.Empty;
     private string password = string.Empty;
-    private List<Accounts> accounts = new();
+    private List<User> accounts = new();
 
     protected override async Task OnInitializedAsync()
     {
+
         if (Auth.IsLoggedIn)
         {
             await FirebaseAuthService.LogoutAsync(); // Ensure user is logged out on initialization
@@ -276,18 +277,13 @@
         isLogginIn = !isLogginIn;
         try
         {
+            email = "tsaadmin@gmail.com";
+            password = "Qwerty1234.";
             var result = await FirebaseAuthService.LoginAsync(email, password);
             if (result.Success)
             {
-                accounts = new(); // Reset accounts list
-                accounts = await Firestore.GetAccountAsync(); // Fetch accounts from Firebase
-
-                // var userStatus = accounts.FirstOrDefault(u => u.email == email && u.stats == "Disabled");
-                // if (userStatus != null)
-                // {
-                //     await JSRuntime.InvokeVoidAsync("alert", "Your account is disabled. Please contact the administrator.");
-                //     return;
-                // }
+                // accounts = new();
+                // accounts = await Firestore.GetAccountAsync();
 
                 await JSRuntime.InvokeVoidAsync("alert", result.Message);
                 NavigationManager.NavigateTo("/dashboard"); // Redirect to dashboard after login

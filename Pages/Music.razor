@@ -36,7 +36,7 @@
             <div class="d-flex flex-column flex-md-row gap-2 mb-4">
                 <div class="position-relative flex-grow-1">
                     <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                    <input type="text" class="form-control border search" placeholder="Search by title, artist or album..." />
+                    <input @bind="searchSong" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by title, artist or album..." />
                 </div>
 
                 <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
@@ -59,7 +59,7 @@
                 </thead>
 
                 <tbody>
-                    @foreach (var items in songList)
+                    @foreach (var items in FilteredSong)
                     {
                         <tr @onclick="(() => ViewSong(items.Id))" @onclick:stopPropagation class="table-row">
                             <td class="table-cell" style="font-weight:500;">@items.Title</td>
@@ -90,6 +90,8 @@
 @code{
     private List<Song> songList = new();
     private Song song = new();
+    private string searchSong = string.Empty;
+    private IEnumerable<Song> FilteredSong => songList.Where(u => string.IsNullOrWhiteSpace(searchSong) || u.Title.Contains(searchSong, StringComparison.OrdinalIgnoreCase) || u.Artist.Contains(searchSong, StringComparison.OrdinalIgnoreCase)).ToList();
 
     protected override async Task OnInitializedAsync()
     {

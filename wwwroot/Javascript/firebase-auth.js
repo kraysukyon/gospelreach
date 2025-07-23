@@ -9,8 +9,8 @@ window.firebaseAuth = {
 
             const db = firebase.firestore();
             //await db.collection("Accounts").add(user);
-            await db.collection("Accounts").doc(uid).set({
-                memberId: account.memberId,
+            await db.collection("Users").doc(uid).set({
+                email: account.email,
                 role: account.role,
                 status: account.status,
             });

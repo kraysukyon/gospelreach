@@ -15,17 +15,17 @@ namespace GospelReachCapstone.Services
         }
 
         //Getting the Accounts List
-        public async Task<List<Accounts>> GetAccountAsync()
+        public async Task<List<User>> GetAccountAsync()
         {
             try
             {
-                var result = await _jsRuntime.InvokeAsync<Accounts[]>("firestoreFunctions.getAccounts");
+                var result = await _jsRuntime.InvokeAsync<User[]>("firestoreFunctions.getAccounts");
                 return result.ToList();
             }
             catch (Exception ex)
             {
                 await _jsRuntime.InvokeVoidAsync("alert", $"Error fetching accounts: {ex.Message}");
-                return new List<Accounts>();
+                return new List<User>();
             }
             
         }
@@ -109,12 +109,35 @@ namespace GospelReachCapstone.Services
             try
             {
                 var result = await _jsRuntime.InvokeAsync<JsonElement>("firestoreFunctions.addMember", member);
-                await _jsRuntime.InvokeVoidAsync("alert", "Member Successfuly added!");
                 return result.GetProperty("success").GetBoolean();
             }
             catch
             {
                 return false;
+            }
+        }
+
+        public async Task updateMemberAsync(string memberId, Member member)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.updateMember", memberId, member);
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
+            }
+        }
+
+        public async Task deleteMemberAsync(string memberId)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.deleteMember", memberId);
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
             }
         }
 

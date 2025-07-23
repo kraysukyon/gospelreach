@@ -1,11 +1,11 @@
 ﻿window.firestoreFunctions = {
 
-    //============================================Account Section============================================//
+    //============================================User Section============================================//
 
     //Get Accounts
     async getAccounts() {
         try {
-            const snapshot = await db.collection("Accounts").get();
+            const snapshot = await db.collection("Users").get();
             return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch (error) {
             alert(error)
@@ -14,7 +14,7 @@
     //Update Account
     async updateAccount(docId, newRole) {
         try {
-            await db.collection("Accounts").doc(docId).update({
+            await db.collection("Users").doc(docId).update({
                 role: newRole
             });
         } catch (error) {
@@ -25,7 +25,7 @@
     //Disable Account
     async disableAccount(docId) {
         try {
-            await db.collection("Accounts").doc(docId).update({ status: "Disabled" });
+            await db.collection("Users").doc(docId).update({ status: "Disabled" });
         } catch (error) {
             alert(error)
         }
@@ -33,7 +33,7 @@
     //Enable Account
     async enableAccount(docId) {
         try {
-            await db.collection("Accounts").doc(docId).update({ status: "Active" });
+            await db.collection("Users").doc(docId).update({ status: "Active" });
         } catch (error) {
             alert(error)
         }
@@ -111,6 +111,22 @@
             return { success: true }
         } catch (error) {
             return { success: false }
+            alert(error)
+        }
+    },
+
+    async updateMember(docId, member) {
+        try {
+            await db.collection("Members").doc(docId).set(member);
+        } catch (error) {
+            alert(error)
+        }
+    },
+
+    async deleteMember(docId) {
+        try {
+            await db.collection("Members").doc(docId).delete();
+        } catch (error) {
             alert(error)
         }
     },

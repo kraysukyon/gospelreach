@@ -1,70 +1,61 @@
 ﻿@page "/media"
 @layout LandingLayout
-@inject GospelReachCapstone.Services.GoogleDriveService _gdrive
 @using GospelReachCapstone.Models
+@using System.Net
 @inject IJSRuntime _js
+@inject HttpClient Http
 
 <PageTitle>Media Files</PageTitle>
 
 
 <div class="sub-page">
     <!--Header Section-->
-    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+    <div class="header d-block d-md-flex flex-md-row align-items-start justify-content-between mb-5">
         <div>
             <h4 class="m-0 fw-bold">Media File Management</h4>
             <p class="m-0 c2" style="font-size: 14px">Upload, organize, and manage church media files.</p>
         </div>
 
-        <div class="w-auto d-flex gap-2 align-items-center">
-            <p>@statusMessage</p>
-            <button @onclick="SignIn" class="btn btn-primary p-2 px-4 text-white link @(isSignIn ? "hide" : "")">Sign In</button>
-            @* <button class="btn btn-primary p-2 text-white link @(isSignIn ? "" : "hide")">Upload File</button> *@
-            <InputFile id="uploadInput" OnChange="UploadFile"/>
-            
+        <div>
+            <InputFile OnChange="HandleFile" />
+            <button class="btn btn-primary text-white p-2" @onclick="UploadFile" disabled="@(!CanUpload)">Upload</button>
         </div>
-    </div>
 
-    @* <h4>📁 Browse Files by Folder</h4>
-    <select @onchange="LoadFilesInFolder">
-        <option value="">-- Select Folder to View Files --</option>
-        @foreach (var items in folderMap)
+        @if (uploading)
         {
-            <option value="@items.Key">@items.Key.ToUpper()</option>
-        }
-    </select> *@
-
-        <!--Table Section-->
-        <div class="card w-100 mb-3 cards @(isSignIn ? "" : "hide")">
-            <div class="container">
-                @if (uploadProgress > 0 && uploadProgress < 100)
-        {
-            <div class="progress my-2">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:@uploadProgress%">
+            <div class="progress mt-2">
+                <div class="progress-bar" role="progressbar" style="width: @(uploadProgress)%;" aria-valuenow="@uploadProgress" aria-valuemin="0" aria-valuemax="100">
                     @uploadProgress%
                 </div>
             </div>
         }
+    </div>
+
+
+        <!--Table Section-->
+        <div class="card w-100 mb-3 cards">
+            <div class="container">
                 <!--Search Section-->
                 <div class="d-flex flex-column flex-md-row gap-2 mb-4">
                     <div class="position-relative flex-grow-1">
                         <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                        <input type="text" class="form-control border search" placeholder="Search files..." />
+                        <input @bind="searchItem" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search files..." />
                     </div>
 
                     <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
-                        @* <button class="btn btn-primary p-2 px-3 w-100 text-nowrap text-white">All</button> *@
-                        <button @onclick="(() => LoadFilesInFolder2(video))" class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-film"></i> Videos</button>
-                        <button @onclick="(() => LoadFilesInFolder2(audio))" class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-music-note-beamed"></i> Audio</button>
+                        <button class="btn btn-primary p-2 px-3 w-100 text-nowrap text-white">All</button>
+                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-film"></i> Videos</button>
+                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-music-note-beamed"></i> Audio</button>
                         <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-file-earmark-text"></i> Documents</button>
-                        <button @onclick="(() => LoadFilesInFolder2(image))" class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-image"></i> Images</button>
+                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-image"></i> Images</button>
                     </div>
                 </div>
-            @if (folderFiles?.Any() == true)
+            @if (files?.Any() == true)
             {
             <!--File Section-->
                 <div class="wrapper">
                     <div class="files">
-                        @foreach (var item in folderFiles)
+                        @foreach (var item in files)
                         {
                             <div class="card p-4 cards d-flex flex-column align-items-start justify-content-center">
                                 <div class="d-flex gap-3">
@@ -75,15 +66,16 @@
                                     </div>
 
                                     <div class="flex-grow-1">
-                                        <a href="@item.WebViewLink" target="_blank" class="weblink">@item.Name</a>
-                                        <p class="c2" style="font-size:14px;">@item.Size Uploaded on 2025-04-21</p>
+                                        <a href="@item.Url" target="_blank" class="weblink">@item.PublicId</a>
+                                        <p class="c2" style="font-size:14px;">@(item.FileSizeBytes/1024)kb Uploaded on @item.CreatedAt</p>
                                         <p class="c2" style="font-size:14px;">By John Smith</p>
                                     </div>
                                 </div>
 
                                 <div class="d-flex mt-3 gap-2 align-self-end">
-                                    <button @onclick="() => DownloadFile(item.Id, item.Name)" class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</button>
-                                    <button @onclick="@(() => DeleteFile(item.Id))" class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
+                                    <a href="@item.Url" target="_blank" class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</a>
+                                    @* <button class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</button> *@
+                                    <button @onclick="() => DeleteFile(item.PublicId)" class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
                                 </div>
                             </div>
                         }
@@ -91,232 +83,123 @@
                 </div>
 
                 }
-                else if (selectedViewFolderKey != null)
-                {
-                    <p><em>No files found or folder empty.</em></p>
-                }
             </div>
         </div>
-    @* <table class="table mt-3">
-        <thead>
-            <tr>
-                <th>File Name</th>
-                <th>Size</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var items in folderFiles)
-            {
-                <tr>
-                    <td>@items.Name</td>
-                    <td>@FormatSize(items.Size)</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" @onclick="() => DownloadFile(items.Id, items.Name)">⬇️ Download</button>
-                        <button class="btn btn-sm btn-danger" @onclick="@(() => DeleteFile(items.Id))">🗑 Delete</button>
-                        <button class="btn btn-sm btn-secondary" @onclick="@(() => PromptRename(items.Id))">✏ Rename</button>
-                        <a href="@items.WebViewLink" target="_blank" class="btn btn-sm btn-info">🔗 View</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table> *@
-
-
 </div>
 
 @code{
-    private bool isSignIn = false;
-    private string statusMessage = "";
-    private string selectedFolderKey = "";
-    private string selectedViewFolderKey = "";
-    private int uploadProgress = 0;
-    private string audio = "1Hf7_22kJyu3XN37QmzOkakpboHoqd9ud";
-    private string video = "1ttpye5PnAv_57DBBRC99_4kg2hNs4Nll";
-    private string image = "1lxD-uV3AJB4-yO7m5Jf2oIkJhR2gWpbu";
-    private string folder = "1ttpye5PnAv_57DBBRC99_4kg2hNs4Nll";
-    private string fetchStatus = "";
-    private List<DriveFile> folderFiles = new();
+    IBrowserFile selectedFile;
+    List<MediaFile> files = new();
+    bool isLoading = true;
+    string searchItem = string.Empty;
+    int uploadProgress = 0;
+    bool uploading = false;
 
-    [JSInvokable]
-    public Task ReportUploadProgress(int percent)
+    bool CanUpload => selectedFile != null;
+
+    protected override async Task OnInitializedAsync()
     {
-        uploadProgress = percent;
-        StateHasChanged(); // update UI
-        return Task.CompletedTask;
+        await LoadFiles();
     }
 
-    [JSInvokable]
-    public Task OnUploadCompleted()
+    async Task HandleFile(InputFileChangeEventArgs e)
     {
-        statusMessage = "✅ File uploaded successfully!";
-        StateHasChanged(); // Refresh the UI
-        return Task.CompletedTask;
+        selectedFile = e.File;
     }
 
-    private readonly Dictionary<string, string> folderMap = new()
+    async Task UploadFile()
     {
-        { "audio", "1Hf7_22kJyu3XN37QmzOkakpboHoqd9ud" },
-        { "video", "1ttpye5PnAv_57DBBRC99_4kg2hNs4Nll" },
-        { "image", "1lxD-uV3AJB4-yO7m5Jf2oIkJhR2gWpbu" }
-    };
+        if (selectedFile == null) return;
 
-    //Toggle hide/show Mediacontents
-    private void ToggleMedia()
-    {
-        isSignIn = !isSignIn;
-    }
-
-    //Sign in googleDrive
-    private async Task SignIn()
-    {
-        statusMessage = "🔄 Connecting to Google Drive...";
-        try
-        {
-            await _gdrive.signInAsync();
-            ToggleMedia();
-            statusMessage = "✅ Drive access granted.";
-        }
-        catch (Exception ex)
-        {
-            statusMessage = $"❌ Drive login error: {ex.Message}";
-        }
-    }
-
-    private async Task LoadFilesInFolder(ChangeEventArgs e)
-    {
-        selectedViewFolderKey = e.Value?.ToString();
-        folderFiles.Clear();
-
-        if (!string.IsNullOrWhiteSpace(selectedViewFolderKey) && folderMap.TryGetValue(selectedViewFolderKey, out var folderId))
-        {
-            try
-            {
-                folderFiles = await _js.InvokeAsync<List<DriveFile>>("googleDriveFunctions.listFilesInFolder", folderId);
-                if (folderFiles == null )
-                {
-                    await _js.InvokeVoidAsync("alert", "folder is null");
-                }
-            }
-            catch (Exception ex)
-            {
-                statusMessage = "❌ Failed to fetch files: " + ex.Message;
-            }
-        }
-    }
-
-    private void ToggleFolder(string id)
-    {
-        folder = id;
-    }
-
-    private async Task UploadFile(InputFileChangeEventArgs e)
-    {
+        uploading = true;
         uploadProgress = 0;
 
-        var file = e.File;
-        const long maxSize = 300 * 1024 * 1024;
-
-        if (file.Size > maxSize)
+        var content = new MultipartFormDataContent();
+        var stream = selectedFile.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024); // 100 MB max
+        var streamContent = new ProgressableStreamContent(stream, 4096, progress =>
         {
-            statusMessage = $"❌ File too large. Max allowed: 300MB. Selected: {FormatSize(file.Size.ToString())}";
-            return;
-        }
+            uploadProgress = progress;
+            InvokeAsync(StateHasChanged); // updates UI
+        });
 
+        streamContent.Headers.Add("Content-Disposition", $"form-data; name=\"file\"; filename=\"{selectedFile.Name}\"");
+        streamContent.Headers.Add("Content-Type", selectedFile.ContentType);
+        content.Add(streamContent, "file", selectedFile.Name);
 
-        try
-        {
-            var dotNetRef = DotNetObjectReference.Create(this);
-            await _js.InvokeVoidAsync("googleDriveFunctions.uploadFromInput", folder, dotNetRef);
-            statusMessage = $"✅ File uploaded!";
-        }
-        catch (Exception ex)
-        {
-            statusMessage = $"❌ Upload failed: {ex.Message}";
-        }
+        var response = await Http.PostAsync("https://localhost:7114/api/media/upload", content);
+
+        uploading = false;
+        uploadProgress = 0;
+        selectedFile = null;
+
+        if (response.IsSuccessStatusCode)
+            await LoadFiles();
+        else
+            await _js.InvokeVoidAsync("alert", "Upload failed.");
     }
 
-
-    private async Task LoadFilesInFolder2(string key)
+    async Task LoadFiles()
     {
-        folderFiles.Clear();
-        fetchStatus = "Fetching files, please wait...";
-        folder = key;
+        isLoading = true;
+        files = await Http.GetFromJsonAsync<List<MediaFile>>("https://localhost:7114/api/media/list");
+        isLoading = false;
+    }
 
-        try
-        {
-            folderFiles = await _js.InvokeAsync<List<DriveFile>>("googleDriveFunctions.listFilesInFolder", key);
-            fetchStatus = "";
+    async Task DeleteFile(string publicId)
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Confirm delete file?");
 
-        }
-        catch (Exception ex)
-        {
-            statusMessage = "❌ Failed to fetch files: " + ex.Message;
-        }
+        if (!confirm) return;
+        
+        await Http.DeleteAsync($"https://localhost:7114/api/media/delete/{publicId}");
+        await LoadFiles();
     }
 
     
-    private async Task DeleteFile(string fileId)
+
+    public class MediaFile
     {
-        try
-        {
-            await _js.InvokeVoidAsync("googleDriveFunctions.deleteFile", fileId);
-            statusMessage = "✅ File deleted.";
-            await LoadFilesInFolder(new ChangeEventArgs { Value = selectedViewFolderKey });
-        }
-        catch (Exception ex)
-        {
-            statusMessage = "❌ Delete failed: " + ex.Message;
-        }
+        public string Url { get; set; }
+        public string PublicId { get; set; }
+        public long FileSizeBytes { get; set; }
+        public string Format { get; set; }
+        public string CreatedAt { get; set; }
     }
 
-    private async Task PromptRename(string fileId)
+    public class ProgressableStreamContent : HttpContent
     {
-        var newName = await _js.InvokeAsync<string>("prompt", "Enter new file name:");
-        if (!string.IsNullOrWhiteSpace(newName))
+        private const int defaultBufferSize = 4096;
+        private readonly Stream content;
+        private readonly int bufferSize;
+        private readonly Action<int> progress;
+
+        public ProgressableStreamContent(Stream content, int bufferSize, Action<int> progress)
         {
-            try
+            this.content = content;
+            this.bufferSize = bufferSize;
+            this.progress = progress;
+        }
+
+        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+        {
+            var buffer = new byte[bufferSize];
+            var size = content.Length;
+            var uploaded = 0;
+
+            int read;
+            while ((read = await content.ReadAsync(buffer, 0, buffer.Length)) > 0)
             {
-                await _js.InvokeVoidAsync("googleDriveFunctions.renameFile", fileId, newName);
-                statusMessage = "✅ File renamed.";
-                await LoadFilesInFolder(new ChangeEventArgs { Value = selectedViewFolderKey });
-            }
-            catch (Exception ex)
-            {
-                statusMessage = "❌ Rename failed: " + ex.Message;
+                await stream.WriteAsync(buffer, 0, read);
+                uploaded += read;
+                int percent = (int)((uploaded * 100.0) / size);
+                progress(percent);
             }
         }
-    }
 
-    private async Task DownloadFile(string fileId, string fileName)
-    {
-        try
+        protected override bool TryComputeLength(out long length)
         {
-            await _js.InvokeVoidAsync("googleDriveFunctions.downloadFile", fileId, fileName);
-        }
-        catch (Exception ex)
-        {
-            statusMessage = $"❌ Download failed: {ex.Message}";
+            length = content.Length;
+            return true;
         }
     }
-
-    private string FormatSize(string sizeStr)
-    {
-        if (long.TryParse(sizeStr, out long size))
-        {
-            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-            int order = 0;
-            while (size >= 1024 && order < sizes.Length - 1)
-            {
-                order++;
-                size = size / 1024;
-            }
-
-            return $"{size:0.#} {sizes[order]}";
-        }
-
-        return "Unknown";
-    }
-
-
 }

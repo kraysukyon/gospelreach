@@ -1,4 +1,4 @@
-﻿@page "/admin"
+﻿@page "/user-management"
 @layout LandingLayout
 @using GospelReachCapstone.Models
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService Authentication
@@ -23,38 +23,28 @@
             @if (title == "Add User")
             {
                 <div class="input mt-3">
-                    <p>Member</p>
-                    <select value="@memberId" @onchange="OnMemberChange" class="form-select p-2 mt-2">
-                        <option value="">- - Select Member - -</option>
-                        @foreach (var item in memberList)
-                        {
-                            <option value="@item.Id">@item.FirstName @item.LastName</option>
-                        }
-                    </select>
+                    <p>Email</p>
+                    <div class="pword mt-2">
+                        <input @bind="user.Email" type="email" placeholder="Email" />
+                    </div>
                 </div>
             }
             
-
-            <div class="input mt-3">
-                <p>Email</p>
-                <input readonly @bind="user.Email" type="email" class="form-control p-2 mt-2" placeholder="Email" />
-            </div>
 
             @if (title == "Add User")
             {
                 <div class="input mt-3">
                     <p>Password</p>
-                    <div class="pword mt-2 @(isValid ? "" : "valid")">
-                        <input readonly="@(isValid ? false : true )" class="@(isValid ? "" : "valid")" @bind="user.Password" type="@(isPasswordShow ? "text" : "password")" placeholder="Password" />
+                    <div class="pword mt-2">
+                        <input @bind="user.Password" type="@(isPasswordShow ? "text" : "password")" placeholder="Password" />
                         <i @onclick="TogglePassword" class="@(isPasswordShow ? "bi bi-eye-slash" : "bi bi-eye")" style="cursor:pointer"></i>
                     </div>
-                    @* <input readonly="@(isValid ? false : true)" @bind="user.Password" type="password" class="form-control p-2 mt-2" placeholder="Password" /> *@
                 </div>
             }
            
             <div class="input mt-3">
                 <p>Role</p>
-                <select disabled="@(isValid ? false : true)" @bind="role" class="form-select p-2 mt-2">
+                <select @bind="role" class="form-select p-2 mt-2">
                     <option value="Administrator">Administrator</option>
                     <option value="Department Head - Mens">Department Head - Mens</option>
                     <option value="Department Head - Homeleague">Department Head - Homeleague</option>
@@ -67,7 +57,7 @@
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
-                    <button disabled="@(isValid ? false : true)" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddUser">Create</button>
+                    <button  class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddUser">Create</button>
                 </div>
             }
             else
@@ -86,8 +76,8 @@
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
         <div>
-            <h4 class="m-0 fw-bold">Pastor & Admin Management</h4>
-            <p class="m-0 c2" style="font-size: 14px">Manage your church leadership and administrative staff.</p>
+            <h4 class="m-0 fw-bold">User Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Manage users and access controls.</p>
         </div>
 
         <div>
@@ -103,6 +93,7 @@
             <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
             <input @bind="searchedActivity" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name, email, or role..."/>
         </div>
+        
         <p class="mb-4 ms-1 @(isLoad ? "" : "d-none")"><em>@load</em></p>
 
         <div class="table-container">
@@ -117,7 +108,7 @@
                 </thead>
 
                 <tbody>
-                    @foreach (var items in FilteredDTOs)
+                    @foreach (var items in FilteredUsers)
                     {
                         <tr class="table-row">
                             <td class="table-cell c2">@items.Email</td>
@@ -126,7 +117,7 @@
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
                                 <!--Edit-->
                                 <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(()=> ToggleUpdateModal(items.Id))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
+                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(()=> ToggleUpdateModal(items.Id, items.Role))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
                                 </div>
 
                                 <!--Check account status-->
@@ -158,126 +149,54 @@
     private bool isAddUserModalVisible = false;
     private string title = "Add User";
     private User user = new();
-    private Accounts account = new();
-    private List<Accounts> accounts = new();
-    private List<AccountsDTO> accountsDTOs = new();
-    private List<Accounts> accountToBeUpdated = new();
+    private List<User> accounts = new();
     private List<Member> memberList = new();
     private string memberId = string.Empty;
     private string role = "Administrator";
     private string member = string.Empty;
     private string searchedActivity = string.Empty;
-    private IEnumerable<AccountsDTO> FilteredDTOs => accountsDTOs.Where(u => string.IsNullOrWhiteSpace(searchedActivity) || u.Email.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Role.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Status.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase)).ToList();
+    private IEnumerable<User> FilteredUsers => accounts.Where(u => string.IsNullOrWhiteSpace(searchedActivity) || u.Email.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Role.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Status.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase)).ToList();
 
 
     //On startup
     protected override async Task OnInitializedAsync()
     {
-
+        isLoad = !isLoad;
         role = "Administrator";
-        await GetAccounts();
+        await GetUsers();
+        isLoad = !isLoad;
     }
 
-    //Get Accounts
-    private async Task GetAccounts()
+    //Get users List
+    private async Task GetUsers()
     {
-        isLoad = !isLoad;
         try
         {
-            accountsDTOs.Clear();
-            List<Accounts> acc = await _firestore.GetAccountAsync();
-            List<Member> mem = await _firestore.GetMembersAsync();
-
-            var joinedList = acc.Join(mem, a => a.memberId, b => b.Id, (a,b) => new AccountsDTO
-            {
-                Id = a.id,
-                MemberId = a.memberId,
-                Email = b.Email,
-                Role = a.role,
-                Status = a.status,
-
-            }).ToList();
-
-            accountsDTOs = joinedList;
+            accounts = await _firestore.GetAccountAsync();
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            await _js.InvokeVoidAsync("alert", $"Error fetching users: {ex.Message}");
         }
-        isLoad = !isLoad;
     }
 
     //Toggle Password
     private void TogglePassword()
     {
-        if (isValid)
-        {
-            isPasswordShow = !isPasswordShow;
-        }
-        
-    }
-
-    //On member Selection
-    private void OnMemberChange(ChangeEventArgs e)
-    {
-        memberId = e.Value?.ToString();
-
-        if (!string.IsNullOrEmpty(memberId))
-        {
-            user.Email = memberList.FirstOrDefault(u => u.Id == memberId).Email;
-            isValid = true;
-        }
-        else
-        {
-            isValid = false;
-            user.Email = string.Empty;
-        }
+        isPasswordShow = !isPasswordShow;
     }
 
     protected async Task OpenModal()
     {
         ToggleAddUserModal();
-        await GetMemberList();
     }
 
-    private async Task GetMemberList()
-    {
-        try
-        {
-            List<Member> mem = await _firestore.GetMembersAsync();
-            List<Accounts> acc = await _firestore.GetAccountAsync();
-
-            memberList = mem.Where(u => u.Status == "Active" && !string.IsNullOrEmpty(u.Email) && !acc.Any(a => a.memberId == u.Id)).ToList();
-        }
-        catch (Exception ex)
-        {
-            await _js.InvokeVoidAsync("alert", ex.Message);
-        }
-    }
-
-    private async Task ToggleUpdateModal(string docId)
+    private async Task ToggleUpdateModal(string docId, string roles)
     {
         isAddUserModalVisible = !isAddUserModalVisible;
+        role = roles;
+        memberId = docId;
         title = "Edit User";
-        var accountToUpdate = accountsDTOs.FirstOrDefault(u => u.Id == docId);
-        if (accountToUpdate != null)
-        {
-            user = new User
-                {
-                    Id = accountToUpdate.Id,
-                    MemberId = accountToUpdate.MemberId,
-                    Role = accountToUpdate.Role,
-                    Status = accountToUpdate.Status,
-                    Email = accountToUpdate.Email
-                };
-
-            role = user.Role;
-        }
-        else
-        {
-            await _js.InvokeVoidAsync("alert", "No such document");
-        }
-
     }
 
 
@@ -287,25 +206,22 @@
         title = "Add User";
         memberId = string.Empty;
         isValid = false;
-        user.Email = string.Empty;
         role = "Administrator";
-        user = new();
     }
 
     private async Task AddUser()
     {
         user.Role = role;
-        user.MemberId = memberId;
         var result = await Authentication.RegisterAsync(user.Email, user.Password, user);
 
         if (result.Success)
         {
+            await GetUsers();
             await _js.InvokeVoidAsync("alert", "Account Successfully Created");
             user = new();
             memberId = string.Empty;
             accounts = new();
             role = "Administrator";
-            await GetAccounts();
             ToggleAddUserModal();
         }
         else
@@ -318,13 +234,13 @@
     {
         try
         {
-            await _firestore.UpdateAccountAsync(user.Id, role);
+            await _firestore.UpdateAccountAsync(memberId, role);
             isAddUserModalVisible = false; // Hide the modal after update
             user = new();
             memberId = string.Empty;
             accounts = new();
             role = "Administrator";
-            await GetAccounts();
+            await GetUsers();
             await _js.InvokeVoidAsync("alert", "User updated successfully");
         }
         catch (Exception ex)
@@ -339,8 +255,8 @@
         try
         {
             await _firestore.DisableAccountAsync(docId);
+            await GetUsers();
             await _js.InvokeVoidAsync("alert", "User disabled successfully");
-            await GetAccounts();
         }
         catch (Exception ex)
         {
@@ -355,8 +271,8 @@
         try
         {
             await _firestore.EnableAccountAsync(docId);
+            await GetUsers();
             await _js.InvokeVoidAsync("alert", "User enabled successfully");
-            await GetAccounts();
         }
         catch (Exception ex)
         {

@@ -27,31 +27,31 @@ namespace GospelReachCapstone.Services
             var result = await _jsRuntime.InvokeAsync<LoginResult>("firebaseAuth.login", email, password);
             if (result.Success)
             {
-                List<Accounts> acc = await _firestore.GetAccountAsync();
-                List<Member> mem = await _firestore.GetMembersAsync();
+                //List<Accounts> acc = await _firestore.GetAccountAsync();
+                //List<Member> mem = await _firestore.GetMembersAsync();
 
-                var joinedList = acc.Join(mem, a => a.memberId, b => b.Id, (a,b) => new AccountsDTO
-                {
-                    Id = a.id,
-                    MemberId = a.memberId,
-                    FirstName = b.FirstName,
-                    Role = a.role,
-                    Status = a.status,
-                    Email = b.Email,
-                }).ToList();
+                //var joinedList = acc.Join(mem, a => a.memberId, b => b.Id, (a,b) => new AccountsDTO
+                //{
+                //    Id = a.id,
+                //    MemberId = a.memberId,
+                //    FirstName = b.FirstName,
+                //    Role = a.role,
+                //    Status = a.status,
+                //    Email = b.Email,
+                //}).ToList();
 
-                var user = joinedList.FirstOrDefault(a => a.Email == email);
+                //var user = joinedList.FirstOrDefault(a => a.Email == email);
 
-                if (user.Status != "Active")
-                {
-                    return (false,"Login failed: Your account is disabled, Please contact administrator.");
-                }
+                //if (user.Status != "Active")
+                //{
+                //    return (false,"Login failed: Your account is disabled, Please contact administrator.");
+                //}
 
-                _authState.IsLoggedIn = true;
-                _authState.UserId = result.Uid;
-                _authState.Email = email;
-                _authState.DisplayName = user?.FirstName ?? "User";
-                _authState.Role = user?.Role ?? "User";
+                //_authState.IsLoggedIn = true;
+                //_authState.UserId = result.Uid;
+                //_authState.Email = email;
+                //_authState.DisplayName = user?.FirstName ?? "User";
+                //_authState.Role = user?.Role ?? "User";
                 return (true, $"Login successful");
             }
             return (false, result.Error ?? "Login failed");

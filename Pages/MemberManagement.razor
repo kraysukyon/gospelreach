@@ -10,6 +10,58 @@
 
 
 <div class="page">
+    <!--ViewModal-->
+    <div @onclick="ToggleView" class="viewModal @(isToggleView ? "show" : "")">
+        <div @onclick:stopPropagation class="viewMember">
+            <h4 class="fw-bold">Member Details</h4>
+
+            <div class="input mt-3">
+                <p>First Name</p>
+                <p>@member.FirstName</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Middle Name</p>
+                <p>@member.MiddleName</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Last Name</p>
+                <p>@member.LastName</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Email</p>
+                <p>@member.Email</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Contact</p>
+                <p>@member.Contact</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Birthdate</p>
+                <p>@member.Birthdate</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Date of Soldiership</p>
+                <p>@member.DateOfSoldiership</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Classification</p>
+                <p>@member.Classification</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Status</p>
+                <p>@member.Status</p>
+            </div>
+        </div>
+    </div>
+
     <!--Add Member Model-->
     <div @onclick="ToggleModal" class="addMemberModal @(isAddModalVisible ? "show" : "")">
         <div class="addMember" @onclick:stopPropagation>
@@ -18,7 +70,7 @@
             </h4>
             <p style="font-size:14px;">Create and Manage Members.</p>
             
-            <div class="input mt-3">
+            <div class="inputs mt-3">
                 <div class="d-flex align-items-center gap-2">
                     <p>First Name</p>
                     <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p>
@@ -27,7 +79,7 @@
                 <input spellcheck="false" @bind="member.FirstName" @onblur="(() => CheckIfValid(nameof(member.FirstName)))" type="text" class="form-control p-2 mt-2 @(validFirstname ? "" : "border-danger")" placeholder="First Name" />
             </div>
 
-            <div class="input mt-3">
+            <div class="inputs mt-3">
                 <div class="d-flex align-items-center gap-1">
                     <p>Middle Name</p>
                     <p style="font-size: 12px; padding: 0; margin: 0; color:gray;">(optional)</p>
@@ -35,7 +87,7 @@
                 <input spellcheck="false" @bind="member.MiddleName" type="text" class="form-control p-2 mt-2" placeholder="Middle Name" />
             </div>
 
-            <div class="input mt-3">
+            <div class="inputs mt-3">
                 <div class="d-flex align-items-center gap-2">
                     <p>Last Name</p>
                     <p class="text-danger fw-bold @(validLastName ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p>
@@ -43,7 +95,7 @@
                 <input spellcheck="false" @bind="member.LastName" @onblur="(() => CheckIfValid(nameof(member.LastName)))" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
             </div>
 
-            <div class="input mt-3">
+            <div class="inputs mt-3">
                 <div class="d-flex align-items-center gap-2">
                     <p>Email</p>
                     <p class="text-danger fw-bold @(validEmail ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">@emailError</p>
@@ -51,7 +103,7 @@
                 <input spellcheck="false" @bind="member.Email" @onblur="(() => CheckIfValidEmail())" type="text" class="form-control p-2 mt-2" placeholder="Email" />
             </div>
 
-            <div class="input mt-3">
+            <div class="inputs mt-3">
                 <div class="d-flex align-items-center gap-1">
                     <p>Contact</p>
                     <p style="font-size: 12px; padding: 0; margin: 0; color:gray;">(optional)</p>
@@ -60,19 +112,19 @@
             </div>
 
             <div class="userFields mt-3">
-                <div class="input">
+                <div class="inputs">
                     <p>Birthdate</p>
                     <input @bind="dateOfBirth" type="date" class="form-control p-2 mt-2" />
                 </div>
 
-                <div class="input">
+                <div class="inputs">
                     <p>Date Of Soldiership</p>
                     <input @bind="dateOfSoldiership" type="date" class="form-control p-2 mt-2" />
                 </div>
             </div>
 
             <div class="userFields mt-3">
-                <div class="input">
+                <div class="inputs">
                     <p>Classification</p>
                     <select @bind="member.Classification" class="form-select p-2 mt-2">
                         <option value="Soldier">Soldier</option>
@@ -81,7 +133,7 @@
                     </select>
                 </div>
 
-                <div class="input">
+                <div class="inputs">
                     <p>Status</p>
                     <select @bind="member.Status" class="form-select p-2 mt-2">
                         <option value="Active">Active</option>
@@ -102,7 +154,7 @@
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
-                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" >Update</button>
+                    <button @onclick="UpdateMember" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" >Update</button>
                 </div>
             }
 
@@ -136,13 +188,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th class="thead">First Name</th>
-                        <th class="thead">Middle Name</th>
-                        <th class="thead">Last Name</th>
-                        <th class="thead">Email</th>
-                        <th class="thead">Contact</th>
-                        <th class="thead">Birthdate</th>
-                        <th class="thead">Date of Soldiership</th>
+                        <th class="thead">Name</th>
                         <th class="thead">Classification</th>
                         <th class="thead">Status</th>
                         <th class="thead">Actions</th>
@@ -153,24 +199,22 @@
                     @foreach (var items in FilteredMember)
                     {
                         <tr class="table-row">
-                            <td class="table-cell c2">@items.FirstName</td>
-                            <td class="table-cell c2">@items.MiddleName</td>
-                            <td class="table-cell c2">@items.LastName</td>
-                            <td class="table-cell c2">@items.Email</td>
-                            <td class="table-cell c2">@items.Contact</td>
-                            <td class="table-cell c2">@items.Birthdate</td>
-                            <td class="table-cell c2">@items.DateOfSoldiership</td>
+                            <td class="table-cell c2">@(items.MiddleName != null ? $"{items.LastName}, {items.FirstName} {items.MiddleName}" : $"{items.LastName}, {items.FirstName}")</td>
                             <td class="table-cell c2">@items.Classification</td>
                             <td class="table-cell c2">@items.Status</td>
 
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
+                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(() => ToggleViewModal(items.Id))"><span><i class="bi bi-pencil-square"></i></span> Details</button>
+                                </div>
                                 <!--Edit-->
                                 <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</a>
+                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(() => ToggleUpdateModal(items.Id))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
+                                    @* <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</a> *@
                                 </div>
 
                                 <!--Delete-->
-                                <button class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                <button @onclick="(() => DeleteMember(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
                             </td>
                         </tr>
                     }
@@ -202,6 +246,8 @@
 
 @code{
     private bool isValid = false;
+    private bool isToggleView = false;
+    private string memberId = string.Empty;
     private int totalMembers = 0;
     private int activeMembers = 0;
     private int newMembers = 0;
@@ -261,6 +307,107 @@
             await Firestore.AddMemberAsync(member);
             await getMembers();
             ToggleModal();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private void ToggleView()
+    {
+        isToggleView = !isToggleView;
+    }
+
+    //Toggle Update Modal
+
+    private void ToggleViewModal(string Id)
+    {
+        isToggleView = !isToggleView;
+
+        var memberView = membersList.FirstOrDefault(u => u.Id == Id);
+
+        if (memberView != null)
+        {
+            member = new Member
+                {
+                    Id = memberView.Id,
+                    FirstName = memberView.FirstName,
+                    MiddleName = memberView.MiddleName,
+                    LastName = memberView.LastName,
+                    Email = memberView.Email,
+                    Contact = memberView.Contact,
+                    Birthdate = memberView.Birthdate,
+                    DateOfSoldiership = memberView.DateOfSoldiership,
+                    Classification = memberView.Classification,
+                    Status = memberView.Status
+                };
+        }
+
+    }
+
+    private async Task ToggleUpdateModal(string docId)
+    {
+        isAddModalVisible = !isAddModalVisible;
+        title = "Update Member";
+        var accountToUpdate = membersList.FirstOrDefault(u => u.Id == docId);
+        if (accountToUpdate != null)
+        {
+            member = new Member
+            {
+                Id = accountToUpdate.Id,
+                FirstName = accountToUpdate.FirstName,
+                MiddleName = accountToUpdate.MiddleName,
+                LastName = accountToUpdate.LastName,
+                Email = accountToUpdate.Email,
+                Contact = accountToUpdate.Contact,
+                Birthdate = accountToUpdate.Birthdate,
+                DateOfSoldiership = accountToUpdate.DateOfSoldiership,
+                Classification = accountToUpdate.Classification,
+                Status = accountToUpdate.Status
+            };
+
+            dateOfBirth = DateTime.Parse(member.Birthdate);
+            dateOfSoldiership = DateTime.Parse(member.DateOfSoldiership);
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "No such document");
+        }
+
+    }
+
+    private async Task UpdateMember()
+    {
+        try
+        {
+            member.Birthdate = dateOfBirth.ToString("MMM dd, yyyy");
+            member.DateOfSoldiership = dateOfSoldiership.ToString("MMM dd, yyyy");
+            await Firestore.updateMemberAsync(member.Id, member);
+            ToggleModal();
+            await getMembers();
+            await _js.InvokeVoidAsync("alert", "Member updated successfully.");
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private async Task DeleteMember(string Id)
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this member?");
+
+        if (!confirm)
+        {
+            return;
+        }
+
+        try
+        {
+            await Firestore.deleteMemberAsync(Id);
+            await getMembers();
+            await _js.InvokeVoidAsync("alert", "Member deleted successfully.");
         }
         catch (Exception ex)
         {
