@@ -21,6 +21,10 @@ a {
     color: rgb(75 85 99);
 }
 
+.btns{
+    width:150px;
+}
+
 .weblink{
     text-decoration: none;
     cursor: pointer;

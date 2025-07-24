@@ -17,21 +17,22 @@
         </div>
 
         <div>
-            <InputFile OnChange="HandleFile" />
+            <InputFile OnChange="HandleFile" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt" />
             <button class="btn btn-primary text-white p-2" @onclick="UploadFile" disabled="@(!CanUpload)">Upload</button>
         </div>
 
-        @if (uploading)
-        {
-            <div class="progress mt-2">
-                <div class="progress-bar" role="progressbar" style="width: @(uploadProgress)%;" aria-valuenow="@uploadProgress" aria-valuemin="0" aria-valuemax="100">
-                    @uploadProgress%
-                </div>
-            </div>
-        }
+        
     </div>
 
-
+    @if (uploading)
+    {
+        <p class="mb-4 ms-1 @(uploading ? "" : "d-none")"><em>Uploading..</em></p>
+        <div class="progress mt-2">
+            <div class="progress-bar" role="progressbar" style="width: @(uploadProgress)%;" aria-valuenow="@uploadProgress" aria-valuemin="0" aria-valuemax="100">
+                @uploadProgress%
+            </div>
+        </div>
+    }
         <!--Table Section-->
         <div class="card w-100 mb-3 cards">
             <div class="container">
@@ -42,38 +43,44 @@
                         <input @bind="searchItem" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search files..." />
                     </div>
 
-                    <div class="flex-shrink-0 d-flex flex-column flex-md-row gap-2">
-                        <button class="btn btn-primary p-2 px-3 w-100 text-nowrap text-white">All</button>
-                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-film"></i> Videos</button>
-                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-music-note-beamed"></i> Audio</button>
-                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-file-earmark-text"></i> Documents</button>
-                        <button class="btn btn-light border border-1 p-2 w-100 text-nowrap"><i class="bi bi-image"></i> Images</button>
-                    </div>
+                    <select @onchange="Filter" class="form-select btns text-center">
+                    <option value="All">All</option>
+                    <option value="Videos">Videos</option>
+                    <option value="Audio">Audio</option>
+                    <option value="Images">Images</option>
+                    <option value="Documents">Documents</option>
+                    </select>
+
+                    @* <div class="flex-s hrink-0 d-flex flex-column flex-md-row gap-2">
+                        <button @onclick="@(() => SetFilter("All"))" class="btn @(selectedFilter == "All" ? "btn-primary text-white" : "btn-light text-black") btns p-2 border border-1 text-nowrap">All</button>
+                    <button @onclick="@(() => SetFilter("Videos"))" class="btn @(selectedFilter == "Videos" ? "btn-primary text-white" : "btn-light text-black") btns border border-1 p-2 text-nowrap"><i class="bi bi-film"></i> Videos</button>
+                    <button @onclick="@(() => SetFilter("Audio"))" class="btn @(selectedFilter == "Audio" ? "btn-primary text-white" : "btn-light text-black") btns border border-1 p-2 text-nowrap"><i class="bi bi-music-note-beamed"></i> Audio</button>
+                    <button @onclick="@(() => SetFilter("Documents"))" class="btn @(selectedFilter == "Documents" ? "btn-primary text-white" : "btn-light text-black") btns border border-1 p-2 text-nowrap"><i class="bi bi-file-earmark-text"></i> Documents</button>
+                    <button @onclick="@(() => SetFilter("Images"))" class="btn @(selectedFilter == "Images" ? "btn-primary text-white" : "btn-light text-black") btns border border-1 p-2 text-nowrap"><i class="bi bi-image"></i> Images</button>
+                    </div> *@
                 </div>
-            @if (files?.Any() == true)
-            {
             <!--File Section-->
                 <div class="wrapper">
                     <div class="files">
-                        @foreach (var item in files)
+                        @foreach (var item in FilteredFiles)
                         {
                             <div class="card p-4 cards d-flex flex-column align-items-start justify-content-center">
                                 <div class="d-flex gap-3">
                                     <div class="flex-shrink-0">
                                         <div class="p-2" style="background-color: lavender; border-radius: 6px;">
-                                            <i class="bi bi-film text-primary"></i>
+                                            <i class="bi bi-film text-primary d-none"></i>
                                         </div>
                                     </div>
 
                                     <div class="flex-grow-1">
-                                        <a href="@item.Url" target="_blank" class="weblink">@item.PublicId</a>
+                                        <a href="@item.Url" target="_blank" class="weblink">@item.PublicId.Split("/").Last()</a>
                                         <p class="c2" style="font-size:14px;">@(item.FileSizeBytes/1024)kb Uploaded on @item.CreatedAt</p>
                                         <p class="c2" style="font-size:14px;">By John Smith</p>
                                     </div>
                                 </div>
 
                                 <div class="d-flex mt-3 gap-2 align-self-end">
-                                    <a href="@item.Url" target="_blank" class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</a>
+                                <a href="@GetDownloadUrl(item)" download class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</a>
                                     @* <button class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</button> *@
                                     <button @onclick="() => DeleteFile(item.PublicId)" class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
                                 </div>
@@ -81,8 +88,6 @@
                         }
                     </div>
                 </div>
-
-                }
             </div>
         </div>
 </div>
@@ -90,6 +95,8 @@
 @code{
     IBrowserFile selectedFile;
     List<MediaFile> files = new();
+    string selectedFilter = "All"; // Default to all
+    IEnumerable<MediaFile> FilteredFiles =>files.Where(file => (string.IsNullOrWhiteSpace(searchItem) || file.PublicId.Contains(searchItem, StringComparison.OrdinalIgnoreCase)) && (selectedFilter == "All" || MatchesFilter(file))).ToList();
     bool isLoading = true;
     string searchItem = string.Empty;
     int uploadProgress = 0;
@@ -107,15 +114,33 @@
         selectedFile = e.File;
     }
 
+    string GetDownloadUrl(MediaFile item)
+    {
+        var url = item.Url;
+
+        // Insert "fl_attachment" right after "upload/" in the Cloudinary URL
+        var insertIndex = url.IndexOf("/upload/") + "/upload/".Length;
+
+        return url.Insert(insertIndex, "fl_attachment/");
+    }
+
     async Task UploadFile()
     {
         if (selectedFile == null) return;
+
+        const long MaxFileSize = 100 * 1024 * 1024; // 100 MB
+
+        if (selectedFile.Size > MaxFileSize)
+        {
+            await _js.InvokeVoidAsync("alert", "File is too large. Maximum size is 100MB.");
+            return;
+        }
 
         uploading = true;
         uploadProgress = 0;
 
         var content = new MultipartFormDataContent();
-        var stream = selectedFile.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024); // 100 MB max
+        var stream = selectedFile.OpenReadStream(maxAllowedSize: MaxFileSize); // 100 MB max
         var streamContent = new ProgressableStreamContent(stream, 4096, progress =>
         {
             uploadProgress = progress;
@@ -133,9 +158,14 @@
         selectedFile = null;
 
         if (response.IsSuccessStatusCode)
+        {
             await LoadFiles();
+            StateHasChanged();      // 👈 force UI refresh
+        }
         else
             await _js.InvokeVoidAsync("alert", "Upload failed.");
+
+        await LoadFiles();
     }
 
     async Task LoadFiles()
@@ -150,9 +180,33 @@
         bool confirm = await _js.InvokeAsync<bool>("confirm", "Confirm delete file?");
 
         if (!confirm) return;
-        
-        await Http.DeleteAsync($"https://localhost:7114/api/media/delete/{publicId}");
+
+        await Http.DeleteAsync($"https://localhost:7114/api/media/delete?publicId={Uri.EscapeDataString(publicId)}");
         await LoadFiles();
+    }
+
+    bool MatchesFilter(MediaFile file)
+    {
+        var ext = Path.GetExtension(file.PublicId).ToLower();
+
+        return selectedFilter switch
+        {
+            "Videos" => new[] { ".mp4", ".avi", ".mov", ".wmv", ".mkv" }.Contains(ext),
+            "Audio" => new[] { ".mp3", ".wav", ".aac", ".flac" }.Contains(ext),
+            "Documents" => new[] { ".pdf", ".doc", ".docx", ".txt", ".pptx", ".xlsx" }.Contains(ext),
+            "Images" => new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" }.Contains(ext),
+            _ => true
+        };
+    }
+
+    void SetFilter(string filter)
+    {
+        selectedFilter = filter;
+    }
+
+    void Filter(ChangeEventArgs e)
+    {
+        selectedFilter = e.Value.ToString();
     }
 
     
@@ -201,5 +255,7 @@
             length = content.Length;
             return true;
         }
+
+        
     }
 }
