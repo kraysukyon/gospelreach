@@ -1,16 +1,19 @@
 ﻿//const auth = firebase.auth();
 
 window.firebaseAuth = {
-    register: async function (email, password, account) {
+    register: async function (account) {
         try {
             const auth = firebase.auth();
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const userCredential = await auth.createUserWithEmailAndPassword(account.email, account.password);
             const uid = userCredential.user.uid;
 
             const db = firebase.firestore();
             //await db.collection("Accounts").add(user);
             await db.collection("Users").doc(uid).set({
                 email: account.email,
+                firstName: account.firstName,
+                middleName: account.middleName,
+                lastName: account.lastName,
                 role: account.role,
                 status: account.status,
             });
@@ -21,6 +24,15 @@ window.firebaseAuth = {
         }
     },
 
+    resetPassword: async function (email) {
+        try {
+            const auth = firebase.auth();
+            await auth.sendPasswordResetEmail(email);
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
     
     login: async function (email,password) {
         try {

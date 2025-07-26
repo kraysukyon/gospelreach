@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "GospelReachCapstone",
   "resources": {
-    "hash": "sha256-7e2/iIhJt66VVRXKemL7z+f5HWGWwztqPc0TBhvgzn8=",
+    "hash": "sha256-XMJg4uDBTC1g1ffny2uq5sDC8yN6DwvOWdXoVP0a2ys=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-3HZ52x+8yne6v3PFF0PCuJ0GMsv8fAp3sXAOwLYGZQk="
     },
@@ -40,16 +40,16 @@
       "System.Linq.wasm": "sha256-iNmluK0JI6riKbwVoLACUNEXh1Y0Ae2liIPZjyuqtf0=",
       "System.Memory.wasm": "sha256-Smo3tsxsgoJiuuu5yoCtiOxBtRPvf01R+rNeztX9EaM=",
       "System.Net.Http.Json.wasm": "sha256-CA+jQXt3f/Nnm88vBgjmNvxpDmZqLv0QiZJR4Guf8As=",
-      "System.Net.Http.wasm": "sha256-3oaRE3i0iwE+j3tPTSMHIcu8nvaSMsyjSd0TEz3Y1oY=",
+      "System.Net.Http.wasm": "sha256-mLwiJ9wylBQGzTMSlFP6wyZJ/MeX+CkAbkJe7AWXeFg=",
       "System.Net.Primitives.wasm": "sha256-1yDn4Wkhv58WWvqAJiVwlMUUJN1R8rmry5sO2KUfp5A=",
       "System.Private.Uri.wasm": "sha256-K06Cj37Ojm6PVcGIgntn0FKk1hIdtD5HMgUUUNDLktg=",
       "System.Runtime.InteropServices.JavaScript.wasm": "sha256-HZEQL1LcemmJPzxGnFTAEaGUqRe8zwZKKJdQLLjZWhA=",
-      "System.Runtime.wasm": "sha256-EeeTH8Oiiv9o8p/ct2AWFvHtWhSNzfCHgi+WWqyxlMo=",
+      "System.Runtime.wasm": "sha256-7Kk13DKxnV6xfhnmQ4FP6pkXJpv+u03B2+ksfPel+qQ=",
       "System.Text.Encodings.Web.wasm": "sha256-TyCrgbuqNXEwZqFx+EGYl/MMzRwCdmCy0gpTCOLv/JQ=",
       "System.Text.Json.wasm": "sha256-J8LvWJKBMC+eHiLxdyEej0oAkZ4uCrB9n/5pdCnDBDo=",
       "System.Text.RegularExpressions.wasm": "sha256-obX41RR6qrEJdPKtDoJpwBjpYdwvmFFJ/UTv2OAUZrs=",
       "System.Private.CoreLib.wasm": "sha256-KUPFuutMFeFM19Oyr1MBZ7qiw8znYO2/WbQWCVKpfyU=",
-      "GospelReachCapstone.wasm": "sha256-AaZBoCpDFBzUIz7Iv+8Gb8IuuR5v3Beyg5icGFSGMv4="
+      "GospelReachCapstone.wasm": "sha256-AWW0XSGAYzyjDTMa7ckFdCEGDPh1sKCGJTREXopq0xs="
     }
   },
   "cacheBootResources": true,

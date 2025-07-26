@@ -17,7 +17,7 @@
         </div>
 
         <div>
-            <InputFile OnChange="HandleFile" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt" />
+            <InputFile OnChange="HandleFile" accept="image/*,video/*,audio/*" />
             <button class="btn btn-primary text-white p-2" @onclick="UploadFile" disabled="@(!CanUpload)">Upload</button>
         </div>
 
@@ -48,7 +48,7 @@
                     <option value="Videos">Videos</option>
                     <option value="Audio">Audio</option>
                     <option value="Images">Images</option>
-                    <option value="Documents">Documents</option>
+                    @* <option value="Documents">Documents</option> *@
                     </select>
 
                     @* <div class="flex-s hrink-0 d-flex flex-column flex-md-row gap-2">
@@ -81,8 +81,8 @@
 
                                 <div class="d-flex mt-3 gap-2 align-self-end">
                                 <a href="@GetDownloadUrl(item)" download class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</a>
-                                    @* <button class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</button> *@
-                                    <button @onclick="() => DeleteFile(item.PublicId)" class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
+@*                                 <button @onclick="() => DownloadFile(item.PublicId)" class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</button>
+ *@                                    <button @onclick="() => DeleteFiles(item.PublicId)" class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
                                 </div>
                             </div>
                         }
@@ -175,6 +175,24 @@
         isLoading = false;
     }
 
+    private async Task DeleteFiles(string publicId)
+    {
+        var confirmed = await _js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete '{publicId}'?");
+        if (!confirmed)
+            return;
+
+        var response = await Http.DeleteAsync($"https://localhost:7114/api/media/delete?publicId={Uri.EscapeDataString(publicId)}");
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadFiles();
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            await _js.InvokeVoidAsync("alert", $"Failed to delete file: {error}");
+        }
+    }
+
     async Task DeleteFile(string publicId)
     {
         bool confirm = await _js.InvokeAsync<bool>("confirm", "Confirm delete file?");
@@ -185,6 +203,12 @@
         await LoadFiles();
     }
 
+    private async Task DownloadFile(string publicId)
+    {
+        var downloadUrl = $"https://localhost:7114/api/media/download/{publicId}";
+        await _js.InvokeVoidAsync("open", downloadUrl, "_blank");
+    }
+
     bool MatchesFilter(MediaFile file)
     {
         var ext = Path.GetExtension(file.PublicId).ToLower();
@@ -193,7 +217,7 @@
         {
             "Videos" => new[] { ".mp4", ".avi", ".mov", ".wmv", ".mkv" }.Contains(ext),
             "Audio" => new[] { ".mp3", ".wav", ".aac", ".flac" }.Contains(ext),
-            "Documents" => new[] { ".pdf", ".doc", ".docx", ".txt", ".pptx", ".xlsx" }.Contains(ext),
+            // "Documents" => new[] { ".pdf", ".doc", ".docx", ".txt", ".pptx", ".xlsx" }.Contains(ext),
             "Images" => new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" }.Contains(ext),
             _ => true
         };
@@ -211,14 +235,14 @@
 
     
 
-    public class MediaFile
-    {
-        public string Url { get; set; }
-        public string PublicId { get; set; }
-        public long FileSizeBytes { get; set; }
-        public string Format { get; set; }
-        public string CreatedAt { get; set; }
-    }
+    // public class MediaFile
+    // {
+    //     public string Url { get; set; }
+    //     public string PublicId { get; set; }
+    //     public long FileSizeBytes { get; set; }
+    //     public string Format { get; set; }
+    //     public string CreatedAt { get; set; }
+    // }
 
     public class ProgressableStreamContent : HttpContent
     {

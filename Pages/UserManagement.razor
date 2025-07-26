@@ -29,9 +29,30 @@
                     </div>
                 </div>
             }
+
+            <div class="input mt-3">
+                <p>First Name</p>
+                <div class="pword mt-2">
+                    <input @bind="user.FirstName" type="text" placeholder="First Name" />
+                </div>
+            </div>
+
+            <div class="input mt-3">
+                <p>Middle Name</p>
+                <div class="pword mt-2">
+                    <input @bind="user.MiddleName" type="text" placeholder="Middle Name" />
+                </div>
+            </div>
+
+            <div class="input mt-3">
+                <p>Last Name</p>
+                <div class="pword mt-2">
+                    <input @bind="user.LastName" type="text" placeholder="Last Name" />
+                </div>
+            </div>
             
 
-            @if (title == "Add User")
+            @* @if (title == "Add User")
             {
                 <div class="input mt-3">
                     <p>Password</p>
@@ -40,7 +61,7 @@
                         <i @onclick="TogglePassword" class="@(isPasswordShow ? "bi bi-eye-slash" : "bi bi-eye")" style="cursor:pointer"></i>
                     </div>
                 </div>
-            }
+            } *@
            
             <div class="input mt-3">
                 <p>Role</p>
@@ -125,6 +146,8 @@
                                 {
                                     <!--Disable-->
                                     <button @onclick="@(() => DisableUser(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Disable</button>
+                                    <!--Reset-->
+                                    <button @onclick="@(() => ResetPassword(items.Email))" class="btn btn-warning text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Reset</button>
                                 }
                                 else
                                 {
@@ -212,21 +235,59 @@
     private async Task AddUser()
     {
         user.Role = role;
-        var result = await Authentication.RegisterAsync(user.Email, user.Password, user);
+        user.Password = Authentication.GeneratePassword();
+        var result = await Authentication.RegisterAsync(user);
 
         if (result.Success)
         {
-            await GetUsers();
-            await _js.InvokeVoidAsync("alert", "Account Successfully Created");
+
+            await OnResetPassword(user.Email); // Send reset password email
+            await _js.InvokeVoidAsync("alert", "Account Successfully Created.\nA Password reset link has been sent to the email.");
             user = new();
             memberId = string.Empty;
             accounts = new();
             role = "Administrator";
+            await GetUsers();
             ToggleAddUserModal();
         }
         else
         {
             await _js.InvokeVoidAsync("alert", result.Message);
+        }
+    }
+
+    private async Task OnResetPassword(string email)
+    {
+        try
+        {
+            var (success, message) = await Authentication.ResetPasswordAsync(email);
+            if (!success)
+            {
+                await _js.InvokeVoidAsync("alert", $"Error sending password reset email: {message}");
+            }
+        }
+        catch(Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private async Task ResetPassword(string email)
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to reset password?");
+
+        if (!confirm) return;
+        try
+        {
+            var (success, message) = await Authentication.ResetPasswordAsync(email);
+            if (!success)
+            {
+                await _js.InvokeVoidAsync("alert", $"Error sending password reset email: {message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
         }
     }
 
