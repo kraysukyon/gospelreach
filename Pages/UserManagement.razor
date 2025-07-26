@@ -144,10 +144,11 @@
                                 <!--Check account status-->
                                 @if (items.Status != "Disabled")
                                 {
+                                    <!--Reset-->
+                                    <button @onclick="@(() => ResetPassword(items.Email))" class="btn btn-warning" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash"></i></span>Reset</button>
+
                                     <!--Disable-->
                                     <button @onclick="@(() => DisableUser(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Disable</button>
-                                    <!--Reset-->
-                                    <button @onclick="@(() => ResetPassword(items.Email))" class="btn btn-warning text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Reset</button>
                                 }
                                 else
                                 {
@@ -283,6 +284,10 @@
             if (!success)
             {
                 await _js.InvokeVoidAsync("alert", $"Error sending password reset email: {message}");
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Successfully sent reset password link");
             }
         }
         catch (Exception ex)
