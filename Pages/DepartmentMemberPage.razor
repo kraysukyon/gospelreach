@@ -1,0 +1,261 @@
+﻿@page "/departmentMember"
+@layout LandingLayout
+@using GospelReachCapstone.Models
+@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.AppState _appState
+
+<PageTitle>Department Heads</PageTitle>
+
+
+<div class="page">
+    <!--Modal for Adding Department Head-->
+    <div @onclick="ToggleAddDepartment" class="addUserModal @(isAddDepartmentModalVisible ? "show" : "")">
+        <div class="addUser" @onclick:stopPropagation>
+            <h4 class="fw-bold">
+                @title
+            </h4>
+            <p style="font-size:14px;">Add and Manage Members</p>
+
+            <div class="input mt-3">
+                <p>First Name</p>
+                <div class="pword mt-2">
+                    <input @bind="departmentMember.FirstName" type="text" placeholder="First Name" />
+                </div>
+            </div>
+
+            <div class="input mt-3">
+                <p>Middle Name</p>
+                <div class="pword mt-2">
+                    <input @bind="departmentMember.MiddleName" type="text" placeholder="Middle Name" />
+                </div>
+            </div>
+
+            <div class="input mt-3">
+                <p>Last Name</p>
+                <div class="pword mt-2">
+                    <input @bind="departmentMember.LastName" type="text" placeholder="Last Name" />
+                </div>
+            </div>
+
+            <div class="input mt-3">
+                <p>Email</p>
+                <div class="pword mt-2">
+                    <input @bind="departmentMember.Email" type="email" placeholder="Email" />
+                </div>
+            </div>
+
+            <div class="input mt-3">
+                <p>Contact</p>
+                <div class="pword mt-2">
+                    <input @bind="departmentMember.Contact" type="text" placeholder="Phone number" />
+                </div>
+            </div>
+
+
+
+            <div class="input mt-3">
+                <p>Birthdate</p>
+                <div class="pword mt-2">
+                    <input @bind="departmentMember.Birthdate" type="date"/>
+                </div>
+            </div>
+
+            @* <div class="input mt-3">
+                <p>Department Head</p>
+                <div class="pword mt-2">
+                    <input @bind="department.DepartmentHead" type="text" placeholder="Department Head" />
+                </div>
+            </div> *@
+
+
+            @if (title == "Add Member")
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddDepartment">Cancel</button>
+                    <button disabled="@isValidating" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddDepartment">Save</button>
+                </div>
+            }
+            else
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddDepartment">Cancel</button>
+                    <button disabled="@isValidating" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="UpdateDepartment">Update</button>
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <div class="d-flex flex-row gap-2">
+                <h4 class="m-0"><a href="departments" class="link">Department</a> ></h4>
+                <h4 class="m-0 fw-bold">@DepName</h4>
+            </div>
+            
+            <p class="m-0 c2" style="font-size: 14px">Manage department leaders and their responsibilities.</p>
+        </div>
+
+        <div>
+            <button class="btn btn-primary p-2 text-white link" @onclick="ToggleAddDepartment">Add Member</button>
+        </div>
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+
+        <!--Search Section-->
+        <div class="position-relative mb-2">
+            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+            <input @bind="searchString" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name, email, or department..." />
+        </div>
+
+        <p class="mb-2"><em>@message</em></p>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead">Name</th>
+                        <th class="thead">Email</th>
+                        <th class="thead">Birthdate</th>
+                        <th class="thead">Age</th>
+                        <th class="thead">Contact</th>
+                        <th class="thead">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in filteredList)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell" style="font-weight:500;">@item.GetFullName()</td>
+                            <td class="table-cell c2">@item.Email</td>
+                            <td class="table-cell c2">@item.Birthdate.ToString("MMM dd, yyyy")</td>
+                            <td class="table-cell c2">@item.GetAge()</td>
+                            <td class="table-cell c2">@item.Contact</td>
+                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                <!--Edit-->
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
+                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(() => ToggleUpdateModal(item.MemberId))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
+                                </div>
+
+                                <!--Delete-->
+                                <button class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code{
+    //Variable Declarations
+    private bool isAddDepartmentModalVisible = false;
+    private string title = "Add Member";
+    private DepartmentMember departmentMember = new();
+    private List<DepartmentMember> departmentMemberList = new();
+    private bool isValidating = false;
+    private string message = string.Empty;
+    private string DepName = string.Empty;
+    private string searchString = string.Empty;
+    private IEnumerable<DepartmentMember> filteredList => departmentMemberList.Where(u => string.IsNullOrWhiteSpace(searchString)
+    || u.GetFullName().Contains(searchString, StringComparison.OrdinalIgnoreCase)
+    || u.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+    || u.Birthdate.ToString("MMM dd, yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase)
+    || u.Contact.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+    || u.GetAge().ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    //Load List during page initialization
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMembers();
+    }
+
+    //Fetching Departments List
+    private async Task GetMembers()
+    {
+        DepName = _appState.SelectedDepartmentName;
+        message = "Fetching database...";
+
+        var result = await _firestore.GetDepartmentMemberAsync(_appState.SelectedDepartmentId);
+
+        if (result.Success)
+        {
+            departmentMemberList = result.Data;
+
+            if(departmentMemberList.Count == 0)
+            {
+                message = "No members";
+            }
+            else
+            {
+                message = string.Empty;
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", $"Failed to load members: {result.Error}");
+        }
+    }
+
+    //Toggle Modal
+    private void ToggleAddDepartment()
+    {
+        title = "Add Member";
+        departmentMember = new(); // Reset department object
+        departmentMember.Birthdate = DateOnly.FromDateTime(DateTime.Now);
+        isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
+    }
+
+    //Adding Department
+    private async Task AddDepartment()
+    {
+        isValidating = !isValidating;
+        departmentMember.DepartmentId = _appState.SelectedDepartmentId;
+        var result = await _firestore.AddDepartmentMemberAsync(departmentMember);
+
+        if(result.Success)
+        {
+            await GetMembers();
+            ToggleAddDepartment();
+            await _js.InvokeVoidAsync("alert", "Member added successfully!");
+            
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to add member: " + result.Error);
+        }
+        isValidating = !isValidating;
+    }
+
+    private void ToggleUpdateModal(string departmentId)
+    {
+        // title = "Update Department";
+        // department.DepartmentId = departmentId;
+        // isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
+    }
+
+    //Updating Department
+    private async Task UpdateDepartment()
+    {
+        // isValidating = !isValidating;
+        // var result = await _firestore.UpdateDepartmentAsync(department.DepartmentId, department);
+
+        // if (result.Success)
+        // {
+        //     await GetDepartmentsList();
+        //     ToggleAddDepartment();
+        //     await _js.InvokeVoidAsync("alert", "Department updated successfully!");
+        // }
+        // else
+        // {
+        //     await _js.InvokeVoidAsync("alert", "Failed to update department: " + result.Error);
+        // }
+        // isValidating = !isValidating;
+    }
+}

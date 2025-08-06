@@ -145,7 +145,7 @@
                                 @if (items.Status != "Disabled")
                                 {
                                     <!--Reset-->
-                                    <button @onclick="@(() => ResetPassword(items.Email))" class="btn btn-warning" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash"></i></span>Reset</button>
+                                    <button @onclick="@(() => ResetPassword(items.Email))" class="btn btn-warning" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-arrow-repeat"></i></span> Reset</button>
 
                                     <!--Disable-->
                                     <button @onclick="@(() => DisableUser(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Disable</button>

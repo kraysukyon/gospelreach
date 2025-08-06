@@ -27,11 +27,11 @@
                 <div class="input inputs">
                     <i class="bi bi-lock" style="padding:5px 12px;"></i>
                     <input readonly="@(isLogginIn ? true : false)" @bind="password" type="@(isPasswordShow ? "text" : "password")" style="font-size:15px;" placeholder="Password" />
-                    <i @onclick="TogglePassword" class="@(isPasswordShow ? "bi bi-eye-slash" : "bi bi-eye")" style="cursor:pointer"></i>
+                    <i @onclick="TogglePassword" class="@(!isPasswordShow ? "bi bi-eye-slash" : "bi bi-eye")" style="cursor:pointer"></i>
 
                 </div>
                 @* <a href="" class="text-decoration-none text-primary text-end">Forgot your password?</a> *@
-                <button class="btn btn-primary w-100 py-2 mt-3" @onclick="ValidateLogin">Sign In</button>
+                <button disabled="@isLogginIn" class="btn btn-primary w-100 py-2 mt-3" @onclick="ValidateLogin">Sign In</button>
             </div>
         </div>
     </div>
@@ -275,16 +275,12 @@
     private async Task ValidateLogin()
     {
         isLogginIn = !isLogginIn;
+
         try
         {
-            // email = "tsaadmin@gmail.com";
-            // password = "Qwerty1234.";
             var result = await FirebaseAuthService.LoginAsync(email, password);
             if (result.Success)
             {
-                // accounts = new();
-                // accounts = await Firestore.GetAccountAsync();
-
                 await JSRuntime.InvokeVoidAsync("alert", result.Message);
                 NavigationManager.NavigateTo("/dashboard"); // Redirect to dashboard after login
             }

@@ -230,6 +230,98 @@
             output.style.height = input.style.height;
         }
         
-    }
+    },
+
+    //============================================Department Management Section============================================//
+    async getDepartment() {
+        try {
+            const departmentTable = await db.collection("Departments").get();
+            const departments = departmentTable.docs.map(items => ({ departmentId: items.id, ...items.data() }));
+
+            return { success: true, data: departments };
+        } catch (error) {
+            return { success: false, error: error.message};
+        }
+    },
+
+    async addDepartment(department) {
+        try {
+            await db.collection("Departments").add({
+                departmentName: department.departmentName,
+            });
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getDepartmentById(id) {
+        try {
+            const docRef = db.collection("Departments").doc(id);
+            const doc = await docRef.get();
+
+            if (doc.exists) {
+                return { success: true, data: { id: doc.id, ...doc.data() } };
+            }
+
+            return { success: false, error: "Department not found" };
+        } catch (error) {
+            return { success: false, error: error.message}
+        }
+    },
+
+    async updateDepartment(id,department) {
+        try {
+            await db.collection("Departments").doc(id).update({
+                departmentName: department.departmentName
+            });
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message}
+        }
+    },
+
+    async removeDepartment(id) {
+        try {
+            await db.collection("Departments").doc(id).delete();
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    //============================================Department Management Section============================================//
+
+    async getDepartmentMembers(depId) {
+        try {
+            const membersTable = await db.collection("DepartmentMembers").where("departmentId","==",depId).get();
+            const members = membersTable.docs.map(item => ({ memberId: item.id, ...item.data() }));
+
+            return { success: true, data: members };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async addDepartmentMember(member) {
+        try {
+            await db.collection("DepartmentMembers").add({
+                departmentId: member.departmentId,
+                firstName: member.firstName,
+                middleName: member.middleName,
+                lastName: member.lastName,
+                birthdate: member.birthdate,
+                email: member.email,
+                contact: member.contact,
+            });
+
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
     
 }
