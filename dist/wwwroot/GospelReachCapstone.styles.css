@@ -1090,6 +1090,197 @@ a[b-2yuqx93yph] {
         flex-direction: column;
     }
 }
+/* /Pages/DepartmentMemberPage - Copy.razor.rz.scp.css */
+*[b-jes8wf9bo8] {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: black;
+    font-family: "Inter", sans-serif;
+}
+
+.addUserModal[b-jes8wf9bo8] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0,0,0,.5);
+    display: none;
+}
+
+.addUser[b-jes8wf9bo8] {
+    display: flex;
+    flex-direction: column;
+    width: 550px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+}
+
+.editUser[b-jes8wf9bo8] {
+    display: flex;
+    flex-direction: column;
+    width: 550px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+}
+
+.pword[b-jes8wf9bo8] {
+    display: flex;
+    width: 100%;
+    padding: .5rem .75rem;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.valid[b-jes8wf9bo8] {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+}
+
+.show[b-jes8wf9bo8] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+    justify-content: center;
+}
+
+    .show input[b-jes8wf9bo8] {
+        border: none;
+        width: 100%;
+        margin-right: .75rem;
+    }
+
+        .show input:focus[b-jes8wf9bo8] {
+            border: none;
+            outline: none;
+        }
+
+            .show input:focus .show[b-jes8wf9bo8] {
+                color: #212529;
+                background-color: #fff;
+                border-color: #86b7fe;
+                outline: 0;
+                box-shadow: 0 0 0 .25rem rgba(13,110,253,.25)
+            }
+
+.hide[b-jes8wf9bo8] {
+    display: none;
+}
+
+.userFields[b-jes8wf9bo8] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.input p[b-jes8wf9bo8] {
+    font-size: 14px;
+}
+
+.c2[b-jes8wf9bo8] {
+    color: #4b5563;
+}
+
+a[b-jes8wf9bo8] {
+    color: rgb(75 85 99);
+}
+
+.planning[b-jes8wf9bo8] {
+    display: grid;
+    grid-template-columns: 1fr 30%;
+    height: auto;
+    gap: 1.5rem;
+}
+
+.link[b-jes8wf9bo8] {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+    .link:hover[b-jes8wf9bo8] {
+        color: rgb(26,86,219);
+        font-weight: 600;
+    }
+
+.cards[b-jes8wf9bo8] {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 24px;
+}
+
+    .cards:hover[b-jes8wf9bo8] {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+.search[b-jes8wf9bo8] {
+    padding: .5rem .75rem;
+    padding-left: 2.5rem;
+}
+
+    .search[b-jes8wf9bo8]::placeholder {
+        color: #4b5563;
+    }
+
+.table-container[b-jes8wf9bo8] {
+    overflow-x: auto;
+}
+
+.thead[b-jes8wf9bo8] {
+    background-color: rgb(249,250,251);
+    text-align: left;
+    font-size: .75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: rgb(107,114,128);
+    padding: 1rem 1.5rem;
+    border: none;
+}
+
+.table-row[b-jes8wf9bo8] {
+    border-bottom-width: 1px;
+    border-color: rgb(229,231,235);
+}
+
+.table-cell[b-jes8wf9bo8] {
+    white-space: nowrap;
+    padding: 30px 24px 20px 24px;
+    font-size: .875rem;
+    line-height: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .page[b-jes8wf9bo8] {
+        display: block;
+    }
+
+    .header a[b-jes8wf9bo8] {
+        width: 100%;
+        margin-top: 1rem;
+    }
+    .cards[b-jes8wf9bo8]{
+        padding: 0;
+    }
+
+    .planning[b-jes8wf9bo8] {
+        display: block;
+    }
+
+    .stats[b-jes8wf9bo8] {
+        display: flex;
+        flex-direction: column;
+    }
+}
 /* /Pages/DepartmentMemberPage.razor.rz.scp.css */
 *[b-ukmtsvz6gu] {
     padding: 0;

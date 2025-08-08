@@ -31,6 +31,11 @@
             </div>
 
             <div class="input mt-3">
+                <p>Gender</p>
+                <p>@member.Gender</p>
+            </div>
+
+            <div class="input mt-3">
                 <p>Email</p>
                 <p>@member.Email</p>
             </div>
@@ -46,8 +51,8 @@
             </div>
 
             <div class="input mt-3">
-                <p>Date of Soldiership</p>
-                <p>@member.DateOfSoldiership</p>
+                <p>Age</p>
+                <p>@member.Age yrs old</p>
             </div>
 
             <div class="input mt-3">
@@ -95,6 +100,8 @@
                 <input spellcheck="false" @bind="member.LastName" @onblur="(() => CheckIfValid(nameof(member.LastName)))" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
             </div>
 
+            
+
             <div class="inputs mt-3">
                 <div class="d-flex align-items-center gap-2">
                     <p>Email</p>
@@ -114,12 +121,16 @@
             <div class="userFields mt-3">
                 <div class="inputs">
                     <p>Birthdate</p>
-                    <input @bind="dateOfBirth" type="date" class="form-control p-2 mt-2" />
+                    <input @bind="member.Birthdate" type="date" class="form-control p-2 mt-2" />
                 </div>
 
                 <div class="inputs">
-                    <p>Date Of Soldiership</p>
-                    <input @bind="dateOfSoldiership" type="date" class="form-control p-2 mt-2" />
+                    <p>Gender</p>
+
+                    <select @bind="member.Gender" class="form-select p-2 mt-2">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
                 </div>
             </div>
 
@@ -128,8 +139,9 @@
                     <p>Classification</p>
                     <select @bind="member.Classification" class="form-select p-2 mt-2">
                         <option value="Soldier">Soldier</option>
-                        <option value="Junior Soldier">Junior Soldier</option>
+                        <option value="Recruit">Recruit</option>
                         <option value="Adherent">Adherent</option>
+                        <option value="Junior Soldier">Junior Soldier</option>
                     </select>
                 </div>
 
@@ -257,8 +269,6 @@
     private Member member = new();
     private bool isAddModalVisible = false;
     private string title = "Add Member";
-    private DateTime dateOfBirth = DateTime.Now;
-    private DateTime dateOfSoldiership = DateTime.Now;
     private bool validFirstname = true;
     private bool validLastName = true;
     private bool validEmail = true;
@@ -278,23 +288,27 @@
         }
         catch (Exception ex)
         {
-            await _js.InvokeVoidAsync("alert", "Unable to fetch Members List");
+            await _js.InvokeVoidAsync("alert", $"Unable to fetch Members List: {ex.Message}");
         }
         isLoad = !isLoad;
     }
 
     private async Task getMembers()
     {
-        membersList = new();
         totalMembers = 0;
         activeMembers = 0;
         newMembers = 0;
-        membersList = await Firestore.GetMembersAsync();
+        var result = await Firestore.GetMembersAsync();
 
-        if (membersList != null)
+        if (result.Success)
         {
+            membersList = result.Data;
+            activeMembers = membersList.Count(u => u.Status == "Active");
             totalMembers = membersList.Count;
-            activeMembers = membersList.Where(u => u.Status == "Active").Count();
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", $"Unable to fetch Members List: {result.Error}");
         }
     }
 
@@ -302,9 +316,9 @@
     {
         try
         {
-            member.Birthdate = dateOfBirth.ToString("MMM dd, yyyy");
-            member.DateOfSoldiership = dateOfSoldiership.ToString("MMM dd, yyyy");
+
             await Firestore.AddMemberAsync(member);
+            await _js.InvokeVoidAsync("alert", "Member added successfully");
             await getMembers();
             ToggleModal();
         }
@@ -335,10 +349,10 @@
                     FirstName = memberView.FirstName,
                     MiddleName = memberView.MiddleName,
                     LastName = memberView.LastName,
+                    Gender = memberView.Gender,
                     Email = memberView.Email,
                     Contact = memberView.Contact,
                     Birthdate = memberView.Birthdate,
-                    DateOfSoldiership = memberView.DateOfSoldiership,
                     Classification = memberView.Classification,
                     Status = memberView.Status
                 };
@@ -359,16 +373,13 @@
                 FirstName = accountToUpdate.FirstName,
                 MiddleName = accountToUpdate.MiddleName,
                 LastName = accountToUpdate.LastName,
+                Gender = accountToUpdate.Gender,
                 Email = accountToUpdate.Email,
                 Contact = accountToUpdate.Contact,
                 Birthdate = accountToUpdate.Birthdate,
-                DateOfSoldiership = accountToUpdate.DateOfSoldiership,
                 Classification = accountToUpdate.Classification,
                 Status = accountToUpdate.Status
             };
-
-            dateOfBirth = DateTime.Parse(member.Birthdate);
-            dateOfSoldiership = DateTime.Parse(member.DateOfSoldiership);
         }
         else
         {
@@ -381,8 +392,6 @@
     {
         try
         {
-            member.Birthdate = dateOfBirth.ToString("MMM dd, yyyy");
-            member.DateOfSoldiership = dateOfSoldiership.ToString("MMM dd, yyyy");
             await Firestore.updateMemberAsync(member.Id, member);
             ToggleModal();
             await getMembers();
@@ -447,9 +456,9 @@
             if (IsValidEmail(member.Email))
             {
                 var list = await Firestore.GetMembersAsync();
-                if (list != null)
+                if (list.Success)
                 {
-                    bool check = list.Any(u => u.Email == member.Email);
+                    bool check = list.Data.Any(u => u.Email == member.Email);
 
                     if (check)
                     {

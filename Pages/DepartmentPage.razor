@@ -84,9 +84,7 @@
                             <td class="table-cell" style="font-weight:500;"><p class="link" @onclick="(() => goToDepartmentMemberPage(item.DepartmentId))">@item.DepartmentName</p></td>
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
                                 <!--Edit-->
-                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(() => ToggleUpdateModal(item.DepartmentId))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
-                                </div>
+                                <button class="btn btn-outline-light border" style="font-size: 13px; border-radius: 10px; padding: 5px 12px;" @onclick="@(() => ToggleUpdateModal(item.DepartmentId))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
 
                                 <!--Delete-->
                                 <button @onclick="(() => RemoveDepartment(item.DepartmentId))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>

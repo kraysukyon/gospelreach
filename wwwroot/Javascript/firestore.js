@@ -68,6 +68,7 @@
         }
     },
 
+    //update attendance
     async editAttendance(docId, attendance) {
         try {
             await db.collection("Attendance").doc(docId).set(attendance);
@@ -76,6 +77,7 @@
         }
     },
 
+    //delete attendance
     async deleteAttendance(docId) {
         try {
             await db.collection("Attendance").doc(docId).delete();
@@ -86,25 +88,30 @@
 
 
     //============================================Member Management Section============================================//
+    //fetch member list
     async getMembers() {
         try {
             const membersTable = await db.collection("Members").get();
-            return membersTable.docs.map(items => ({id: items.id, ...items.data()}));
+            const member = membersTable.docs.map(items => ({ id: items.id, ...items.data() }));
+
+            return { success: true , data: member }
         } catch (error) {
-            alert(error)
+            return { success: false, error: error.message }
         }
     },
 
+    //add member
     async addMember(member) {
         try {
             await db.collection("Members").add({
                 firstName: member.firstName,
                 middleName: member.middleName,
                 lastName: member.lastName,
+                gender: member.gender,
                 email: member.email,
                 contact: member.contact,
                 birthdate: member.birthdate,
-                dateOfSoldiership: member.dateOfSoldiership,
+                age: member.age,
                 classification: member.classification,
                 status: member.status,
             });
@@ -115,6 +122,7 @@
         }
     },
 
+    //update memeber
     async updateMember(docId, member) {
         try {
             await db.collection("Members").doc(docId).set(member);
@@ -123,6 +131,7 @@
         }
     },
 
+    //remove member
     async deleteMember(docId) {
         try {
             await db.collection("Members").doc(docId).delete();
@@ -295,9 +304,10 @@
 
     //============================================Department Management Section============================================//
 
-    async getDepartmentMembers(depId) {
+    async getDepartmentMembers() {
         try {
-            const membersTable = await db.collection("DepartmentMembers").where("departmentId","==",depId).get();
+            //const membersTable = await db.collection("DepartmentMembers").where("departmentId", "==", depId).get();
+            const membersTable = await db.collection("DepartmentMembers").get();
             const members = membersTable.docs.map(item => ({ memberId: item.id, ...item.data() }));
 
             return { success: true, data: members };
@@ -310,12 +320,7 @@
         try {
             await db.collection("DepartmentMembers").add({
                 departmentId: member.departmentId,
-                firstName: member.firstName,
-                middleName: member.middleName,
-                lastName: member.lastName,
-                birthdate: member.birthdate,
-                email: member.email,
-                contact: member.contact,
+                memberId: member.memberId
             });
 
             return { success: true };
@@ -324,4 +329,21 @@
         }
     },
     
+    async updateDepartmmentMember(id, member) {
+        try {
+            await db.collection("DepartmentMembers").doc(id).set(member);
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async removeDepartmentmember(id) {
+        try {
+            await db.collection("DepartmentMembers").doc(id).delete();
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
 }

@@ -90,17 +90,22 @@ namespace GospelReachCapstone.Services
             }
         }
 
-        public async Task<List<Member>> GetMembersAsync()
+        //================================== Member Section=============================================//
+
+        public async Task<MembersResult> GetMembersAsync()
         {
             try
             {
-                var memberList = await _jsRuntime.InvokeAsync<Member[]>("firestoreFunctions.getMembers");
-                return memberList.ToList();
+                var result = await _jsRuntime.InvokeAsync<MembersResult>("firestoreFunctions.getMembers");
+                return result;
             }
-            catch (Exception ex)
+            catch (JSException ex)
             {
-                await _jsRuntime.InvokeVoidAsync("alert", $"Error fetching members: {ex.Message}");
-                return new List<Member>();
+                return new MembersResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
             }
         }
 
@@ -354,11 +359,11 @@ namespace GospelReachCapstone.Services
         }
 
         //==================================Department Member Section=============================================//
-        public async Task<DepartmentMemberResult> GetDepartmentMemberAsync(string depId)
+        public async Task<DepartmentMemberResult> GetDepartmentMemberAsync()
         {
             try
             {
-                var result = await _jsRuntime.InvokeAsync<DepartmentMemberResult>("firestoreFunctions.getDepartmentMembers", depId);
+                var result = await _jsRuntime.InvokeAsync<DepartmentMemberResult>("firestoreFunctions.getDepartmentMembers");
                 return result;
             }
             catch (JSException ex)
@@ -389,12 +394,55 @@ namespace GospelReachCapstone.Services
                 };
             }
         }
+
+        public async Task<DepartmentMemberResult> UpdateDepartmentMemberAsync(string Id, DepartmentMember dep)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<DepartmentMemberResult>("firestoreFunctions.updateDepartmmentMember", Id, dep);
+                return result;
+            }
+            catch(JSException ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
+                return new DepartmentMemberResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        public async Task<DepartmentMemberResult> RemoveDepartmentMemberAsync(string Id)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<DepartmentMemberResult>("firestoreFunctions.removeDepartmmentMember", Id);
+                    return result;
+            }
+            catch (JSException ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
+                return new DepartmentMemberResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
     }
 
     public class AttendanceResult
     {
         public bool Success { get; set; }
         public string Id { get; set; }
+        public string Error { get; set; }
+    }
+
+    public class MembersResult
+    {
+        public bool Success { get; set; }
+        public List<Member> Data { get; set; }
         public string Error { get; set; }
     }
 

@@ -17,7 +17,7 @@
         </div>
 
         <div>
-            <InputFile OnChange="HandleFile" accept="image/*,video/*,audio/*" />
+            <InputFile OnChange="HandleFile" accept="image/*,video/*,audio/*,.pdf" />
             <button class="btn btn-primary text-white p-2" @onclick="UploadFile" disabled="@(!CanUpload)">Upload</button>
         </div>
 
@@ -48,7 +48,7 @@
                     <option value="Videos">Videos</option>
                     <option value="Audio">Audio</option>
                     <option value="Images">Images</option>
-                    @* <option value="Documents">Documents</option> *@
+                    <option value="Documents">Documents</option>
                     </select>
 
                     @* <div class="flex-s hrink-0 d-flex flex-column flex-md-row gap-2">
@@ -217,7 +217,7 @@
         {
             "Videos" => new[] { ".mp4", ".avi", ".mov", ".wmv", ".mkv" }.Contains(ext),
             "Audio" => new[] { ".mp3", ".wav", ".aac", ".flac" }.Contains(ext),
-            // "Documents" => new[] { ".pdf", ".doc", ".docx", ".txt", ".pptx", ".xlsx" }.Contains(ext),
+            "Documents" => new[] { ".pdf", ".doc", ".docx", ".txt", ".pptx", ".xlsx" }.Contains(ext),
             "Images" => new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" }.Contains(ext),
             _ => true
         };
