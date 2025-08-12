@@ -25,6 +25,14 @@ a, .btn-link {
     padding-top: 1.1rem;
 }
 
+.Primary {
+    background-color: #07568f;
+}
+
+.Whitey{
+    color: #fff;
+}
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }

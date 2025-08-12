@@ -1,0 +1,402 @@
+﻿@page "/schedules"
+@layout LandingLayout
+@inject GospelReachCapstone.Services.FirestoreService _firestore
+@using GospelReachCapstone.Models
+@inject IJSRuntime _js
+@using System.Globalization
+
+<PageTitle>Schedule Management</PageTitle>
+
+
+<div class="pages">
+    <!--Add User Model-->
+    <div @onclick="ToggleModal" class="addEventModal @(isAddModalVisible ? "show" : "")">
+        <div class="addEvent" @onclick:stopPropagation>
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4 class="fw-bold">
+                        @title
+                    </h4>
+                    <p style="font-size:14px;">Create and Manage Schedules.</p>
+                </div>
+                <button hidden="@(title == "Add Schedule")" class="btndelete btn" @onclick="(() => removeSchedule(sched.Id))"><i class="bi bi-trash-fill text-danger"></i></button>
+            </div>
+            
+
+            <div class="input mt-3">
+                <p>Category</p>
+                <select @bind="sched.Category" class="form-select p-2 mt-2">
+                    <option value="Event">Event</option>
+                    <option value="Weekly Program">Weekly Program</option>
+                    <option value="Service">Service</option>
+                </select>
+            </div>
+
+            <div class="input mt-3">
+                <p>Title</p>
+                <input @bind="sched.Title" type="text" class="form-control p-2 mt-2" placeholder="Enter Title" />
+            </div>
+
+            <div class="userFields">
+                <div class="input">
+                    <p>Start Date</p>
+                    <input @bind="sched.StartDate" @bind:event="onchange" @bind:after="OnChangeDate"  type="date" class="form-control p-2" />
+                </div>
+
+                <div class="input">
+                    <p>End Date</p>
+                    <input @bind="sched.EndDate" type="date" class="form-control p-2" />
+                </div>
+            </div>
+
+            <div class="input mt-3">
+                <p>Location</p>
+                <input @bind="sched.Location" type="text" class="form-control p-2 mt-2" placeholder="Location" />
+            </div>
+
+            <div class="input mt-3">
+                <p>Description</p>
+                <textarea @bind="sched.Description" type="text" class="form-control p-2 mt-2" placeholder="Description" style="min-height:200px;"/>
+            </div>
+
+
+
+            @if (title == "Add Schedule")
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addEvent">Create</button>
+                </div>
+            }
+            else
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
+                    <button @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!--Header Section-->
+    <div class="header">
+        <div>
+            <h4 class="m-0 fw-bold">Schedule Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Create schedules and manages church events, activities and services.</p>
+        </div>
+
+        <div>
+            <button @onclick="ToggleModal" class="btn btn-primary p-2 px-3 text-white link w-100"><i class="bi bi-plus-circle-fill text-white me-2"></i>Add</button>
+        </div>
+    </div>
+
+    <!--Calendar View Section-->
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <select @bind:get="SelectedMonth" @bind:set="OnMonthChanged">
+                @foreach (var m in Months)
+                {
+                    <option value="@m.Value">@m.Name</option>
+                }
+            </select>
+
+            <select @bind:get="SelectedYear" @bind:set="OnYearChanged">
+                @foreach (var y in Years)
+                {
+                    <option value="@y">@y</option>
+                }
+            </select>
+
+            @* <button @onclick="ShowAddEventForm">+ Add Event</button> *@
+        </div>
+
+        <div class="calendar-week">
+            @foreach (var dayName in DayNames)
+            {
+                <div class="day-name">@dayName</div>
+            }
+        </div>
+
+        <div class="calendar-grid">
+            @foreach (var week in CalendarWeeks)
+            {
+                @foreach (var day in week)
+                {
+                    <div class="day-cell @(day == 0 ? "empty" : "")">
+                        @if (day != 0)
+                        {
+                            <div class="day-number">@day</div>
+                            <div class="day-list">
+                                @foreach (var item in schedulesList.Where(u => u.StartDate == new DateOnly(SelectedYear, SelectedMonth, day)))
+                                {
+                                    <div class="@SwitchClass(item.Category)" @onclick="(() => OpenEdit(item.Id))">@item.Title</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Schedule> schedulesList = new();
+    private string title = "Add Schedule";
+    private bool isAddModalVisible = false;
+    private Schedule sched = new();
+    private string searchSched = string.Empty;
+    private IEnumerable<Schedule> filteredSched => schedulesList.Where(u => string.IsNullOrWhiteSpace(searchSched) || u.Title.Contains(searchSched, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    public record MonthOption(int Value, string Name);
+    private List<MonthOption> Months { get; set; }
+    private List<int> Years { get; set; }
+    private string[] DayNames { get; set; } = CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedDayNames;
+
+    private int SelectedMonth { get; set; }
+    private int SelectedYear { get; set; }
+
+    private List<List<int>> CalendarWeeks = new();
+
+    // Event storage
+    private Dictionary<DateTime, string> Events = new();
+
+    // Event form
+    private bool IsAddingEvent = false;
+    private DateTime NewEventDate = DateTime.Today;
+    private string NewEventTitle = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Init();
+        await getScheduleList();
+
+    }
+
+    private string SwitchClass(string name)
+    {
+        return name switch
+        {
+            "Event" => "pill",
+            "Weekly Program" => "pill2",
+            "Service" => "pill3",
+            _ => "pill"
+        };
+    }
+
+    private void OnChangeDate()
+    {
+        sched.EndDate = sched.StartDate;
+    }
+
+    private void ToggleModal()
+    {
+        isAddModalVisible = !isAddModalVisible;
+        title = "Add Schedule";
+        sched = new();
+    }
+
+    private void Init()
+    {
+        Months = Enumerable.Range(1, 12)
+            .Select(m => new MonthOption(m, CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)))
+            .ToList();
+
+        int currentYear = DateTime.Now.Year;
+        Years = Enumerable.Range(currentYear - 5, 11).ToList();
+
+        SelectedMonth = DateTime.Now.Month;
+        SelectedYear = currentYear;
+
+        GenerateCalendar();
+    }
+
+    private async Task getScheduleList()
+    {
+        try
+        {
+            schedulesList = new();
+            var result = await _firestore.GetScheduleAsync();
+
+            if (result.Success)
+            {
+                schedulesList = result.Data;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", result.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private async Task addEvent()
+    {
+        try
+        {
+            var result = await _firestore.AddScheduleAsync(sched);
+            if (result.Success)
+            {
+                await _js.InvokeVoidAsync("alert", "Schedule successfully added");
+                ToggleModal();
+                await getScheduleList();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", result.Error);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private async Task OpenEdit(string Id)
+    {
+        ToggleModal();
+        title = "Update Schedule";
+        var editEvent = schedulesList.FirstOrDefault(u => u.Id == Id);
+        if (editEvent != null)
+        {
+            sched = editEvent;
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Event does not exist");
+            await getScheduleList();
+        }
+    }
+
+    private async Task updateEvent()
+    {
+        try
+        {
+            bool confirm = await _js.InvokeAsync<bool>("confirm", "Confirm changes?");
+            if (!confirm) return;
+
+            var result = await _firestore.UpdateScheduleAsync(sched.Id, sched);
+
+            if (result.Success)
+            {
+                await _js.InvokeVoidAsync("alert", "Event successfuly updated");
+                ToggleModal();
+                GenerateCalendar();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Failed to update: " + result.Error);
+            }
+        }
+        catch
+        {
+            await _js.InvokeVoidAsync("alert", "Update Failed");
+        }
+    }
+
+    private async Task removeSchedule(string Id)
+    {
+        bool confirmed = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this event?");
+        if (!confirmed) return;
+
+        try
+        {
+            var result = await _firestore.RemoveScheduleAsync(Id);
+            if (result.Success)
+            {
+                await _js.InvokeVoidAsync("alert", "Successfully deleted");
+                ToggleModal();
+                await getScheduleList();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error on deleting document: {result.Error}");
+            }
+
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Error on deleting document: {ex.Message}");
+        }
+    }
+
+    private void GenerateCalendar()
+    {
+        CalendarWeeks.Clear();
+
+        var firstDayOfMonth = new DateTime(SelectedYear, SelectedMonth, 1);
+        var daysInMonth = DateTime.DaysInMonth(SelectedYear, SelectedMonth);
+
+        int currentDay = 1;
+        int startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+
+        var week = new List<int>();
+
+        // Fill empty days before first day
+        for (int i = 0; i < startDayOfWeek; i++)
+        {
+            week.Add(0);
+        }
+
+        // Fill actual days
+        while (currentDay <= daysInMonth)
+        {
+            week.Add(currentDay);
+            currentDay++;
+
+            if (week.Count == 7)
+            {
+                CalendarWeeks.Add(week);
+                week = new List<int>();
+            }
+        }
+
+        // Fill remaining empty days
+        if (week.Count > 0)
+        {
+            while (week.Count < 7)
+            {
+                week.Add(0);
+            }
+            CalendarWeeks.Add(week);
+        }
+    }
+
+    private void OnMonthChanged(int value)
+    {
+        SelectedMonth = value;
+        GenerateCalendar();
+    }
+
+    private void OnYearChanged(int value)
+    {
+        SelectedYear = value;
+        GenerateCalendar();
+    }
+
+    private void ShowAddEventForm()
+    {
+        IsAddingEvent = true;
+        NewEventDate = new DateTime(SelectedYear, SelectedMonth, 1);
+        NewEventTitle = "";
+    }
+
+    private void CancelAddEvent()
+    {
+        IsAddingEvent = false;
+    }
+
+    private void AddEvent()
+    {
+        if (!string.IsNullOrWhiteSpace(NewEventTitle))
+        {
+            Events[NewEventDate] = NewEventTitle;
+        }
+        IsAddingEvent = false;
+    }
+}

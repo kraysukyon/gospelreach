@@ -52,9 +52,9 @@
             <p class="m-0 c2" style="font-size: 14px">Manage department and members</p>
         </div>
 
-        <div>
+        @* <div>
             <button class="btn btn-primary p-2 text-white" @onclick="ToggleAddDepartment">Add Department</button>
-        </div>
+        </div> *@
     </div>
 
     <!--Table Section-->
@@ -86,8 +86,8 @@
                                 <!--Edit-->
                                 <button class="btn btn-outline-light border" style="font-size: 13px; border-radius: 10px; padding: 5px 12px;" @onclick="@(() => ToggleUpdateModal(item.DepartmentId))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
 
-                                <!--Delete-->
-                                <button @onclick="(() => RemoveDepartment(item.DepartmentId))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                @* <!--Delete-->
+                                <button @onclick="(() => RemoveDepartment(item.DepartmentId))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button> *@
                             </td>
                         </tr>
                     }

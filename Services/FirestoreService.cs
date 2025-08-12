@@ -368,7 +368,6 @@ namespace GospelReachCapstone.Services
             }
             catch (JSException ex)
             {
-                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
                 return new DepartmentMemberResult
                 {
                     Success = false,
@@ -417,13 +416,87 @@ namespace GospelReachCapstone.Services
         {
             try
             {
-                var result = await _jsRuntime.InvokeAsync<DepartmentMemberResult>("firestoreFunctions.removeDepartmmentMember", Id);
+                var result = await _jsRuntime.InvokeAsync<DepartmentMemberResult>("firestoreFunctions.removeDepartmentmember", Id);
                     return result;
             }
             catch (JSException ex)
             {
                 await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
                 return new DepartmentMemberResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //==================================Department Member Section=============================================//
+
+        //add schedule
+        public async Task<ScheduleResult> AddScheduleAsync(Schedule sched)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.addSchedule", sched);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Fetch Data for schedule
+        public async Task<ScheduleResult> GetScheduleAsync()
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.getSchedule");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Update Schedule
+        public async Task<ScheduleResult> UpdateScheduleAsync(string Id, Schedule sched)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.updateSchedule", Id, sched);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Remove Schedule
+        public async Task<ScheduleResult> RemoveScheduleAsync(string Id)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.removeSchedule", Id);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
                 {
                     Success = false,
                     Error = ex.Message
@@ -457,6 +530,13 @@ namespace GospelReachCapstone.Services
     {
         public bool Success { get; set; }
         public List<DepartmentMember> Data { get; set; }
+        public string Error { get; set; }
+    }
+
+    public class ScheduleResult
+    {
+        public bool Success { get; set; }
+        public List<Schedule> Data { get; set; }
         public string Error { get; set; }
     }
 }

@@ -302,13 +302,13 @@
         }
     },
 
-    //============================================Department Management Section============================================//
+    //============================================DepartmentMember Management Section============================================//
 
     async getDepartmentMembers() {
         try {
             //const membersTable = await db.collection("DepartmentMembers").where("departmentId", "==", depId).get();
             const membersTable = await db.collection("DepartmentMembers").get();
-            const members = membersTable.docs.map(item => ({ memberId: item.id, ...item.data() }));
+            const members = membersTable.docs.map(item => ({ DepartmentMemberId: item.id, ...item.data() }));
 
             return { success: true, data: members };
         } catch (error) {
@@ -346,4 +346,58 @@
             return { success: false, error: error.message }
         }
     },
+
+    //============================================DepartmentMember Management Section============================================//
+
+    async addSchedule(schedule) {
+        try {
+            await db.collection("Schedules").add({
+                category: schedule.category,
+                title: schedule.title,
+                startDate: schedule.startDate,
+                endDate: schedule.endDate,
+                description: schedule.description
+            });
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async getSchedule() {
+        try {
+            const schedTable = await db.collection("Schedules").get();
+            const sched = schedTable.docs.map(u => ({id: u.id, ... u.data()}));
+
+            return { success: true, data: sched }
+        } catch (error) {
+            return { success: false, error: error.message}
+        }
+    },
+
+    async updateSchedule(id, schedule) {
+        try {
+            await db.collection("Schedules").doc(id).update({
+                category: schedule.category,
+                title: schedule.title,
+                startDate: schedule.startDate,
+                endDate: schedule.endDate,
+                description: schedule.description
+            });
+            return { success: true }
+        } catch (error) {
+            return { success: true, error: error.message }
+        }
+    },
+
+    async removeSchedule(Id) {
+        try {
+            await db.collection("Schedules").doc(Id).delete();
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message}
+        }
+    },
+
 }

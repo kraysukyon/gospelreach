@@ -43,6 +43,7 @@
                             <tr>
                                 <th class="thead"><input type="checkbox" checked="@selectAll" @onchange="ToggleSelectAll" /></th>
                                 <th class="thead">Name</th>
+                                
                             </tr>
                         </thead>
 
@@ -52,6 +53,7 @@
                                 <tr class="table-row">
                                     <td class="table-cell"><input type="checkbox" checked="@SelectedMembers.Contains(item.Id)" @onchange="(e) => ToggleMember(item.Id,(bool)e.Value)" /></td>
                                     <td class="table-cell" style="font-weight:500;">@item.GetFullName()</td>
+                                    
                                 </tr>
                             }
                         </tbody>
@@ -119,7 +121,10 @@
                 <thead>
                     <tr>
                         <th class="thead">Name</th>
-                        <th class="thead">Actions</th>
+                        @if (_appState.SelectedDepartmentId == "VzTQIg7WYg0h6Utksi4J")
+                        {
+                            <th class="thead">Action</th>
+                        }
                     </tr>
                 </thead>
 
@@ -128,6 +133,12 @@
                     {
                         <tr class="table-row">
                             <td class="table-cell" style="font-weight:500;">@item.GetFullName()</td>
+                            @if (_appState.SelectedDepartmentId == "VzTQIg7WYg0h6Utksi4J")
+                            {
+                                <td class="table-cell">
+                                    <button @onclick="(() => DeleteMember(item.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>
@@ -195,8 +206,6 @@
                 await _js.InvokeVoidAsync("alert", $"Failed to load members: {result.Error}");
             }
         }
-
-
     }
 
     private void ToggleSelectAll(ChangeEventArgs e)
@@ -226,11 +235,11 @@
 
     private async Task AddSelectedToDepartment()
     {
-        messages = _appState.SelectedDepartmentId;
+        messages = "Adding members, please wait...";
         foreach (string item in SelectedMembers)
         {
             departmentMember.DepartmentId = _appState.SelectedDepartmentId;
-            departmentMember.DepartmentMemberId = item;
+            departmentMember.MemberId = item;
             var result = await _firestore.AddDepartmentMemberAsync(departmentMember);
         }
         messages = string.Empty;
@@ -249,7 +258,7 @@
         await LoadMusicMembers();
     }
 
-  
+
     //Fetching Departments List
     private async Task GetMembers()
     {
@@ -294,7 +303,7 @@
                     await LoadMusicMembers();
                     break;
 
-                
+
             }
 
             if (members != null && members.Count == 0)
@@ -305,16 +314,50 @@
             {
                 message = string.Empty;
             }
-            
+
         }
         else
         {
             await _js.InvokeVoidAsync("alert", $"Unable to fetch members: {result.Error}");
         }
+    }
 
-        
+    private async Task DeleteMember(string Id)
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this member?");
+        if (!confirm) return;
 
-        
+        var result = await _firestore.GetDepartmentMemberAsync();
+
+        if (result.Success)
+        {
+            var dep = result.Data;
+            string? memberToRemove = dep.FirstOrDefault(u => u.MemberId == Id)?.DepartmentMemberId;
+
+            if (memberToRemove != null)
+            {
+                var rem = await _firestore.RemoveDepartmentMemberAsync(memberToRemove);
+
+                if (rem.Success)
+                {
+                    await GetMembers();
+                    await _js.InvokeVoidAsync("alert", "Member Successfully Removed.");
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Cannot perform operation: " + rem.Error);
+                }
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Cannot perform operation: Member not found.");
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Cannot perform operation: " + result.Error);
+        }
+
     }
 
     

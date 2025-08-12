@@ -1,6 +1,4 @@
-﻿//const auth = firebase.auth();
-
-window.firebaseAuth = {
+﻿window.firebaseAuth = {
     register: async function (account) {
         try {
             const auth = firebase.auth();
