@@ -108,16 +108,21 @@
                 </div>
 
 
-                <div hidden="@(!isAttendanceVisible)" class="userFields">
-                    <div class="input">
-                        <p>Count</p>
-                        <input @bind="count" type="number" min="0" class="form-control p-2" />
-                    </div>
+                <div hidden="@(!isAttendanceVisible)" class="att">
+                    <div class="userFields">
+                        <div class="input">
+                            <p>Count</p>
+                            <input @bind="count" type="number" min="0" class="form-control p-2" />
+                        </div>
 
-                    <div class="input">
-                        <p>Seekers</p>
-                        <input @bind="seekers" type="number" min="0" class="form-control p-2" />
+                        <div class="input">
+                            <p>Seekers</p>
+                            <input @bind="seekers" type="number" min="0" class="form-control p-2" />
+                        </div>
                     </div>
+                    
+
+                    <button @onclick="(() => AddOrUpdateAttendance(sched.Id, attDate))" class="btn btn-primary p-2 px-3 text-white link">Save</button>
                 </div>
             </div>
             
@@ -134,7 +139,7 @@
             else
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-md-between">
-                    <i hidden="@(title == "Add Schedule")" @onclick="ToggleAttendance" class="bi bi-plus-square text-primary m-0 p-0 fs-4 cursor"></i>
+                    <i hidden="@(title == "Add Schedule" || title == "Update Details")" @onclick="ToggleAttendance" class="bi bi-plus-square text-primary m-0 p-0 fs-4 cursor"></i>
                     <div>
                         <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
                         <button hidden="@(!isEditMode)" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
@@ -196,7 +201,7 @@
                                     a.ScheduleId == item.Id &&
                                     a.Date == new DateOnly(SelectedYear, SelectedMonth, day));
 
-                                    <div class="@SwitchClass(item.Category)" @onclick="(() => OpenEdit(item.Id))">@item.Title</div>
+                                    <div class="@SwitchClass(item.Category)" @onclick="(() => OpenEdit(item.Id, new DateOnly(SelectedYear, SelectedMonth, day)))">@item.Title</div>
                                 }
                             </div>
                         }
@@ -238,6 +243,7 @@
     private bool isAttendanceVisible = false;
     private int count = 0;
     private int seekers = 0;
+    private DateOnly attDate { get; set; }
 
     //Toggle option
     private bool isOptionVisible = false;
@@ -250,6 +256,7 @@
     {
         Init();
         await getScheduleList();
+        await GetAttendanceList();
 
     }
 
@@ -351,6 +358,7 @@
 
     private void ToggleUpdateUI()
     {
+        title = "Update Details";
         isEditMode = true;
     }
 
@@ -367,6 +375,21 @@
         SelectedYear = currentYear;
 
         GenerateCalendar();
+    }
+
+    //Get Attendance List
+    private async Task GetAttendanceList()
+    {
+        var result = await _firestore.GetAttendanceAsync();
+
+        if (result.Success)
+        {
+            Attendances = result.Data;
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to get attendance list: " + result.Error);
+        }
     }
 
     private async Task getScheduleList()
@@ -436,10 +459,11 @@
     }
 
     //View Schedule
-    private async Task OpenEdit(string Id)
+    private async Task OpenEdit(string Id, DateOnly date)
     {
         ToggleView();
         title = "Details";
+        attDate = date;
         var editEvent = schedulesList.FirstOrDefault(u => u.Id == Id);
         if (editEvent != null)
         {
@@ -455,6 +479,8 @@
             await getScheduleList();
         }
     }
+
+
 
     private async Task updateEvent()
     {
@@ -601,5 +627,45 @@
     private bool HasEvent(DateOnly date) =>
         schedulesList.Any(e => date >= e.StartDate &&
                         date <= e.EndDate);
+
+    private async Task AddOrUpdateAttendance(string schedId, DateOnly date)
+    {
+        var existing = Attendances.FirstOrDefault(a => a.ScheduleId == schedId && a.Date == date);
+        if (existing != null)
+        {
+            existing.Count = count;
+            existing.Seekers = seekers;
+
+            var result = await _firestore.UpdateAttendanceAsync(existing.Id, existing);
+            if (result.Success)
+            {
+                await GetAttendanceList();
+                await _js.InvokeVoidAsync("alert", "Attendance saved successfully");
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Failed to save attendance: " + result.Error);
+            }
+        }
+        else
+        {
+            att.ScheduleId = sched.Id;
+            att.Count = count;
+            att.Seekers = seekers;
+
+            var result = await _firestore.AddAttendanceAsync(att);
+
+            if (result.Success)
+            {
+                await GetAttendanceList();
+                await _js.InvokeVoidAsync("alert", "Attendance saved successfully");
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Failed to save attendance: " + result.Error);
+            }
+
+        }
+    }
 
 }

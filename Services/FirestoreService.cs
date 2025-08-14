@@ -531,7 +531,7 @@ namespace GospelReachCapstone.Services
     public class AttendanceResult
     {
         public bool Success { get; set; }
-        public string Id { get; set; }
+        public List<Attendance> Data { get; set; }
         public string Error { get; set; }
     }
 
