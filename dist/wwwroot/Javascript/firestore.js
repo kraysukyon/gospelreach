@@ -45,9 +45,10 @@
     async getAttendance() {
         try {
             const attendanceTable = await db.collection("Attendance").get();
-            return attendanceTable.docs.map(items => ({ id: items.id, ...items.data() }));
+            const attendance = attendanceTable.docs.map(items => ({ id: items.id, ...items.data() }));
+            return { success: true, data: attendance };
         } catch (error) {
-            alert(error);
+            return { success: false, error: error.message }
         }
         
     },
@@ -56,15 +57,14 @@
     async addAttendance(attendance) {
         try {
             await db.collection("Attendance").add({
+                scheduleId: attendance.scheduleId,
                 date: attendance.date,
-                category: attendance.category,
-                activity: attendance.activity,
                 count: attendance.count,
                 seekers: attendance.seekers
             });
             return { success: true }
         } catch (error) {
-            return { success: false }
+            return { success: false, error: error.message }
         }
     },
 
@@ -72,8 +72,9 @@
     async editAttendance(docId, attendance) {
         try {
             await db.collection("Attendance").doc(docId).set(attendance);
+            return { success: true }
         } catch (error) {
-            alert(error)
+            return { success: false, error: error.message } 
         }
     },
 
@@ -81,8 +82,9 @@
     async deleteAttendance(docId) {
         try {
             await db.collection("Attendance").doc(docId).delete();
+            return { success: true }
         } catch (error) {
-            alert(error)
+            return { success: false, error: error.message }
         }
     },
 
@@ -356,7 +358,9 @@
                 title: schedule.title,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
-                description: schedule.description
+                location: schedule.location,
+                description: schedule.description,
+                status: schedule.status
             });
 
             return { success: true }
@@ -383,7 +387,9 @@
                 title: schedule.title,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
-                description: schedule.description
+                location: schedule.location,
+                description: schedule.description,
+                status: schedule.status
             });
             return { success: true }
         } catch (error) {

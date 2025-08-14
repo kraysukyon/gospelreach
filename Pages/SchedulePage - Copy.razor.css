@@ -63,44 +63,6 @@
     font-size: 14px;
 }
 
-.iconText{
-    display: grid;
-    grid-template-columns: 25px 1fr;
-    margin-top: 1.5rem;
-    gap:1rem;
-}
-
-.fs{
-    color: #272626;
-}
-
-.options{
-    position: relative;
-}
-
-.optionIcon:hover {
-    color: #1b6ec2;
-    font-size: 18px;
-}
-
-.options-child {
-    position: absolute;
-    border: 1px solid #00000026;
-    border-radius: 5px;
-    right: 0;
-    box-shadow: 10px 10px 8px rgba(0,0,0,0,.25);
-}
-
-.fsx{
-    font-size: 15px;
-    font-weight:600;
-    padding: .25rem;
-}
-
-.fsx:hover {
-    background-color: #00000021;
-}
-
 
 .c2 {
     color: #4b5563;
@@ -199,8 +161,8 @@ a {
 
 .calendar-header {
     display: flex;
-    justify-content: start;
-    padding: .5rem 1rem;
+    justify-content: center;
+    padding: 10px;
     background: #1976d2;
     color: white;
     gap: 10px;
@@ -208,10 +170,10 @@ a {
 
 }
 
-.icon {
-    font-weight: 300; /* may help slightly */
-    -webkit-text-stroke: 1px white; /* outline to make it appear thicker */
-}
+    .calendar-header select {
+        padding: 5px;
+        font-size: 16px;
+    }
 
 .calendar-week{
     display: grid;
@@ -244,10 +206,6 @@ a {
     .day-cell.empty {
         background: #f0f0f0;
     }
-
-.day {
-    background-color: rgb(235 245 255);
-}
 
 .day-number {
     position:absolute;
@@ -295,14 +253,6 @@ a {
 
 button{
     cursor: pointer;
-}
-
-.today {
-    color: #1976d2;
-    background: white;
-    padding: 0 1rem;
-    border-radius: 25px;
-    font-weight: 600;
 }
 
 

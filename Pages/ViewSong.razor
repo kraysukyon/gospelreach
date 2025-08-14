@@ -8,24 +8,25 @@
 
 <div class="sub-page">
     <!--Header Section-->
-    <div class="header d-block d-md-flex flex-md-row align-items-start justify-content-between mb-2">
-        <div>
-            <h4 class="m-0 fw-bold">View Lyrics and Chords</h4>
-            <p class="m-0 c2" style="font-size: 14px">Lyrics and chords</p>
-            <div class="d-flex align-items-center  gap-2 mt-3">
-                <p>Transpose: @(transposeStep > 0 ? $"+{transposeStep}" : transposeStep)</p>
-                <button @onclick="StepDown" class="btns"> - </button>
-                <button @onclick="StepUp" class="btns"> + </button>
-                <button @onclick="ToggleBracketlessView" class="btns">Preview without brackets</button>
-                <!--Download as pdf-->
-                <button @onclick="DownloadAsPdf" class="btns"><span><i class="bi bi-download"></i></span></button>
-                <!--Print-->
-                <button @onclick="PrintOutput" class="btns"><span><i class="bi bi-printer text-black"></i></span></button>
+    <div class="header d-block d-md-flex flex-md-column align-items-start justify-content-between mb-2">
+        <div class="d-flex flex-row justify-content-between align-items-start w-100">
+            <div>
+                <h4 class="m-0 fw-bold">View Lyrics and Chords</h4>
+                <p class="m-0 c2" style="font-size: 14px">Lyrics and chords</p>
             </div>
+            
+            <a href="music" class="btn btn-danger p-2 px-4 text-white link">Return</a>
+            
         </div>
-
-        <div>
-            <a href="music" class="btn btn-danger p-2 px-4 text-white link w-100">Return</a>
+        <div class="d-flex align-items-center  gap-2 mt-3">
+            <p>Transpose: @(transposeStep > 0 ? $"+{transposeStep}" : transposeStep)</p>
+            <button @onclick="StepDown" class="btns"> - </button>
+            <button @onclick="StepUp" class="btns"> + </button>
+            <button @onclick="ToggleBracketlessView" class="btns">Preview without brackets</button>
+            <!--Download as pdf-->
+            <button @onclick="DownloadAsPdf" class="btns"><span><i class="bi bi-download"></i></span></button>
+            <!--Print-->
+            <button @onclick="PrintOutput" class="btns"><span><i class="bi bi-printer text-black"></i></span></button>
         </div>
     </div>
 
@@ -43,11 +44,9 @@
             </div>
             <pre class="mt-3">@lyricsAndChords</pre>
         </div>
-        <pre class="mt-3"><strong>Song Title:</strong> @song.Title
-<strong>Artist:</strong> @song.Artist
-
-                @transposedOutput
-            </pre>
+        <h5 class="fw-bold">@song.Title</h5>
+        <p>@song.Artist</p>
+        <pre class="mt-3">@transposedOutput</pre>
     </div>
 </div>
 

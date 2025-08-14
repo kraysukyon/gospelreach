@@ -9,5 +9,6 @@
         public DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public string Location { get; set; }
         public string Description { get; set; }
+        public string Status { get; set; }
     }
 }

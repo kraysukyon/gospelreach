@@ -50,43 +50,66 @@ namespace GospelReachCapstone.Services
         }
 
         //Getting the Attendance List
-        public async Task<List<Attendance>> GetAttendanceAsync()
+        public async Task<AttendanceResult> GetAttendanceAsync()
         {
-            var result = await _jsRuntime.InvokeAsync<Attendance[]>("firestoreFunctions.getAttendance");
-            return result.ToList();
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<AttendanceResult>("firestoreFunctions.getAttendance");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult { Success = false, Error = ex.Message };
+            }
         }
 
 
         //Add Attendance
-        public async Task<(bool Success, string Message)> AddAttendanceAsync(Attendance attendance)
+        public async Task<AttendanceResult> AddAttendanceAsync(Attendance attendance)
         {
             try
             {
                 var result = await _jsRuntime.InvokeAsync<AttendanceResult>("firestoreFunctions.addAttendance", attendance);
-                return result.Success ? (true, "Attendance added successfully") : (false, result.Error ?? "Failed to add attendance");
+                return result;
             }
-            catch (Exception ex)
+            catch (JSException ex)
             {
-                await _jsRuntime.InvokeVoidAsync("alert", $"Error adding attendance: {ex.Message}");
-                return (false, "Error adding attendance");
+                return new AttendanceResult { Success = false, Error = ex.Message };
             }
 
         }
 
-        public async Task UpdateAttendanceAsync(string docId, Attendance attendance)
-        {
-            await _jsRuntime.InvokeVoidAsync("firestoreFunctions.editAttendance", docId, attendance);
-        }
-
-        public async Task DeleteAttendanceAsync(string docId)
+        public async Task<AttendanceResult> UpdateAttendanceAsync(string docId, Attendance attendance)
         {
             try
             {
-                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.deleteAttendance", docId);
+                var result = await _jsRuntime.InvokeAsync<AttendanceResult>("firestoreFunctions.editAttendance", docId, attendance);
+                return result;
             }
-            catch (Exception ex)
+            catch (JSException ex)
             {
-                await _jsRuntime.InvokeVoidAsync("alert", $"Error deleting attendancesssss: {ex.Message}");
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        public async Task<AttendanceResult> DeleteAttendanceAsync(string docId)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<AttendanceResult>("firestoreFunctions.deleteAttendance", docId);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
             }
         }
 
