@@ -71,7 +71,12 @@
     //update attendance
     async editAttendance(docId, attendance) {
         try {
-            await db.collection("Attendance").doc(docId).set(attendance);
+            await db.collection("Attendance").doc(docId).update({
+                scheduleId: attendance.scheduleId,
+                date: attendance.date,
+                count: attendance.count,
+                seekers: attendance.seekers
+            });
             return { success: true }
         } catch (error) {
             return { success: false, error: error.message } 

@@ -9,15 +9,14 @@
 
 
 <div class="pages">
-    <!--Add User Model-->
+    <!--Add Schedule Modal-->
     <div @onclick="ToggleModal" class="addEventModal @(isAddModalVisible ? "show" : "")">
         <div class="addEvent" @onclick:stopPropagation @onclick="closeOption">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between mb-3">
                 <div>
                     <h4 class="fw-bold">
                         @title
                     </h4>
-                    <p style="font-size:14px;">Create and Manage Schedules.</p>
                 </div>
 
                 <div class="options">
@@ -31,42 +30,86 @@
             </div>
 
             <div hidden="@(!isEditMode)">
+                <!--Title-->
                 <div class="input mt-3">
-                    <p>Category</p>
-                    <select @bind="eventCategory" class="form-select p-2 mt-2">
+                    <div class="title">
+                        <i class="bi bi-pencil-square"></i>
+                        <p>Title</p>
+                    </div>
+                    
+                    <input @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
+                </div>
+
+                <!--Type-->
+                <div class="input mt-3">
+                    <div class="title">
+                        <i class="bi bi-ui-radios-grid"></i>
+                        <p>Type</p>
+                    </div>
+
+                    <div class="cat">
+                        <button @onclick="(() => setType(1))" class="btn type @GetClass(1)"><i class="bi bi-star"></i> Event</button>
+                        <button @onclick="(() => setType(2))" class="btn type @GetClass(2)"><i class="bi bi-book"></i> Program</button>
+                        <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Services</button>
+                    </div>
+                    
+                    @* <select @bind="eventCategory" class="form-select p-2">
                         <option value="Event">Event</option>
                         <option value="Weekly Program">Weekly Program</option>
                         <option value="Service">Service</option>
-                    </select>
+                    </select> *@
                 </div>
 
+                <!--Date-->
                 <div class="input mt-3">
-                    <p>Title</p>
-                    <input @bind="eventTitle"  type="text" class="form-control p-2 mt-2" placeholder="Enter Title" />
-                </div>
-
-                <div class="userFields">
-                    <div class="input">
-                        <p>Start Date</p>
-                        <input @bind="sDate" @bind:event="onchange" @bind:after="OnChangeDate" type="date" class="form-control p-2" />
+                    <div class="title">
+                        <i class="bi bi-calendar-check"></i>
+                        <p>Date</p>
                     </div>
 
-                    <div class="input">
-                        <p>End Date</p>
+                    
+                    <div class="date">
+                        <input @bind="sDate" @bind:event="onchange" @bind:after="OnChangeDate" type="date" class="form-control p-2" />
+                        <i class="bi bi-arrow-right"></i>
                         <input @bind="eDate" type="date" class="form-control p-2" />
                     </div>
                 </div>
 
+                <!--Time-->
                 <div class="input mt-3">
-                    <p>Location</p>
-                    <input @bind="sched.Location" type="text" class="form-control p-2 mt-2" placeholder="Location" />
+                    <div class="title">
+                        <i class="bi bi-clock"></i>
+                        <p>Time</p>
+                    </div>
+
+                    <div class="date">
+                        <input @bind="sTime" type="time" class="form-control p-2" />
+                        <i class="bi bi-arrow-right"></i>
+                        <input @bind="eTime" type="time" class="form-control p-2" />
+                    </div>
                 </div>
 
+                <!--Venue-->
                 <div class="input mt-3">
-                    <p>Description</p>
-                    <textarea @bind="sched.Description" type="text" class="form-control p-2 mt-2" placeholder="Description" style="min-height:200px;" />
+                    <div class="title">
+                        <i class="bi bi-geo-alt"></i>
+                        <p>Venue</p>
+                    </div>
+                    
+                    <input @bind="sched.Location" type="text" class="form-control p-2" placeholder="Add Venue" />
                 </div>
 
+                <!--Description-->
+                <div class="input inputD mt-3">
+                    <div class="title mt-2">
+                        <i class="bi bi-list-ul"></i>
+                        <p>Details</p>
+                    </div>
+                    
+                    <textarea @bind="sched.Description" id="textArea" type="text" spellcheck="false" class="form-control p-2" placeholder="Add Details" />
+                </div>
+
+                <!--Attendance-->
                 <div hidden="@(!isAttendanceVisible)" class="userFields">
                     <div class="input">
                         <p>Count</p>
@@ -122,14 +165,14 @@
                     </div>
                     
 
-                    <button @onclick="(() => AddOrUpdateAttendance(sched.Id, attDate))" class="btn btn-primary p-2 px-3 text-white link">Save</button>
+                    <button @onclick="AddOrUpdateAttendance" class="btn btn-primary p-2 px-3 text-white link">Save</button>
                 </div>
             </div>
             
 
 
 
-            @if (title == "Add Schedule")
+            @if (title == "New Schedule")
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
@@ -139,7 +182,8 @@
             else
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-md-between">
-                    <i hidden="@(title == "Add Schedule" || title == "Update Details")" @onclick="ToggleAttendance" class="bi bi-plus-square text-primary m-0 p-0 fs-4 cursor"></i>
+                    <button hidden="@(title == "New Schedule" || title == "Update Details")" @onclick="ToggleAttendance" class="btn attBtn">Attendance</button>
+                    @* <i  class="bi bi-plus-square text-primary m-0 p-0 fs-4 cursor"></i> *@
                     <div>
                         <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
                         <button hidden="@(!isEditMode)" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
@@ -162,8 +206,25 @@
         </div>
     </div>
 
+    <div class="lcontainer" hidden="@(isListVisible)">
+        <div class="d-flex align-items-center justify-content-center gap-2">
+            <div class="l1"></div>
+            Event
+        </div>
+
+        <div class="d-flex align-items-center justify-content-center gap-2">
+            <div class="l2"></div>
+            Weekly Program
+        </div>
+
+        <div class="d-flex align-items-center justify-content-center gap-2">
+            <div class="l3"></div>
+            Services
+        </div>
+    </div>
+
     <!--Calendar View Section-->
-    <div class="calendar-container">
+    <div class="calendar-container" hidden="@(isListVisible)">
         <div class="calendar-header">
             <div class="d-flex gap-2 align-items-center">
                 <button class="btn today" @onclick="setDateToday">Date Today</button>
@@ -174,6 +235,7 @@
                 <p class="text-white m-0 p-0 fs-3 fw-normal">@GetMonthName()</p>
                 <p class="text-white m-0 p-0 fs-3 fw-normal">@SelectedYear</p>
             </div>
+            <i class="bi bi-search text-white fs-4 cursor" @onclick="ToggleList"></i>
         </div>
 
         <div class="calendar-week">
@@ -201,6 +263,8 @@
                                     a.ScheduleId == item.Id &&
                                     a.Date == new DateOnly(SelectedYear, SelectedMonth, day));
 
+                                    
+
                                     <div class="@SwitchClass(item.Category)" @onclick="(() => OpenEdit(item.Id, new DateOnly(SelectedYear, SelectedMonth, day)))">@item.Title</div>
                                 }
                             </div>
@@ -210,19 +274,64 @@
             }
         </div>
     </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards" hidden="@(!isListVisible)">
+
+        <!--Search Section-->
+        <div class="d-flex justify-content-between align-items-start gap-2">
+            <div class="position-relative mb-2 w-100">
+                <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                <input @bind="searchSched" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name..." />
+            </div>
+            <i class="bi bi-calendar-event fs-4 cursor m-0 p-0" @onclick="ToggleList"></i>
+            
+        </div>
+        
+
+        <p class="mb-2"><em>@messages</em></p>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead">Name</th>
+                        <th class="thead">Start Date</th>
+                        <th class="thead">End Date</th>
+                        <th class="thead">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in filteredSched)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell" style="font-weight:500;">@item.Title</td>
+                            <td class="table-cell" style="font-weight:500;">@item.StartDate.ToString("MMMM dd, yyyy")</td>
+                            <td class="table-cell" style="font-weight:500;">@item.EndDate.ToString("MMMM dd, yyyy")</td>
+                            <td @onclick:stopPropagation @onclick="(() => OpenEdit(item.Id, new DateOnly(SelectedYear, SelectedMonth, attDate.Day)))" class="table-cell d-flex gap-2 hover" style="padding: 24px 24px; border-bottom: none; width: auto;">View</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 @code {
     private List<Schedule> schedulesList = new();
-    private string title = "Add Schedule";
+    private string title = "New Schedule";
     private string eventTitle { get; set; }
     private string eventCategory { get; set; }
     private DateOnly sDate { get; set; }
     private DateOnly eDate { get; set; }
+    private DateTime sDateTime { get; set; } = DateTime.Today;
     private bool isAddModalVisible = false;
     private Schedule sched = new();
     private string searchSched = string.Empty;
-    private IEnumerable<Schedule> filteredSched => schedulesList.Where(u => string.IsNullOrWhiteSpace(searchSched) || u.Title.Contains(searchSched, StringComparison.OrdinalIgnoreCase)).ToList();
+    private string messages = string.Empty;
+    private int index = 1;
+    private IEnumerable<Schedule> filteredSched => schedulesList.Where(u => string.IsNullOrWhiteSpace(searchSched) || u.Title.Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.StartDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.EndDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase)).ToList();
 
     public record MonthOption(int Value, string Name);
     private List<MonthOption> Months { get; set; }
@@ -231,6 +340,7 @@
 
     private int SelectedMonth { get; set; }
     private int SelectedYear { get; set; }
+    private bool isListVisible = false;
 
     private List<List<int>> CalendarWeeks = new();
     private int month = DateTime.Now.Month;
@@ -243,7 +353,11 @@
     private bool isAttendanceVisible = false;
     private int count = 0;
     private int seekers = 0;
-    private DateOnly attDate { get; set; }
+    private DateOnly attDate = new DateOnly(2025,9,6);
+
+    //Time
+    private TimeOnly sTime = new TimeOnly(8,0);
+    private TimeOnly eTime = new TimeOnly(17, 0);
 
     //Toggle option
     private bool isOptionVisible = false;
@@ -314,6 +428,29 @@
         };
     }
 
+    private void setType(int type)
+    {
+        index = type;
+        switch (type)
+        {
+            case 1:
+                eventCategory = "Event";
+                break;
+            case 2:
+                eventCategory = "Weekly Program";
+                break;
+            case 3:
+                eventCategory = "Service";
+                break;
+
+        }
+    }
+
+    private string GetClass(int indexs)
+    {
+        return $"{(index == indexs ? "active" : "")}";
+    }
+
     private void OnChangeDate()
     {
         eDate = sDate;
@@ -325,7 +462,7 @@
         isOptionVisible = false;
         isEditMode = true;
         isAttendanceVisible = false;
-        title = "Add Schedule";
+        title = "New Schedule";
         sched = new();
         eventTitle = sched.Title;
         eventCategory = sched.Category;
@@ -340,7 +477,7 @@
         isAttendanceVisible = false;
         isOptionVisible = false;
         isEditMode = false;
-        title = "Add Schedule";
+        title = "New Schedule";
         sched = new();
     }
 
@@ -375,6 +512,11 @@
         SelectedYear = currentYear;
 
         GenerateCalendar();
+    }
+
+    private void ToggleList()
+    {
+        isListVisible = !isListVisible;
     }
 
     //Get Attendance List
@@ -461,6 +603,7 @@
     //View Schedule
     private async Task OpenEdit(string Id, DateOnly date)
     {
+        attDate = date;
         ToggleView();
         title = "Details";
         attDate = date;
@@ -477,6 +620,28 @@
         {
             await _js.InvokeVoidAsync("alert", "Event does not exist");
             await getScheduleList();
+        }
+
+        var result = await _firestore.GetAttendanceAsync();
+        if (result.Success)
+        {
+            Attendances = result.Data;
+
+            var attend = Attendances.FirstOrDefault(u => u.ScheduleId == Id && u.Date == attDate);
+            if (attend != null)
+            {
+                count = attend.Count;
+                seekers = attend.Seekers;
+            }
+            else
+            {
+                count = 0;
+                seekers = 0;
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to fetch attendance: " + result.Error);
         }
     }
 
@@ -523,9 +688,31 @@
             var result = await _firestore.RemoveScheduleAsync(Id);
             if (result.Success)
             {
-                await _js.InvokeVoidAsync("alert", "Successfully deleted");
+                var attend = await _firestore.GetAttendanceAsync();
+
+                if (attend.Success)
+                {
+                    Attendances = attend.Data;
+
+                    var attendanceToRemove = Attendances.Where(u => u.ScheduleId == Id).ToList();
+
+                    foreach (var item in attendanceToRemove)
+                    {
+                        var res = await _firestore.DeleteAttendanceAsync(item.Id);
+                        if (!res.Success)
+                        {
+                            await _js.InvokeVoidAsync("alert", "Failed to remove attendance of the removed schedule : " + res.Error);
+                        }
+                    }
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Failed to remove attendance of the removed schedule : " + attend.Error);
+                }
+
                 ToggleModal();
                 await getScheduleList();
+                await _js.InvokeVoidAsync("alert", "Successfully deleted");
             }
             else
             {
@@ -628,9 +815,9 @@
         schedulesList.Any(e => date >= e.StartDate &&
                         date <= e.EndDate);
 
-    private async Task AddOrUpdateAttendance(string schedId, DateOnly date)
+    private async Task AddOrUpdateAttendance()
     {
-        var existing = Attendances.FirstOrDefault(a => a.ScheduleId == schedId && a.Date == date);
+        var existing = Attendances.FirstOrDefault(u => u.ScheduleId == sched.Id && u.Date == attDate);
         if (existing != null)
         {
             existing.Count = count;
@@ -649,23 +836,38 @@
         }
         else
         {
+
             att.ScheduleId = sched.Id;
             att.Count = count;
             att.Seekers = seekers;
+            att.Date = attDate;
 
             var result = await _firestore.AddAttendanceAsync(att);
 
             if (result.Success)
             {
+                count = 0;
+                seekers = 0;
                 await GetAttendanceList();
+                isAddModalVisible = false;
                 await _js.InvokeVoidAsync("alert", "Attendance saved successfully");
+
             }
             else
             {
                 await _js.InvokeVoidAsync("alert", "Failed to save attendance: " + result.Error);
             }
-
+           
         }
     }
 
 }
+
+<script>
+    const text = document.getElementById('textArea');
+
+    text.addEventListener('input', function(){
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+</script>
