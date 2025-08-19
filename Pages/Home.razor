@@ -290,7 +290,7 @@
             if (result.Success)
             {
                 await JSRuntime.InvokeVoidAsync("alert", result.Message);
-                NavigationManager.NavigateTo("/dashboard"); // Redirect to dashboard after login
+                NavigationManager.NavigateTo("dashboard"); // Redirect to dashboard after login
             }
             else
             {

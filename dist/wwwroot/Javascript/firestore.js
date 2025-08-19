@@ -237,9 +237,11 @@
     },
 
     resizeTextarea(input, output) {
+        input.style.height = 'auto';
         if (!input || input.value.trim() === '') {
-            input.style.height = "100px";
-            output.style.height = "100px";
+            //input.style.height = "100px";
+            //output.style.height = "100px";
+            input.style.height = (input.scrollHeight) + "px";
         }
         else {
             input.style.height = (input.scrollHeight) + "px";
@@ -363,6 +365,9 @@
                 title: schedule.title,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
+                startTime: schedule.startTime,
+                endTime: schedule.endTime,
+                timeOption: schedule.timeOption,
                 location: schedule.location,
                 description: schedule.description,
                 status: schedule.status
@@ -385,6 +390,17 @@
         }
     },
 
+    async getScheduleByStatus(stats) {
+        try {
+            const schedTable = await db.collection("Schedules").where("status", "==", stats).get();
+            const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return {success: true, data: sched }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
     async updateSchedule(id, schedule) {
         try {
             await db.collection("Schedules").doc(id).update({
@@ -392,6 +408,9 @@
                 title: schedule.title,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
+                startTime: schedule.startTime,
+                endTime: schedule.endTime,
+                timeOption: schedule.timeOption,
                 location: schedule.location,
                 description: schedule.description,
                 status: schedule.status
@@ -408,6 +427,19 @@
             return { success: true }
         } catch (error) {
             return { success: false, error: error.message}
+        }
+    },
+
+    textareaResize(input) {
+        input.style.height = 'auto';
+        //input.style.height = this.scrollHeight + 'px';
+
+        if (!input || input.value.trim() === '') {
+            //input.style.height = 'calc(1.5em + .75rem + 2px)';
+            input.style.height = (input.scrollHeight) + "px";
+        }
+        else {
+            input.style.height = (input.scrollHeight) + "px";
         }
     },
 

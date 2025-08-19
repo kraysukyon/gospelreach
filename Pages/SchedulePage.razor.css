@@ -13,10 +13,13 @@
     flex-direction: column;
 }
 
-.addEvent{
+.addEvents{
+    background-color: #FFF;
     max-height: 100vh;
     overflow: auto;
     padding: 1rem;
+    width: 600px;
+    border-radius:25px;
 }
 
 .attBtn {
@@ -58,21 +61,21 @@
 
 textarea{
     resize: none;
-    overflow: hidden;
+    overflow: auto;
     max-height:150px;
 }
 
 .cat{
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: .5rem;
 }
 
 .type {
-
     border: 2px solid #dee2e6;
     padding-top: .4rem;
     padding-bottom: .4rem;
+    font-size: 1rem;
 }
 
 .type:focus{
@@ -110,6 +113,13 @@ textarea{
     height: 10px;
     border-radius: 5px;
     background-color: #88245f
+}
+
+.l4 {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: #c78600;
 }
 
 .addEventModal {
@@ -215,9 +225,23 @@ textarea{
     margin: 0;
 }
 
+
+
 .input input{
     padding: 0;
     margin: 0;
+}
+
+.input .dates{
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 1rem;
+}
+
+.input .time {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
 }
 
 .input .date{
@@ -247,9 +271,57 @@ textarea{
     gap:1rem;
 }
 
+.inputTime {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: start;
+}
+
+    .inputTime .title {
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        gap: .5rem;
+        padding: 0;
+        margin: 0;
+    }
+
+        .inputTime .title i, .inputTime .title p {
+            color: gray;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 0;
+            margin: 0;
+        }
+
+    .inputTime p {
+        font-size: 14px;
+    }
+
+    .inputTime .date {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .inputTime .time {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .inputTime .dates {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        gap: 0;
+    }
+
 .fs{
     color: #272626;
 }
+
+
 
 .options{
     position: relative;
@@ -266,6 +338,7 @@ textarea{
     border-radius: 5px;
     right: 0;
     box-shadow: 10px 10px 8px rgba(0,0,0,0,.25);
+    background-color: #FFFFFF;
 }
 
 .fsx{
@@ -356,6 +429,18 @@ a {
 
 .pill3 {
     background-color: #88245f;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: .75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFF;
+    cursor: pointer;
+}
+
+.pill4 {
+    background-color: #c78600;
     padding: 4px 8px;
     border-radius: 10px;
     font-size: .75rem;
@@ -482,6 +567,27 @@ button{
     border-radius: 25px;
     font-weight: 600;
 }
+
+.viewMod{
+    max-height: calc(100vh - 40vh);
+}
+
+.filterTime{
+    display:flex;
+    width: fit-content;
+    gap: 1rem;
+    margin: .5rem 0 1rem .25rem;
+    align-items: center;
+}
+
+.filterTime p{
+    text-wrap: nowrap;
+}
+
+    .filterTime select {
+        padding-left: 1rem;
+        padding-right: 2rem;
+    }
 
 
 

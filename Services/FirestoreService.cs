@@ -491,6 +491,24 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        //Fetch schedules by status
+        public async Task<ScheduleResult> GetScheduleByStatusAsync(string status)
+        {
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.getScheduleByStatus", status);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
         //Update Schedule
         public async Task<ScheduleResult> UpdateScheduleAsync(string Id, Schedule sched)
         {
@@ -524,6 +542,19 @@ namespace GospelReachCapstone.Services
                     Success = false,
                     Error = ex.Message
                 };
+            }
+        }
+
+        //Resize textarea of input and output
+        public async Task ResizeDetails(ElementReference input)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.textareaResize", input);
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
             }
         }
     }
