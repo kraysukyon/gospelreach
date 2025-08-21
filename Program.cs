@@ -24,5 +24,9 @@ builder.Services.AddScoped<FirestoreService>();
 builder.Services.AddScoped<ChordsFormatterService>();
 builder.Services.AddScoped<GeneralFunctions>();
 builder.Services.AddScoped<AppState>();
+builder.Services.AddScoped<GroupService>();
+builder.Services.AddScoped<GroupMemberService>();
+builder.Services.AddScoped<MemberService>();
+builder.Services.AddScoped<ScheduleService>();
 
 await builder.Build().RunAsync();

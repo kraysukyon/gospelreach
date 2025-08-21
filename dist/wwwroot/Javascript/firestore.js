@@ -443,4 +443,103 @@
         }
     },
 
+    //============================================Group Section============================================//
+
+    async getGroup() {
+        try {
+            const groupTable = await db.collection("Groups").get();
+            const group = groupTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: group }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async addGroup(group) {
+        try {
+            const docref = await db.collection("Groups").add({
+                name: group.name,
+            });
+
+            return {success: true, Id: docref.id}
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async getGroupById(id) {
+        try {
+            const docRef = db.collection("Groups").doc(id);
+            const doc = await docRef.get();
+
+            if (!doc.exists) {
+                return { success: false, error: "Group not found" }
+            }
+
+            return { success: true, group: { id: doc.id, ...doc.data() } }
+        } catch (error) {
+            return {success: false, error: error.message}
+        }
+    },
+
+    async updateGroup(group) {
+        try {
+            await db.collection("Groups").doc(group.id).update({
+                name: group.name
+            });
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message}
+        }
+    },
+
+    //============================================GroupMember Section============================================//
+    async getGroupMembersByGroupId(id) {
+        try {
+            const groupMembertable = await db.collection("GroupMembers").where("groupId", "==", id).get();
+
+            if (groupMembertable.empty) {
+                return { success: true, error: "No members found for this group"}
+            }
+
+            const groupMember = groupMembertable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return {success: true, data: groupMember}
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+
+    async addGroupmembers(mem) {
+        try {
+            await db.collection("GroupMembers").add({
+                groupId: mem.groupId,
+                memberId: mem.memberId
+            });
+
+            return { success: true }
+        } catch (error) {
+            return {success: false, error:error.message}
+        }
+    },
+
+    async removeGroupMembers(id) {
+        try {
+            const snapshot = await db.collection("GroupMembers").where("groupId", "==", id).get();
+            const batch = db.batch();
+
+            snapshot.forEach(doc => { batch.delete(doc.ref) });
+
+            await batch.commit();
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+
 }

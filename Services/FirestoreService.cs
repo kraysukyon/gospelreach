@@ -113,61 +113,7 @@ namespace GospelReachCapstone.Services
             }
         }
 
-        //================================== Member Section=============================================//
-
-        public async Task<MembersResult> GetMembersAsync()
-        {
-            try
-            {
-                var result = await _jsRuntime.InvokeAsync<MembersResult>("firestoreFunctions.getMembers");
-                return result;
-            }
-            catch (JSException ex)
-            {
-                return new MembersResult
-                {
-                    Success = false,
-                    Error = ex.Message
-                };
-            }
-        }
-
-        public async Task<bool> AddMemberAsync(Member member)
-        {
-            try
-            {
-                var result = await _jsRuntime.InvokeAsync<JsonElement>("firestoreFunctions.addMember", member);
-                return result.GetProperty("success").GetBoolean();
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public async Task updateMemberAsync(string memberId, Member member)
-        {
-            try
-            {
-                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.updateMember", memberId, member);
-            }
-            catch (Exception ex)
-            {
-                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
-            }
-        }
-
-        public async Task deleteMemberAsync(string memberId)
-        {
-            try
-            {
-                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.deleteMember", memberId);
-            }
-            catch (Exception ex)
-            {
-                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
-            }
-        }
+        
 
         //======================================================Events Section========================================//
         public async Task<List<Event>> getEventsAsync()
@@ -452,111 +398,6 @@ namespace GospelReachCapstone.Services
                 };
             }
         }
-
-        //==================================Department Member Section=============================================//
-
-        //add schedule
-        public async Task<ScheduleResult> AddScheduleAsync(Schedule sched)
-        {
-            try
-            {
-                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.addSchedule", sched);
-                return result;
-            }
-            catch (JSException ex)
-            {
-                return new ScheduleResult
-                {
-                    Success = false,
-                    Error = ex.Message
-                };
-            }
-        }
-
-        //Fetch Data for schedule
-        public async Task<ScheduleResult> GetScheduleAsync()
-        {
-            try
-            {
-                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.getSchedule");
-                return result;
-            }
-            catch (JSException ex)
-            {
-                return new ScheduleResult
-                {
-                    Success = false,
-                    Error = ex.Message
-                };
-            }
-        }
-
-        //Fetch schedules by status
-        public async Task<ScheduleResult> GetScheduleByStatusAsync(string status)
-        {
-            try
-            {
-                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.getScheduleByStatus", status);
-                return result;
-            }
-            catch (JSException ex)
-            {
-                return new ScheduleResult
-                {
-                    Success = false,
-                    Error = ex.Message
-                };
-            }
-        }
-
-        //Update Schedule
-        public async Task<ScheduleResult> UpdateScheduleAsync(string Id, Schedule sched)
-        {
-            try
-            {
-                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.updateSchedule", Id, sched);
-                return result;
-            }
-            catch (JSException ex)
-            {
-                return new ScheduleResult
-                {
-                    Success = false,
-                    Error = ex.Message
-                };
-            }
-        }
-
-        //Remove Schedule
-        public async Task<ScheduleResult> RemoveScheduleAsync(string Id)
-        {
-            try
-            {
-                var result = await _jsRuntime.InvokeAsync<ScheduleResult>("firestoreFunctions.removeSchedule", Id);
-                return result;
-            }
-            catch (JSException ex)
-            {
-                return new ScheduleResult
-                {
-                    Success = false,
-                    Error = ex.Message
-                };
-            }
-        }
-
-        //Resize textarea of input and output
-        public async Task ResizeDetails(ElementReference input)
-        {
-            try
-            {
-                await _jsRuntime.InvokeVoidAsync("firestoreFunctions.textareaResize", input);
-            }
-            catch (Exception ex)
-            {
-                await _jsRuntime.InvokeVoidAsync("alert", ex.Message);
-            }
-        }
     }
 
     public class AttendanceResult
@@ -566,12 +407,6 @@ namespace GospelReachCapstone.Services
         public string Error { get; set; }
     }
 
-    public class MembersResult
-    {
-        public bool Success { get; set; }
-        public List<Member> Data { get; set; }
-        public string Error { get; set; }
-    }
 
     public class DepartmentResult
     {

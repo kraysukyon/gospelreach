@@ -1,5 +1,6 @@
 ﻿@page "/schedules"
 @layout LandingLayout
+@inject GospelReachCapstone.Services.ScheduleService _schedule
 @inject GospelReachCapstone.Services.FirestoreService _firestore
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
@@ -524,7 +525,7 @@
     {
         messages = "Fetching files...Please wait";
 
-        var result = await _firestore.GetScheduleByStatusAsync("Upcoming");
+        var result = await _schedule.GetScheduleByStatusAsync("Upcoming");
 
         if (result.Success)
         {
@@ -547,7 +548,7 @@
 
         if (selectedStatus != null)
         {
-            var result = await _firestore.GetScheduleByStatusAsync(selectedStatus);
+            var result = await _schedule.GetScheduleByStatusAsync(selectedStatus);
 
             if (result.Success)
             {
@@ -765,7 +766,7 @@
         try
         {
             schedulesList = new();
-            var result = await _firestore.GetScheduleAsync();
+            var result = await _schedule.GetScheduleAsync();
 
             if (result.Success)
             {
@@ -809,7 +810,7 @@
             sched.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
             sched.EndTime = eTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
 
-            var result = await _firestore.AddScheduleAsync(sched);
+            var result = await _schedule.AddScheduleAsync(sched);
             if (result.Success)
             {
                 await _js.InvokeVoidAsync("alert", "Schedule successfully added");
@@ -904,7 +905,7 @@
             sched.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
             sched.EndTime = eTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
 
-            var result = await _firestore.UpdateScheduleAsync(sched.Id, sched);
+            var result = await _schedule.UpdateScheduleAsync(sched.Id, sched);
 
             if (result.Success)
             {
@@ -930,7 +931,7 @@
 
         try
         {
-            var result = await _firestore.RemoveScheduleAsync(Id);
+            var result = await _schedule.RemoveScheduleAsync(Id);
             if (result.Success)
             {
                 var attend = await _firestore.GetAttendanceAsync();
@@ -1110,7 +1111,7 @@
     {
         try
         {
-            await _firestore.ResizeDetails(textarea);
+            await _schedule.ResizeDetails(textarea);
         }
         catch (Exception ex)
         {
@@ -1119,12 +1120,3 @@
     }
 
 }
-
-@* <script>
-    const text = document.getElementById('textArea');
-
-    text.addEventListener('input', function(){
-        this.style.height = 'auto';
-        this.style.height = this.scrollHeight + 'px';
-    });
-</script> *@

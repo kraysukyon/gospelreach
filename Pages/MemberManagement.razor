@@ -1,6 +1,6 @@
 ﻿@page "/membermanagement"
 @layout LandingLayout
-@inject GospelReachCapstone.Services.FirestoreService Firestore
+@inject GospelReachCapstone.Services.MemberService _memberService
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.GeneralFunctions _gen
@@ -298,7 +298,7 @@
         totalMembers = 0;
         activeMembers = 0;
         newMembers = 0;
-        var result = await Firestore.GetMembersAsync();
+        var result = await _memberService.GetMembersAsync();
 
         if (result.Success)
         {
@@ -317,7 +317,7 @@
         try
         {
 
-            await Firestore.AddMemberAsync(member);
+            await _memberService.AddMemberAsync(member);
             await _js.InvokeVoidAsync("alert", "Member added successfully");
             await getMembers();
             ToggleModal();
@@ -392,7 +392,7 @@
     {
         try
         {
-            await Firestore.updateMemberAsync(member.Id, member);
+            await _memberService.updateMemberAsync(member.Id, member);
             ToggleModal();
             await getMembers();
             await _js.InvokeVoidAsync("alert", "Member updated successfully.");
@@ -414,7 +414,7 @@
 
         try
         {
-            await Firestore.deleteMemberAsync(Id);
+            await _memberService.deleteMemberAsync(Id);
             await getMembers();
             await _js.InvokeVoidAsync("alert", "Member deleted successfully.");
         }
@@ -455,7 +455,7 @@
         {
             if (IsValidEmail(member.Email))
             {
-                var list = await Firestore.GetMembersAsync();
+                var list = await _memberService.GetMembersAsync();
                 if (list.Success)
                 {
                     bool check = list.Data.Any(u => u.Email == member.Email);

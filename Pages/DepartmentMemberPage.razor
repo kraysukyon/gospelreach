@@ -2,6 +2,7 @@
 @layout LandingLayout
 @using GospelReachCapstone.Models
 @inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject GospelReachCapstone.Services.MemberService _memberService
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.AppState _appState
 
@@ -175,7 +176,7 @@
     //Getthe membersList
     private async Task LoadMusicMembers()
     {
-        var result = await _firestore.GetMembersAsync();
+        var result = await _memberService.GetMembersAsync();
         if (result.Success)
         {
             List<DepartmentMember> musicMem = new();
@@ -266,7 +267,7 @@
         DepName = _appState.SelectedDepartmentName;
         message = "Fetching database...";
 
-        var result = await _firestore.GetMembersAsync();
+        var result = await _memberService.GetMembersAsync();
         if (result.Success)
         {
             members = result.Data;

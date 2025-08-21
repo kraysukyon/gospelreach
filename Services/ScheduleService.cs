@@ -1,0 +1,119 @@
+﻿using GospelReachCapstone.Models;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+
+namespace GospelReachCapstone.Services
+{
+    public class ScheduleService
+    {
+        private readonly IJSRuntime _js;
+        public ScheduleService(IJSRuntime js)
+        {
+            _js = js;
+        }
+
+        //=========Functions============================
+        //add schedule
+        public async Task<ScheduleResult> AddScheduleAsync(Schedule sched)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.addSchedule", sched);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Fetch Data for schedule
+        public async Task<ScheduleResult> GetScheduleAsync()
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getSchedule");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Fetch schedules by status
+        public async Task<ScheduleResult> GetScheduleByStatusAsync(string status)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getScheduleByStatus", status);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Update Schedule
+        public async Task<ScheduleResult> UpdateScheduleAsync(string Id, Schedule sched)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.updateSchedule", Id, sched);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Remove Schedule
+        public async Task<ScheduleResult> RemoveScheduleAsync(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.removeSchedule", Id);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Resize textarea of input and output
+        public async Task ResizeDetails(ElementReference input)
+        {
+            try
+            {
+                await _js.InvokeVoidAsync("firestoreFunctions.textareaResize", input);
+            }
+            catch (Exception ex)
+            {
+                await _js.InvokeVoidAsync("alert", ex.Message);
+            }
+        }
+    }
+}
