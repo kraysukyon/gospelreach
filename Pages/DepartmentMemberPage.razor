@@ -1,7 +1,7 @@
 ﻿@page "/departmentMember"
 @layout LandingLayout
 @using GospelReachCapstone.Models
-@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject GospelReachCapstone.Services.DepartmentMemberService _departmentMemberService
 @inject GospelReachCapstone.Services.MemberService _memberService
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.AppState _appState
@@ -183,7 +183,7 @@
             allMembers = result.Data;
             messages = string.Empty;
             members = allMembers.Where(u => u.Age > 12).ToList();
-            var results = await _firestore.GetDepartmentMemberAsync();
+            var results = await _departmentMemberService.GetDepartmentMemberAsync();
             if (results.Success)
             {
                 musicMem = results.Data;
@@ -241,7 +241,7 @@
         {
             departmentMember.DepartmentId = _appState.SelectedDepartmentId;
             departmentMember.MemberId = item;
-            var result = await _firestore.AddDepartmentMemberAsync(departmentMember);
+            var result = await _departmentMemberService.AddDepartmentMemberAsync(departmentMember);
         }
         messages = string.Empty;
         await GetMembers();
@@ -328,7 +328,7 @@
         bool confirm = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this member?");
         if (!confirm) return;
 
-        var result = await _firestore.GetDepartmentMemberAsync();
+        var result = await _departmentMemberService.GetDepartmentMemberAsync();
 
         if (result.Success)
         {
@@ -337,7 +337,7 @@
 
             if (memberToRemove != null)
             {
-                var rem = await _firestore.RemoveDepartmentMemberAsync(memberToRemove);
+                var rem = await _departmentMemberService.RemoveDepartmentMemberAsync(memberToRemove);
 
                 if (rem.Success)
                 {

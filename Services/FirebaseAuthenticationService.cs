@@ -8,13 +8,11 @@ namespace GospelReachCapstone.Services
     {
         private readonly IJSRuntime _jsRuntime;
         private readonly AuthState _authState;
-        private readonly FirestoreService _firestore;
 
-        public FirebaseAuthenticationService(IJSRuntime jSRuntime, AuthState authstate, FirestoreService firestore)
+        public FirebaseAuthenticationService(IJSRuntime jSRuntime, AuthState authstate, DepartmentMemberService firestore)
         {
             _jsRuntime = jSRuntime;
             _authState = authstate;
-            _firestore = firestore;
         }
         public async Task<(bool Success, string Message)> RegisterAsync(User user)
         {

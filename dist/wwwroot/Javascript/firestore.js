@@ -56,13 +56,13 @@
     //Adding Attendance
     async addAttendance(attendance) {
         try {
-            await db.collection("Attendance").add({
+            const tb = await db.collection("Attendance").add({
                 scheduleId: attendance.scheduleId,
                 date: attendance.date,
                 count: attendance.count,
                 seekers: attendance.seekers
             });
-            return { success: true }
+            return { success: true, id: tb.id}
         } catch (error) {
             return { success: false, error: error.message }
         }
@@ -87,6 +87,21 @@
     async deleteAttendance(docId) {
         try {
             await db.collection("Attendance").doc(docId).delete();
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    //============================================Attendance Member Record=============================================
+    async addAttendanceMemberRecor(att) {
+        try {
+            await db.collection("AttendanceMemberRecord").add({
+                attendanceId: att.attendanceId,
+                memberId: att.memberId,
+                isPresent: att.isPresent
+            });
+
             return { success: true }
         } catch (error) {
             return { success: false, error: error.message }
@@ -147,49 +162,6 @@
         }
     },
 
-    //============================================Event Management Section============================================//
-    async getEvents() {
-        try {
-            const eventsTable = await db.collection("Events").get();
-            return eventsTable.docs.map(items => ({ id: items.id, ...items.data() }));
-        } catch (error) {
-            alert(error)
-        }
-    },
-
-    async addEvent(event) {
-        try {
-            await db.collection("Events").add({
-                eventName: event.eventName,
-                date: event.date,
-                tag: event.tag,
-                startTime: event.startTime,
-                endTime: event.endTime,
-                location: event.location,
-                description: event.description
-            });
-            return { success: true }
-        } catch (error) {
-            return { success: false }
-            alert(error)
-        }
-    },
-
-    async editEvent(eventId, events) {
-        try {
-            await db.collection("Events").doc(eventId).set(events);
-        } catch (error) {
-            alert(error)
-        }
-    },
-
-    async deleteEvent(eventId) {
-        try {
-            await db.collection("Events").doc(eventId).delete();
-        } catch (error) {
-            alert(error);
-        }
-    },
 
     //============================================Music Management Section============================================//
     async getSongs() {
@@ -356,12 +328,13 @@
         }
     },
 
-    //============================================DepartmentMember Management Section============================================//
+    //============================================Schedule Management Section============================================//
 
     async addSchedule(schedule) {
         try {
             await db.collection("Schedules").add({
                 category: schedule.category,
+                subCategory: schedule.subCategoryId,
                 title: schedule.title,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
@@ -405,6 +378,7 @@
         try {
             await db.collection("Schedules").doc(id).update({
                 category: schedule.category,
+                subCategory: schedule.subCategoryId,
                 title: schedule.title,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
@@ -427,6 +401,17 @@
             return { success: true }
         } catch (error) {
             return { success: false, error: error.message}
+        }
+    },
+
+    async getSubCategory() {
+        try {
+            const subCatTable = await db.collection("SubCategories").get();
+            const subCat = subCatTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: subCat }
+        } catch (error) {
+            return { success: false, error: error.message }
         }
     },
 

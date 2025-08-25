@@ -2,7 +2,7 @@
 @layout LandingLayout
 @using GospelReachCapstone.Models
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService Authentication
-@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject GospelReachCapstone.Services.AccountsService _accountsServices
 @inject IJSRuntime _js
 
 
@@ -196,7 +196,7 @@
     {
         try
         {
-            accounts = await _firestore.GetAccountAsync();
+            accounts = await _accountsServices.GetAccountAsync();
         }
         catch(Exception ex)
         {
@@ -300,7 +300,7 @@
     {
         try
         {
-            await _firestore.UpdateAccountAsync(memberId, role);
+            await _accountsServices.UpdateAccountAsync(memberId, role);
             isAddUserModalVisible = false; // Hide the modal after update
             user = new();
             memberId = string.Empty;
@@ -320,7 +320,7 @@
     {
         try
         {
-            await _firestore.DisableAccountAsync(docId);
+            await _accountsServices.DisableAccountAsync(docId);
             await GetUsers();
             await _js.InvokeVoidAsync("alert", "User disabled successfully");
         }
@@ -336,7 +336,7 @@
     {
         try
         {
-            await _firestore.EnableAccountAsync(docId);
+            await _accountsServices.EnableAccountAsync(docId);
             await GetUsers();
             await _js.InvokeVoidAsync("alert", "User enabled successfully");
         }

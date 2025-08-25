@@ -1,7 +1,8 @@
 ﻿@page "/editSong/{Id}"
 @layout LandingLayout
 @inject IJSRuntime _js
-@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject GospelReachCapstone.Services.DepartmentMemberService _departmentMemberService
+@inject GospelReachCapstone.Services.MusicService _musicService
 @inject GospelReachCapstone.Services.ChordsFormatterService _chordsFormatterService
 @using GospelReachCapstone.Models
 @inject NavigationManager _nav
@@ -83,7 +84,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        songList = await _firestore.GetSongsAsync();
+        songList = await _musicService.GetSongsAsync();
         var item = songList.FirstOrDefault(u => u.Id == Id);
 
         if (item != null)
@@ -111,7 +112,7 @@
     {
         try
         {
-            await _firestore.ResizeTextArea(inputTextArea,outputTextArea);
+            await _musicService.ResizeTextArea(inputTextArea, outputTextArea);
         }
         catch (Exception ex)
         {
@@ -167,7 +168,7 @@
         try
         {
             song.LyricsAndChords = lyricsAndChords;
-            await _firestore.UpdateSongAsync(Id,song);
+            await _musicService.UpdateSongAsync(Id, song);
             await _js.InvokeVoidAsync("alert", "Song successfully updated!");
             _nav.NavigateTo("/music");
 
@@ -187,7 +188,7 @@
         try
         {
             song.LyricsAndChords = transposedOutput;
-            await _firestore.UpdateSongAsync(Id, song);
+            await _musicService.UpdateSongAsync(Id, song);
             await _js.InvokeVoidAsync("alert", "Song successfully updated!");
             _nav.NavigateTo("/music");
 

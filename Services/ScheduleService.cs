@@ -116,4 +116,11 @@ namespace GospelReachCapstone.Services
             }
         }
     }
+
+    public class ScheduleResult
+    {
+        public bool Success { get; set; }
+        public List<Schedule> Data { get; set; }
+        public string Error { get; set; }
+    }
 }

@@ -1,7 +1,8 @@
 ﻿@page "/departments"
 @layout LandingLayout
 @using GospelReachCapstone.Models
-@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject GospelReachCapstone.Services.DepartmentMemberService _departmentMemberService
+@inject GospelReachCapstone.Services.DepartmentService _departmentService
 @inject IJSRuntime _js
 @inject NavigationManager _nav
 @inject GospelReachCapstone.Services.AppState _appState
@@ -118,7 +119,7 @@
     private async Task GetDepartmentsList()
     {
         message = "Fetching Files...";
-        var result = await _firestore.GetDepartmentsAsync();
+        var result = await _departmentService.GetDepartmentsAsync();
 
         if (result.Success)
         {
@@ -151,7 +152,7 @@
     private async Task AddDepartment()
     {
         isValidating = !isValidating;
-        var result = await _firestore.AddDepartmentAsync(department);
+        var result = await _departmentService.AddDepartmentAsync(department);
 
         if(result.Success)
         {
@@ -191,7 +192,7 @@
     private async Task UpdateDepartment()
     {
         isValidating = !isValidating;
-        var result = await _firestore.UpdateDepartmentAsync(department.DepartmentId, department);
+        var result = await _departmentService.UpdateDepartmentAsync(department.DepartmentId, department);
 
         if (result.Success)
         {
@@ -213,7 +214,7 @@
 
         if(!confirm) return;
 
-        var result = await _firestore.RemoveDepartmentAsync(Id);
+        var result = await _departmentService.RemoveDepartmentAsync(Id);
 
         if (result.Success)
         {

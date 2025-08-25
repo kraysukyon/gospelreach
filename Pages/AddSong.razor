@@ -1,7 +1,7 @@
 ﻿@page "/addSong"
 @layout LandingLayout
 @inject IJSRuntime _js
-@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject GospelReachCapstone.Services.MusicService _musicService
 @inject GospelReachCapstone.Services.ChordsFormatterService _chordsFormatterService
 @using GospelReachCapstone.Models
 @inject NavigationManager _nav
@@ -94,7 +94,7 @@
     {
         try
         {
-            await _firestore.ResizeTextArea(inputTextArea,outputTextArea);
+            await _musicService.ResizeTextArea(inputTextArea, outputTextArea);
         }
         catch (Exception ex)
         {
@@ -150,7 +150,7 @@
         try
         {
             song.LyricsAndChords = lyricsAndChords;
-            await _firestore.AddSongAsync(song);
+            await _musicService.AddSongAsync(song);
             await _js.InvokeVoidAsync("alert", "Song successfully added to database!");
             _nav.NavigateTo("/music");
         }
@@ -169,7 +169,7 @@
         try
         {
             song.LyricsAndChords = transposedOutput;
-            await _firestore.AddSongAsync(song);
+            await _musicService.AddSongAsync(song);
             await _js.InvokeVoidAsync("alert", "Song successfully added to database!");
             _nav.NavigateTo("/music");
         }

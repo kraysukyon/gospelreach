@@ -1,16 +1,23 @@
 ﻿@page "/schedules"
 @layout LandingLayout
 @inject GospelReachCapstone.Services.ScheduleService _schedule
-@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject GospelReachCapstone.Services.AttendanceService _attendance
+@inject GospelReachCapstone.Services.GroupService _group
+@inject GospelReachCapstone.Services.GroupMemberService _groupMemberService
+@inject GospelReachCapstone.Services.MemberService _memberService
+@inject GospelReachCapstone.Services.SubCategoryService _subCategoryService
+@inject GospelReachCapstone.Services.NotificationService _notificationService
+@inject GospelReachCapstone.Services.AttendanceMemberRecordService _attenanceMemberRecordService
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
 @using System.Globalization
+@inject HttpClient Http
+
 
 <PageTitle>Schedule Management</PageTitle>
 
 
 <div class="pages">
-    <!--Add Schedule Modal-->
     <div @onclick="ToggleModal" class="addEventModal @(isAddModalVisible ? "show" : "")">
 
         <!--Title-->
@@ -43,7 +50,7 @@
                         <p>Title</p>
                     </div>
                     
-                    <input @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
+                    <input readonly="@(isSub)" @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
                 </div>
 
                 <!--Type-->
@@ -55,7 +62,16 @@
 
                     <div class="cat">
                         <button @onclick="(() => setType(1))" class="btn type @GetClass(1)"><i class="bi bi-star"></i> Event</button>
-                        <button @onclick="(() => setType(2))" class="btn type @GetClass(2)"><i class="bi bi-book"></i> Meeting</button>
+                        <div class="meet">
+                            @* <button @onclick="(() => setType(2))" class="btn type @GetClass(2) w-100" style="font-size: 12px; line-height:1.2;"><i class="bi bi-book"></i> Weekly<br />Meeting</button> *@
+                            <select @onchange="getSubCatValue" @onclick="(() => setType(2))" class="form-control p-2">
+                                <option value=""><i class="bi bi-book"></i> Weekly Meeting</option>
+                                @foreach(var item in subCategorieList)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                        </div>
                         <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Service</button>
                         <button @onclick="(() => setType(4))" class="btn type @GetClass(4)"><i class="bi bi-houses"></i> Others</button>
                     </div>
@@ -112,29 +128,6 @@
                                 <label for="afternoon">Afternoon</label>
                             </div>
                         </div>
-
-                        @* <div class="time">
-                            <div class="d-flex gap-1 align-items-center">
-                                <input checked="@isCustom" @onchange="e => OnCheckChange(0, e)" type="checkbox" id="custom" />
-                                <label for="custom">Custom</label>
-                            </div>
-
-                            <div class="d-flex gap-1 align-items-center">
-                                <input checked="@isAllday" @onchange="e => OnCheckChange(1,e)" type="checkbox" id="allday" />
-                                <label for="allday">All day</label>
-                            </div>
-
-                            <div class="d-flex gap-1 align-items-center">
-                                <input checked="@isMorning" @onchange="e => OnCheckChange(2, e)" type="checkbox" id="morning" />
-                                <label for="morning">Morning</label>
-                            </div>
-
-                            <div class="d-flex gap-1 align-items-center">
-                                <input checked="@isAfternoon" @onchange="e => OnCheckChange(3, e)" type="checkbox" id="afternoon" />
-                                <label for="afternoon">Afternoon</label>
-                            </div>
-                        </div> *@
-                        
                     </div>
                 </div>
 
@@ -149,7 +142,7 @@
                 </div>
 
                 <!--Description-->
-                <div class="input inputD mt-3">
+                <div class="input inputD mt-3 mb-3">
                     <div class="title mt-2">
                         <i class="bi bi-list-ul"></i>
                         <p>Details</p>
@@ -158,32 +151,46 @@
                     <textarea @bind="sched.Description" @ref="textarea" @oninput="ResizeDet" type="text" spellcheck="false" class="form-control p-2" placeholder="Add Details" />
                 </div>
 
-                <!--Attendance-->
-                <div hidden="@(!isAttendanceVisible)" class="userFields">
-                    <div class="input">
-                        <p>Count</p>
-                        <input @bind="count" type="number" min="0" class="form-control p-2" />
+                <!--Notification-->
+                <div class="input inputD mt-3 mb-3">
+                    <div class="title mt-2">
+                        <input id="chk" checked @onchange="ToggleNotify" type="checkbox"/>
+                        @* <i class="bi bi-bell"></i> *@
+                        <label class="cursor" for="chk">Notify</label>
                     </div>
 
-                    <div class="input">
-                        <p>Seekers</p>
-                        <input @bind="seekers" type="number" min="0" class="form-control p-2" />
+                    <div class="d-flex flex-column gap-2">
+                        <select disabled="@(!isNotify)" @bind="groupMemberId" class="form-control p-2 text-center">
+                            <option value="">Select Group</option>
+                            @foreach (var item in groupList)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                        <div class="email">
+                            <input readonly="@(!isNotify)" spellcheck="false" @bind="emailToAdd" type="text" class="form-control p-2 pe-5" placeholder="Add Email" />
+                            <i @onclick="AddToEmailList" class="bi bi-plus-circle-fill text-primary fs-5 cursor add"></i>
+                        </div>
+
+                        <div class="addedEmail">
+                            @foreach (var item in emailList)
+                            {
+                                <div class="emails">
+                                    <p class="pill5">@item</p>
+                                    <i @onclick="() => RemoveToEmailList(item)" class="bi bi-x-circle cursor remove bg-white text-danger"></i>
+                                </div>
+                            }
+                        </div>
+                        
                     </div>
+                    
                 </div>
 
-                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                <div class="addOptions mt-4 d-block d-md-flex gap-2" style="justify-self: end;">
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
                     <button hidden="@(title != "New Schedule")" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addEvent">Create</button>
                     <button hidden="@(title == "New Schedule")" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
                 </div>
-
-                @* <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-md-between">
-                    <button hidden="@(title == "New Schedule" || title == "Update Details")" @onclick="ToggleAttendance" class="btn attBtn">Attendance</button>
-                    <div>
-                        <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
-                        <button hidden="@(!isEditMode)" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
-                    </div>
-                </div> *@
             </div>
 
             <!--View Modal-->
@@ -215,42 +222,94 @@
 
                 <div class="iconText">
                     <i class="bi bi-list-columns fs"></i>
-                    <pre class="form-control border border-0">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
-                    @* <textarea type="text" class="form-control border-0 bg-transparent" readonly style="min-height:200px;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</textarea> *@
+                    <pre class="form-control border border-0" style="max-height: 200px; overflow-y: auto;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
                 </div>
 
-
-                <div hidden="@(!isAttendanceVisible)" class="att">
-                    <div class="userFields">
-                        <div class="input">
-                            <p>Count</p>
-                            <input @bind="count" type="number" min="0" class="form-control p-2" />
-                        </div>
-
-                        <div class="input">
-                            <p>Seekers</p>
-                            <input @bind="seekers" type="number" min="0" class="form-control p-2" />
-                        </div>
-                    </div>
-                    
-
-                    <button @onclick="AddOrUpdateAttendance" class="btn btn-primary p-2 px-3 text-white link">Save</button>
-                </div>
-
-                <div style="height: 50px;">
-
-                </div>
-
-                @* <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-md-between">
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-md-between">
                     <button hidden="@(title == "New Schedule" || title == "Update Details")" @onclick="ToggleAttendance" class="btn attBtn">Attendance</button>
                     <div>
                         <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
                         <button hidden="@(!isEditMode)" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
                     </div>
-                </div> *@
+                </div>
 
             </div>
+
+            <!--Attendance Section Modal-->
+            <div class="addAttendance attend" @onclick:stopPropagation>
+                <div>
+                    <h4 class="fw-bold">Attendance</h4>
+                    <p>@sched.Title - @attDate.ToString("MMM dd, yyyy")</p>
+                </div>
+
+                <div class="inputs mt-3">
+                    <p>Select Group</p>
+                    <div class="pword mt-2">
+                        <select class="form-control p-2" @onchange="GetGroupAndMembers">
+                            <option value="">--Select Group--</option>
+                            @foreach (var item in groupList)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="userFields mt-3">
+                    <div class="inputs">
+                        <p>Count</p>
+                        <input type="number" @bind="count" min="0" readonly class="form-control p-2 mt-2" />
+                    </div>
+
+                    <div class="inputs">
+                        <p>Seekers</p>
+                        <input type="number" @bind="seekers" min="0" max="@count" class="form-control p-2 mt-2" />
+                    </div>
+                </div>
+
+                <!--Table Section-->
+
+                <p class="mt-3">Select People</p>
+                <!--Search Section-->
+                <div class="position-relative mt-2">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
+                </div>
+
+                <p class="m-2"><em>@groupMemberMessage</em></p>
+
+
+                @if (groupMemberList.Count != 0)
+                {
+                    <div class="table-container mt-2">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChange" /></th>
+                                    <th class="thead" style="width: 100%;">Name</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var item in filteredMember)
+                                {
+                                    <tr>
+                                        <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                            <input @bind="item.isSelected" type="checkbox" />
+                                        </td>
+                                        <td class="table-cell" style="width: 100%;">@item.Member.GetFullName()</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                <button @onclick="AddOrUpdateAttendance" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+            </div>
         </div>
+
+        
     </div>
 
     <!--Header Section-->
@@ -395,13 +454,16 @@
 @code {
     private List<Schedule> schedulesList = new();
     private List<Schedule> schedulesListView = new();
+    private List<SubCategory> subCategorieList = new();
     ElementReference textarea;
     private string title = "New Schedule";
-    private string eventTitle { get; set; }
+    private string eventTitle { get; set; } = string.Empty;
     private string eventCategory { get; set; } = "Event";
     private DateOnly sDate { get; set; }
     private DateOnly eDate { get; set; }
     private DateTime sDateTime { get; set; } = DateTime.Today;
+    private string subCategory { get; set; } = string.Empty;
+    private bool isSub { get; set; } = false;
     private bool isAddModalVisible = false;
     private Schedule sched = new();
     private string searchSched = string.Empty;
@@ -449,14 +511,75 @@
     private bool isMorning = false;
     private bool isAfternoon = false;
 
+    //Group
+    private List<Group> groupList = new();
+    private Group group = new();
+    private string groupMemberMessage { get; set; } = string.Empty;
+    private string groupMemberId { get; set; } = string.Empty;
+
+    //GroupMember
+    private string memberSearch { get; set; } = string.Empty;
+    private List<GroupMemberSelection> groupMemberList { get; set; } = new();
+    private IEnumerable<GroupMemberSelection> filteredMember => groupMemberList.Where(u => string.IsNullOrWhiteSpace(memberSearch) || u.Member.GetFullName().Contains(memberSearch, StringComparison.OrdinalIgnoreCase));
+
+    //Notifications
+    private List<string> emailList = new();
+    private string emailToAdd { get; set; } = string.Empty;
+    private bool isNotify = true;
+
+    //Email
+    private string body { get; set; } = string.Empty;
+    private string status = "";
+    private string schedTitle { get; set; } = string.Empty;
+    private string schedCategory { get; set; } = string.Empty;
+    private string schedLocation { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         Init();
         await getScheduleList();
         await GetAttendanceList();
-
+        await GetSubCategoriesList();
     }
+
+    //get sub category id and name
+    private void getSubCatValue(ChangeEventArgs e)
+    {
+        string Id = e.Value!.ToString()!;
+
+        if (!string.IsNullOrEmpty(Id))
+        {
+            var sub = subCategorieList.FirstOrDefault(u => u.Id == Id);
+
+            if(sub != null)
+            {
+                isSub = true;
+                eventTitle = sub.Name;
+                subCategory = sub.Id;
+            }
+        }
+        else
+        {
+            isSub = false;
+            eventTitle = string.Empty;
+        }
+    }
+
+    //Get subcategories
+    private async Task GetSubCategoriesList()
+    {
+        var result = await _subCategoryService.GetSubCategories();
+
+        if(result.Success)
+        {
+            subCategorieList = result.Data;
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
 
     //set the date to default today
     private void setDateToday()
@@ -515,9 +638,10 @@
     }
 
     //show counts and seekers
-    private void ToggleAttendance()
+    private async Task ToggleAttendance()
     {
         isAttendanceVisible = !isAttendanceVisible;
+        await GetGroupName();
     }
 
     //Get Upcoming list of schedules
@@ -542,7 +666,7 @@
     //Fetch files according to status
     private async Task SelectStatus(ChangeEventArgs e)
     {
-        selectedStatus = e.Value.ToString();
+        selectedStatus = e.Value!.ToString()!;
 
         messages = "Fetching files...Please wait";
 
@@ -565,7 +689,7 @@
     }
 
     // Add or update attendance count for a specific date in an event
-    private async Task AddOrUpdateAttendance(string schedId, DateOnly date, int count)
+    private async Task AddOrUpdateAttendance(string schedId, DateOnly date)
     {
         var existing = Attendances.FirstOrDefault(a => a.ScheduleId == schedId && a.Date == date);
         if (existing != null)
@@ -574,10 +698,11 @@
         }
         else
         {
-            var result = await _firestore.AddAttendanceAsync(att);
+            var result = await _attendance.AddAttendanceAsync(att);
 
             if (result.Success)
             {
+
                 await _js.InvokeVoidAsync("alert", "Attendance added successfully");
             }
             else
@@ -588,53 +713,13 @@
     }
 
     //Handle Time checkboxes
-    private void OnCheckChange(int chk, ChangeEventArgs e)
+    private void OnCheckChange(ChangeEventArgs e)
     {
-        bool isChecked = (bool)e.Value;
+        bool isChecked = (bool)e.Value!;
 
-        switch (chk)
+        foreach (var item in groupMemberList)
         {
-            case 0:
-                isCustom = true;
-                if (isCustom)
-                {
-                    isAllday = false;
-                    isMorning = false;
-                    isAfternoon = false;
-                    sTime = new TimeOnly(8, 0);
-                    eTime = new TimeOnly(17, 0);
-                }
-                break;
-            case 1:
-                isAllday = isChecked;
-                if (isChecked)
-                {
-                    isMorning = false;
-                    isAfternoon = false;
-                    sTime = new TimeOnly(8, 0);
-                    eTime = new TimeOnly(17, 0);
-                }
-                break;
-            case 2:
-                isMorning = isChecked;
-                if (isChecked)
-                {
-                    isAllday = false;
-                    isAfternoon = false;
-                    sTime = new TimeOnly(8, 0);
-                    eTime = new TimeOnly(12, 0);
-                }
-                break;
-            case 3:
-                isAfternoon = isChecked;
-                if (isChecked)
-                {
-                    isAllday = false;
-                    isMorning = false;
-                    sTime = new TimeOnly(13, 0);
-                    eTime = new TimeOnly(17, 0);
-                }
-                break;
+            item.isSelected = isChecked;
         }
 
     }
@@ -657,16 +742,22 @@
         switch (type)
         {
             case 1:
+                isSub = false;
                 eventCategory = "Event";
+                subCategory = string.Empty;
                 break;
             case 2:
-                eventCategory = "Meeting";
+                eventCategory = "Weekly Meeting";
                 break;
             case 3:
+                isSub = false;
                 eventCategory = "Service";
+                subCategory = string.Empty;
                 break;
             case 4:
+                isSub = false;
                 eventCategory = "Others";
+                subCategory = string.Empty;
                 break;
 
         }
@@ -682,7 +773,7 @@
         eDate = sDate;
     }
 
-    private void ToggleModal()
+    private async Task ToggleModal()
     {
         isAddModalVisible = !isAddModalVisible;
         isOptionVisible = false;
@@ -694,6 +785,14 @@
         eventCategory = sched.Category;
         sDate = sched.StartDate;
         eDate = sched.EndDate;
+        isSub = false;
+        setType(1);
+        GetClass(1);
+
+        if (isAddModalVisible || isEditMode)
+        {
+            await GetGroupName();
+        }
 
     }
 
@@ -719,10 +818,11 @@
         isOptionVisible = false;
     }
 
-    private void ToggleUpdateUI()
+    private async Task ToggleUpdateUI()
     {
         title = "Update Details";
         isEditMode = true;
+        await GetGroupName();
     }
 
     private void Init()
@@ -749,7 +849,7 @@
     //Get Attendance List
     private async Task GetAttendanceList()
     {
-        var result = await _firestore.GetAttendanceAsync();
+        var result = await _attendance.GetAttendanceAsync();
 
         if (result.Success)
         {
@@ -783,7 +883,7 @@
         }
     }
 
-    //Add event to database
+    //Add schedule to database
     private async Task addEvent()
     {
         try
@@ -803,8 +903,10 @@
                 sched.Status = "Completed";
             }
 
+
             sched.Title = eventTitle;
             sched.Category = eventCategory;
+            sched.SubCategoryId = subCategory;
             sched.StartDate = sDate;
             sched.EndDate = eDate;
             sched.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
@@ -813,8 +915,14 @@
             var result = await _schedule.AddScheduleAsync(sched);
             if (result.Success)
             {
+                schedTitle = sched.Title;
+                schedLocation = sched.Location;
+                schedCategory = sched.Category;
+                await ToggleModal();
                 await _js.InvokeVoidAsync("alert", "Schedule successfully added");
-                ToggleModal();
+
+                _ = SendEmail();
+
                 await getScheduleList();
             }
             else
@@ -835,7 +943,6 @@
         attDate = date;
         ToggleView();
         title = "Details";
-        attDate = date;
         var editEvent = schedulesList.FirstOrDefault(u => u.Id == Id);
         if (editEvent != null)
         {
@@ -851,7 +958,7 @@
             await getScheduleList();
         }
 
-        var result = await _firestore.GetAttendanceAsync();
+        var result = await _attendance.GetAttendanceAsync();
         if (result.Success)
         {
             Attendances = result.Data;
@@ -900,6 +1007,7 @@
 
             sched.Title = eventTitle;
             sched.Category = eventCategory;
+            sched.SubCategoryId = subCategory;
             sched.StartDate = sDate;
             sched.EndDate = eDate;
             sched.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
@@ -910,7 +1018,7 @@
             if (result.Success)
             {
                 await _js.InvokeVoidAsync("alert", "Event successfuly updated");
-                ToggleModal();
+                await ToggleModal();
                 GenerateCalendar();
             }
             else
@@ -934,7 +1042,7 @@
             var result = await _schedule.RemoveScheduleAsync(Id);
             if (result.Success)
             {
-                var attend = await _firestore.GetAttendanceAsync();
+                var attend = await _attendance.GetAttendanceAsync();
 
                 if (attend.Success)
                 {
@@ -944,7 +1052,7 @@
 
                     foreach (var item in attendanceToRemove)
                     {
-                        var res = await _firestore.DeleteAttendanceAsync(item.Id);
+                        var res = await _attendance.DeleteAttendanceAsync(item.Id);
                         if (!res.Success)
                         {
                             await _js.InvokeVoidAsync("alert", "Failed to remove attendance of the removed schedule : " + res.Error);
@@ -956,7 +1064,7 @@
                     await _js.InvokeVoidAsync("alert", "Failed to remove attendance of the removed schedule : " + attend.Error);
                 }
 
-                ToggleModal();
+                await ToggleModal();
                 await getScheduleList();
                 await _js.InvokeVoidAsync("alert", "Successfully deleted");
             }
@@ -1069,7 +1177,7 @@
             existing.Count = count;
             existing.Seekers = seekers;
 
-            var result = await _firestore.UpdateAttendanceAsync(existing.Id, existing);
+            var result = await _attendance.UpdateAttendanceAsync(existing.Id, existing);
             if (result.Success)
             {
                 await GetAttendanceList();
@@ -1088,10 +1196,21 @@
             att.Seekers = seekers;
             att.Date = attDate;
 
-            var result = await _firestore.AddAttendanceAsync(att);
+            var result = await _attendance.AddAttendanceAsync(att);
 
             if (result.Success)
             {
+                var memToAdd = groupMemberList.Where(u => u.isSelected).ToList();
+                string attId = result.Id;
+
+                if (memToAdd != null)
+                {
+                    @foreach (var item in memToAdd)
+                    {
+                        var add = new AttendanceMemberRecord { AttendanceId = attId, MemberId = item.Member.Id, IsPresent = true };
+                        var results = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(add);
+                    }
+                }
                 count = 0;
                 seekers = 0;
                 await GetAttendanceList();
@@ -1119,4 +1238,200 @@
         }
     }
 
+    //Get All Group
+    private async Task GetGroupName()
+    {
+        var result = await _group.GetGroupsAsync();
+
+        if (result.Success)
+        {
+            groupList = result.Data;
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to get group: " + result.Error);
+        }
+    }
+
+    //Get Initial Group and Members
+    private async Task GetGroupmembers(string Id)
+    {
+        var result = await _group.GetGroupByIdAsync(Id);
+
+        if (result.Success)
+        {
+
+            group = new Group { Id = result.Group.Id, Name = result.Group.Name };
+
+            var res = await _groupMemberService.GetGroupMembersByGroupIdAsync(Id);
+
+            if (res.Success)
+            {
+
+                if (res.Data == null)
+                {
+                    groupMemberMessage = "No members found";
+                    groupMemberList.Clear();
+                    // var resMem = await _memberService.GetMembersAsync();
+
+                    // if (resMem.Success)
+                    // {
+                    //     var member = resMem.Data;
+
+                    //     groupMemberList = member.Select(u => new GroupMemberSelection
+                    //     {
+                    //         Member = u,
+                    //         isSelected = true
+                    //     }).ToList();
+
+                    // }
+                }
+                else
+                {
+                    groupMemberMessage = $"{res.Data.Count} members found";
+                    var resMem = await _memberService.GetMembersAsync();
+
+                    if (resMem.Success)
+                    {
+                        //Get all members
+                        var allMembers = resMem.Data;
+
+                        //Get members who belong to the group
+                        var groupMembers = res.Data;
+                        var groupMembersId = groupMembers.Select(u => u.MemberId).ToHashSet();
+
+                        //Build Selection list with condition
+                        var gm = allMembers.Select(m => new GroupMemberSelection
+                        {
+                            Member = m,
+                            isSelected = groupMembersId.Contains(m.Id)
+                        }).ToList();
+
+                        groupMemberList = gm.Where(u => u.isSelected).ToList();
+                        count = groupMemberList.Count;
+
+                    }
+                    else
+                    {
+                        await _js.InvokeVoidAsync("alert", "Members not found: " + resMem.Error);
+                    }
+                }
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Group not found: " + result.Error);
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Group not found: " + result.Error);
+        }
+    }
+
+    //Get Group and its members
+    private async Task GetGroupAndMembers(ChangeEventArgs e)
+    {
+        string Id = e.Value!.ToString()!;
+        if (string.IsNullOrEmpty(Id)) return;
+        await GetGroupmembers(Id);
+    }
+
+    //Add to list of emails
+    private void AddToEmailList()
+    {
+        emailToAdd.Trim();
+        if (!string.IsNullOrEmpty(emailToAdd))
+        {
+            emailList.Add(emailToAdd);
+            var list = emailList.Distinct().ToList();
+            emailList = list;
+            emailToAdd = string.Empty;
+        }
+    }
+
+    //Remove to list of emails
+    private void RemoveToEmailList(string email)
+    {
+        emailList.Remove(email);
+        var list = emailList.Distinct().ToList();
+        emailList = list;
+    }
+
+    //Toggle notification
+    private void ToggleNotify(ChangeEventArgs e)
+    {
+        isNotify = (bool)e.Value!;
+    }
+
+    //Send Email Function
+    private async Task SendEmail()
+    {
+        if (!string.IsNullOrEmpty(groupMemberId))
+        {
+            await GetGroupmembers(groupMemberId);
+        }
+
+        var gm = groupMemberList.Where(u => u.isSelected && !string.IsNullOrEmpty(u.Member.Email)).Select(u => u.Member.Email).ToList();
+
+        if(gm != null)
+        {
+            foreach(var a in gm)
+            {
+                if (!string.IsNullOrEmpty(a))
+                {
+                    emailList.Add(a);
+                }
+            }
+        }
+
+        var distinct = emailList.Distinct().ToList();
+        emailList = distinct;
+
+        string subject = $"Schedule Reminder for {schedCategory}: {schedTitle}";
+        string body = $@"
+Hello There,<br><br>
+This is a friendly reminder from <b>Gospel Reach Team</b>.<br><br>
+📌 <b>Scheduled Activity:</b> {schedTitle}<br>
+🕒 <b>Time:</b> {sTime} – {eTime}<br>
+📅 <b>Date:</b> {sDate} - {eDate}<br>
+📍 <b>Location:</b> {schedLocation}<br><br>
+Please make sure to be on time and prepared.<br>
+If you have any questions, feel free to contact us.<br><br>
+Thank you,<br>
+Gospel Reach Team
+";
+
+        var result = await _notificationService.SendEmailsAsync(emailList, subject, body);
+
+        if (result.Success)
+        {
+            await _js.InvokeVoidAsync("alert", "Email sent");
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to send email: " + result.Error);
+        }
+
+        
+        // var email = new { To = emailList, Subject = subject, Body = body };
+
+        // try
+        // {
+        //     var response = await Http.PostAsJsonAsync("https:localhost:7114/api/email/send", email);
+        //     status = response.IsSuccessStatusCode ? "Emails sent!" : "Failed to send.";
+        //     await _js.InvokeVoidAsync("alert", "Emails sent successfully");
+        // }
+        // catch (Exception ex)
+        // {
+        //     await _js.InvokeVoidAsync("alert", "Failed to send email: " + ex.Message);
+        // }
+
+        emailList.Clear();
+    }
+
+    private class GroupMemberSelection
+    {
+        public bool isSelected { get; set; }
+        public Member Member { get; set; }
+    }
 }

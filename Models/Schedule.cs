@@ -4,6 +4,7 @@
     {
         public string Id { get; set; }
         public string Category { get; set; } = "Event";
+        public string? SubCategoryId { get; set; }
         public string Title { get; set; }
         public DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);

@@ -2,7 +2,7 @@
 @layout LandingLayout
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
-@inject GospelReachCapstone.Services.FirestoreService _firestore
+@inject GospelReachCapstone.Services.MusicService _musicService
 @inject NavigationManager _nav
 
 <PageTitle>Music</PageTitle>
@@ -97,7 +97,7 @@
         try
         {
             songList = new();
-            songList =  await _firestore.GetSongsAsync();
+            songList = await _musicService.GetSongsAsync();
             if (songList != null)
             {
                 songList = songList.OrderByDescending(u => u.Title).ToList();
@@ -116,7 +116,7 @@
         try
         {
             List<Song> list = new();
-            list = await _firestore.GetSongsAsync();
+            list = await _musicService.GetSongsAsync();
             if (list != null)
             {
                 var songId = list.FirstOrDefault(u => u.Id == docId);
@@ -143,7 +143,7 @@
 
         try
         {
-            await _firestore.DeleteSongAsync(Id);
+            await _musicService.DeleteSongAsync(Id);
             await _js.InvokeVoidAsync("alert", "Song Successfully deleted!");
             await getSongList();
         }
@@ -158,7 +158,7 @@
         try
         {
             List<Song> list = new();
-            list = await _firestore.GetSongsAsync();
+            list = await _musicService.GetSongsAsync();
             if (list != null)
             {
                 var songId = list.FirstOrDefault(u => u.Id == docId);

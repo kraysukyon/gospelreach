@@ -41,11 +41,19 @@
                 <a href="membermanagement" class="text-decoration-none c2">Member<br />Management</a>
             </div>
 
+            <!--Group Management-->
+            <div class="@GetClass(4, "link")" @onclick="() => SetActive(4)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-collection"></i>
+                </div>
+                <a href="group" class="text-decoration-none c2">Group<br />Management</a>
+            </div>
+
             <!--Tracking-->
             <h3 class="sidebar-heading">TRACKING</h3>
 
             <!--Attendance-->
-            <div class="@GetClass(4, "link")" @onclick="() => SetActive(4)">
+            <div class="@GetClass(5, "link")" @onclick="() => SetActive(5)">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-bar-chart"></i>
                 </div>
@@ -53,7 +61,7 @@
             </div>
 
             <!--Finance-->
-            <div class="@GetClass(5, "link")" @onclick="() => SetActive(5)">
+            <div class="@GetClass(6, "link")" @onclick="() => SetActive(6)">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-piggy-bank"></i>
                 </div>
@@ -64,7 +72,7 @@
             <h3 class="sidebar-heading">CONTENT</h3>
 
             <!--Media Files-->
-            <div class="@GetClass(6, "link")" @onclick="() => SetActive(6)">
+            <div class="@GetClass(7, "link")" @onclick="() => SetActive(7)">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-film"></i>
                 </div>
@@ -72,7 +80,7 @@
             </div>
 
             <!--Music-->
-            <div class="@GetClass(7, "link")" @onclick="() => SetActive(7)">
+            <div class="@GetClass(8, "link")" @onclick="() => SetActive(8)">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-music-note"></i>
                 </div>
@@ -154,19 +162,19 @@
                 Navs.NavigateTo("membermanagement");
                 break;
             case 4:
-                Navs.NavigateTo("attendance");
+                Navs.NavigateTo("group");
                 break;
             case 5:
-                Navs.NavigateTo("finance");
+                Navs.NavigateTo("attendance");
                 break;
             case 6:
-                Navs.NavigateTo("media");
+                Navs.NavigateTo("finance");
                 break;
             case 7:
-                Navs.NavigateTo("music");
+                Navs.NavigateTo("media");
                 break;
             case 8:
-                Navs.NavigateTo("events");
+                Navs.NavigateTo("music");
                 break;
             case 9:
                 Navs.NavigateTo("schedules");

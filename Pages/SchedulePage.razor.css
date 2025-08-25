@@ -15,11 +15,27 @@
 
 .addEvents{
     background-color: #FFF;
-    max-height: 100vh;
+    max-height: calc(100vh - 15vh);
     overflow: auto;
     padding: 1rem;
     width: 600px;
     border-radius:25px;
+}
+
+.addAttendance {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translate(0,-50%);
+    display: flex;
+    flex-direction: column;
+    width: 600px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+    max-height: calc(100vh - 10vh);
+    overflow-y: auto;
+    transition: all 0.5s ease;
 }
 
 .attBtn {
@@ -69,6 +85,16 @@ textarea{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: .5rem;
+}
+
+.meet{
+    position: relative;
+}
+
+.category{
+    position: absolute;
+    top: 100%;
+    left: 0;
 }
 
 .type {
@@ -132,6 +158,8 @@ textarea{
     background-color: rgba(0,0,0,.5);
     display: none;
 }
+
+
 
 .hover:hover {
     color: #1b6ec2;
@@ -252,9 +280,9 @@ textarea{
 
 }
 
-.input .title i, .input .title p{
+.input .title i, .input .title p, .input .title label {
     color: gray;
-    font-size:16px;
+    font-size: 16px;
     font-weight: 500;
     padding: 0;
     margin: 0;
@@ -451,6 +479,20 @@ a {
     cursor: pointer;
 }
 
+.pill5 {
+    background-color: #fff;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: .75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ced4da;
+    cursor: default;
+    text-wrap: nowrap;
+    width:100%;
+}
+
 .calendar-container {
     display: flex;
     flex-direction: column;
@@ -589,6 +631,56 @@ button{
         padding-right: 2rem;
     }
 
+.inputs{
+    display: flex;
+    flex-direction: column;
+}
+
+.notif{
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+}
+
+.email{
+    display: flex;
+    position: relative;
+}
+
+.email .add{
+    position:absolute;
+    top: 50%;
+    right:0;
+    transform: translate(0,-50%);
+    padding:.5rem;
+}
+
+.emails {
+    display: flex;
+    position: relative;
+}
+
+    .emails .remove{
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: translate(0,-15%);
+        margin: 0;
+        padding: 0;
+    }
+
+    .addedEmail {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .5rem;
+    }
+
+        .addedEmail > * {
+            min-width: 0;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
 
 
 @media (max-width: 768px) {
