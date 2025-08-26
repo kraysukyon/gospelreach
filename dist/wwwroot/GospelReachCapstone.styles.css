@@ -2844,7 +2844,7 @@ a[b-7a688qs3l3] {
     background-color: #FFF;
     max-height: calc(100vh - 15vh);
     overflow: auto;
-    padding: 1rem;
+    padding: 1.5rem;
     width: 600px;
     border-radius:25px;
 }
@@ -2852,8 +2852,8 @@ a[b-7a688qs3l3] {
 .addAttendance[b-hlwuhtkxei] {
     position: absolute;
     top: 50%;
-    right: 0;
-    transform: translate(0,-50%);
+    left: 50%;
+    transform: translate(-50%,-50%);
     display: flex;
     flex-direction: column;
     width: 600px;
@@ -3199,7 +3199,7 @@ textarea[b-hlwuhtkxei]{
 .fsx[b-hlwuhtkxei]{
     font-size: 15px;
     font-weight:600;
-    padding: .25rem;
+    padding: .5rem 1rem;
 }
 
 .fsx:hover[b-hlwuhtkxei] {
