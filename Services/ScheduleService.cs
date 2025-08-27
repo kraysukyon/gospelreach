@@ -49,6 +49,24 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        //Fetch Data for schedule
+        public async Task<ScheduleResult> GetScheduleByDateAsync(int month, int year)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getScheduleByDate", month, year);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
         //Fetch schedules by status
         public async Task<ScheduleResult> GetScheduleByStatusAsync(string status)
         {

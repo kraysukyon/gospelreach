@@ -12,8 +12,9 @@ namespace GospelReachCapstone.Services
             _js = js;
         }
 
-        //Add attendance member record
+        //================================================Function=====================================
 
+        //Add attendance member record
         public async Task<AttendanceMemberRecordResult> AddAttendanceMemberRecordAsync(AttendanceMemberRecord att)
         {
             try
@@ -36,6 +37,24 @@ namespace GospelReachCapstone.Services
                     Success = false,
                     Error = ex.Message
                 };
+            }
+        }
+
+        //Remove AttendanceMemberRecord
+        public async Task<AttendanceMemberRecordResult> RemoveAttendanceRecordAsync(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceMemberRecordResult>("firestoreFunctions.removeAttendanceMember", Id);
+                return result;
+            }
+            catch(JSException jsEx)
+            {
+                return new AttendanceMemberRecordResult { Success = false, Error = jsEx.Message };
+            }
+            catch(Exception ex)
+            {
+                return new AttendanceMemberRecordResult { Success = false, Error = ex.Message };
             }
         }
     }

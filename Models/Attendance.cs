@@ -4,6 +4,8 @@
     {
         public string Id { get; set; }
         public string ScheduleId { get; set; }
+        public decimal Tithes { get; set; }
+        public decimal Offering { get; set; }
         public DateOnly Date { get; set; }
         public int Count { get; set; }
         public int Seekers { get; set; }

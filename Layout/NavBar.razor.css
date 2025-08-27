@@ -28,6 +28,50 @@
     padding: 20px;
 }
 
+.links {
+    padding: .8rem .6rem 0 .6rem;
+    margin: 0 0 0 2px;
+    border-radius: 2px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+    .links:hover {
+        background-color: rgb(235 245 255);
+        color: rgb(26 86 219);
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+.links:hover i , .links:hover .dp{
+    color: rgb(26 86 219);
+}
+
+.links .dep{
+    width: 100%;
+    display: grid;
+    grid-template-columns: 30px auto;
+    align-items: center;
+}
+
+    .links i, .links p {
+        cursor: pointer;
+    }
+
+.subDepartment {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-left: 3rem;
+    padding-top:1rem;
+}
+
+.hide {
+    height: 0px;
+}
+
+
 .link {
     padding: .8rem .6rem;
     margin: 0 0 0 2px;
@@ -35,6 +79,7 @@
     width: 100%;
     display: grid;
     grid-template-columns: 30px auto;
+    align-items: center;
 }
 
     .link:hover {
@@ -73,10 +118,19 @@
     font-weight: 600;
 }
 
-    .active a, .active i {
+    .active a, .active i , .active .dp{
         color: rgb(26 86 219);
         font-weight: 600;
     }
+
+    .ds{
+        font-weight: normal;
+    }
+
+.hov:hover {
+    text-decoration: underline;
+    color: rgb(26 86 219);
+}
 
 .side-foot {
     padding: 20px;
@@ -102,7 +156,9 @@
     }
 
 
-@media (max-width: 768px){
+
+
+@media (max-width: 768px) {
     .side-parent-content{
         flex-grow: 1;
         overflow-y: auto;

@@ -1,0 +1,404 @@
+﻿@page "/visitors"
+@layout LandingLayout
+@inject GospelReachCapstone.Services.MemberService _memberService
+@inject GospelReachCapstone.Services.VisitorService _visitorsService
+@using GospelReachCapstone.Models
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.GeneralFunctions _gen
+@using System.Text.RegularExpressions
+
+<PageTitle>Member Management</PageTitle>
+
+
+<div class="page">
+    <!--ViewModal-->
+    <div @onclick="ToggleView" class="viewModal @(isToggleView ? "show" : "")">
+        <div @onclick:stopPropagation class="viewMember">
+            <h4 class="fw-bold">Member Details</h4>
+
+            <div class="input mt-3">
+                <p>First Name</p>
+                <p>@visitor.FirstName</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Middle Name</p>
+                <p>@visitor.MiddleName</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>Last Name</p>
+                <p>@visitor.LastName</p>
+            </div>
+
+            <div class="input mt-3">
+                <p>First Visit</p>
+                <p>@visitor.FirstVisitDate</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!--Add Member Model-->
+    <div @onclick="ToggleModal" class="addMemberModal @(isAddModalVisible ? "show" : "")">
+        <div class="addMember" @onclick:stopPropagation>
+            <h4 class="fw-bold">
+                @title
+            </h4>
+            <p style="font-size:14px;">Create and Manage Members.</p>
+            
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-2">
+                    <p>First Name</p>
+                    <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p>
+                </div>
+                
+                <input spellcheck="false" @bind="visitor.FirstName" @onblur="(() => CheckIfValid(nameof(visitor.FirstName)))" type="text" class="form-control p-2 mt-2 @(validFirstname ? "" : "border-danger")" placeholder="First Name" />
+            </div>
+
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-1">
+                    <p>Middle Name</p>
+                    <p style="font-size: 12px; padding: 0; margin: 0; color:gray;">(optional)</p>
+                </div>
+                <input spellcheck="false" @bind="visitor.MiddleName" type="text" class="form-control p-2 mt-2" placeholder="Middle Name" />
+            </div>
+
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-2">
+                    <p>Last Name</p>
+                    <p class="text-danger fw-bold @(validLastName ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p>
+                </div>
+                <input spellcheck="false" @bind="visitor.LastName" @onblur="(() => CheckIfValid(nameof(visitor.LastName)))" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
+            </div>
+
+            
+            @if (title == "Add Member")
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
+                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addMember">Create</button>
+                </div>
+            }
+            else
+            {
+                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
+                    <button @onclick="UpdateMember" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" >Update</button>
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Visitor Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Manage church visitors</p>
+        </div>
+
+        <div>
+            <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleModal">Add Member</button>
+        </div>
+        
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+
+        <!--Search Section-->
+        <div class="position-relative">
+            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+            <input @bind="searchstring" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search members..." />
+        </div>
+        <p class="mb-4 ms-1 @(isLoad ? "" : "d-none")"><em>@load</em></p>
+
+        <div class="table-container mt-4">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead">Name</th>
+                        <th class="thead">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var items in FilteredVisitor)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell c2">@items.GetFullName()</td>
+                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
+                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(() => ToggleViewModal(items.Id))"><span><i class="bi bi-pencil-square"></i></span> Details</button>
+                                </div>
+                                <!--Edit-->
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
+                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(() => ToggleUpdateModal(items.Id))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
+                                    @* <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</a> *@
+                                </div>
+
+                                <!--Delete-->
+                                <button @onclick="(() => DeleteMember(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--Quick Stats Section-->
+    <div class="d-flex flex-column mt-4">
+        <div class="d-md-flex d-block justify-content-evenly gap-4">
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Total Members</p>
+                <h3 class="m-0 c2 text-primary fw-bold">@totalMembers</h3>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Active Members</p>
+                <h3 class="m-0 c2 text-success fw-bold">@activeMembers</h3>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">New This Month</p>
+                <h3 class="m-0 c2 text-danger fw-bold">@newMembers</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    private bool isValid = false;
+    private bool isToggleView = false;
+    private string memberId = string.Empty;
+    private int totalMembers = 0;
+    private int activeMembers = 0;
+    private int newMembers = 0;
+    private string load = "Fetching Files...";
+    private bool isLoad = false;
+    private List<Visitor> visitorsList = new();
+    private Visitor visitor = new();
+    private bool isAddModalVisible = false;
+    private string title = "Add Member";
+    private string memberName = string.Empty;
+    private bool validFirstname = true;
+    private bool validLastName = true;
+    private bool validEmail = true;
+    private string emailError = string.Empty;
+    private string searchstring = string.Empty;
+    private List<Member> memberList = new();
+    private List<Visitor> FilteredVisitor => visitorsList.Where(u => string.IsNullOrWhiteSpace(searchstring) || u.FirstName.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.MiddleName) && u.MiddleName.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || u.LastName.Contains(searchstring, StringComparison.OrdinalIgnoreCase)).ToList();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoad = !isLoad;
+        try
+        {
+            await getMembers();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Unable to fetch Members List: {ex.Message}");
+        }
+        isLoad = !isLoad;
+    }
+
+    private async Task getMembers()
+    {
+        totalMembers = 0;
+        activeMembers = 0;
+        newMembers = 0;
+        var result = await _visitorsService.GetVisitorsAsync();
+
+        if (result.Success)
+        {
+            visitorsList = result.Data;
+            totalMembers = visitorsList.Count;
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", $"Unable to fetch Visitors List: {result.Error}");
+        }
+
+        var memresult = await _memberService.GetMembersAsync();
+        if (memresult.Success)
+        {
+            memberList = memresult.Data;
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", $"Unable to fetch Members List: {memresult.Error}");
+        }
+    }
+
+    private async Task addMember()
+    {
+        // try
+        // {
+
+        //     await _memberService.AddMemberAsync(member);
+        //     await _js.InvokeVoidAsync("alert", "Member added successfully");
+        //     await getMembers();
+        //     ToggleModal();
+        // }
+        // catch (Exception ex)
+        // {
+        //     await _js.InvokeVoidAsync("alert", ex.Message);
+        // }
+    }
+
+    private void ToggleView()
+    {
+        isToggleView = !isToggleView;
+    }
+
+    //Toggle Update Modal
+
+    private void ToggleViewModal(string Id)
+    {
+        isToggleView = !isToggleView;
+
+        var memberView = visitorsList.FirstOrDefault(u => u.Id == Id);
+
+        if (memberView != null)
+        {
+            visitor = new Visitor
+                {
+                    Id = memberView.Id,
+                    FirstName = memberView.FirstName,
+                    MiddleName = memberView.MiddleName,
+                    LastName = memberView.LastName,
+                    FirstVisitDate = memberView.FirstVisitDate,
+                    InvitedByMemberId = memberView.InvitedByMemberId
+                };
+        }
+
+    }
+
+    private async Task ToggleUpdateModal(string docId)
+    {
+        isAddModalVisible = !isAddModalVisible;
+        title = "Update Visitor";
+        var accountToUpdate = visitorsList.FirstOrDefault(u => u.Id == docId);
+        if (accountToUpdate != null)
+        {
+            visitor = new Visitor
+            {
+                Id = accountToUpdate.Id,
+                FirstName = accountToUpdate.FirstName,
+                MiddleName = accountToUpdate.MiddleName,
+                LastName = accountToUpdate.LastName,
+            };
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "No such document");
+        }
+
+    }
+
+    private async Task UpdateMember()
+    {
+        // try
+        // {
+        //     await _memberService.updateMemberAsync(member.Id, member);
+        //     ToggleModal();
+        //     await getMembers();
+        //     await _js.InvokeVoidAsync("alert", "Member updated successfully.");
+        // }
+        // catch (Exception ex)
+        // {
+        //     await _js.InvokeVoidAsync("alert", ex.Message);
+        // }
+    }
+
+    private async Task DeleteMember(string Id)
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this member?");
+
+        if (!confirm)
+        {
+            return;
+        }
+
+        try
+        {
+            await _memberService.deleteMemberAsync(Id);
+            await getMembers();
+            await _js.InvokeVoidAsync("alert", "Member deleted successfully.");
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+    private void ToggleModal()
+    {
+        isAddModalVisible = !isAddModalVisible;
+        visitor = new();
+        title = "Add Visitor";
+    }
+
+    private void CheckIfValid(string fieldName)
+    {
+        switch (fieldName)
+        {
+            case nameof(visitor.FirstName):
+                validFirstname = !string.IsNullOrWhiteSpace(visitor.FirstName);
+                break;
+            case nameof(visitor.LastName):
+                validLastName = !string.IsNullOrWhiteSpace(visitor.LastName);
+                break;
+        }
+    }
+
+    private async Task CheckIfValidEmail()
+    {
+        // if (string.IsNullOrEmpty(member.Email))
+        // {
+        //     validEmail = true;
+        //     emailError = string.Empty;
+        // }
+        // else
+        // {
+        //     if (IsValidEmail(member.Email))
+        //     {
+        //         var list = await _memberService.GetMembersAsync();
+        //         if (list.Success)
+        //         {
+        //             bool check = list.Data.Any(u => u.Email == member.Email);
+
+        //             if (check)
+        //             {
+        //                 validEmail = false;
+        //                 emailError = "Email already exists.";
+        //                 return;
+        //             }
+
+        //             validEmail = true;
+        //         }
+
+        //     }
+        //     else
+        //     {
+        //         validEmail = false;
+        //         emailError = "Enter valid email";
+        //     }
+        // }
+    }
+
+    public bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+        return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
+    }
+
+
+}

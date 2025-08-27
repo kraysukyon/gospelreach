@@ -166,19 +166,8 @@ a {
     line-height: 1.25rem;
 }
 
-.searchWith{
-    display: flex;
-    gap: 1rem;
-    width: 100%;
-}
-
-    .searchWith select{
-        padding: .25rem 2rem;
-        width:auto;
-    }
-
-    @media (max-width: 768px) {
-        .page {
+@media (max-width: 768px) {
+    .page {
         display: block;
     }
 

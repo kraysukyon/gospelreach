@@ -1,4 +1,4 @@
-﻿@page "/departments"
+﻿@page "/departmentss"
 @layout LandingLayout
 @using GospelReachCapstone.Models
 @inject GospelReachCapstone.Services.DepartmentMemberService _departmentMemberService
@@ -62,36 +62,54 @@
     <div class="card w-100 mb-3 cards">
 
         <!--Search Section-->
-        <div class="position-relative mb-2">
-            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-            <input @bind="searchString" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name, email, or department..." />
-        </div>
-
         <p class="mb-2"><em>@message</em></p>
 
         <div class="table-container">
             <table class="table">
                 <thead>
                     <tr>
-                        <th class="thead">Name</th>
-                        <th class="thead">Actions</th>
+                        <th class="thead">Department Name</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    @foreach (var item in filteredList)
-                    {
-                        <tr class="table-row">
-                            <td class="table-cell" style="font-weight:500;"><p class="link" @onclick="(() => goToDepartmentMemberPage(item.DepartmentId))">@item.DepartmentName</p></td>
-                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
-                                <!--Edit-->
-                                <button class="btn btn-outline-light border" style="font-size: 13px; border-radius: 10px; padding: 5px 12px;" @onclick="@(() => ToggleUpdateModal(item.DepartmentId))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
-
-                                @* <!--Delete-->
-                                <button @onclick="(() => RemoveDepartment(item.DepartmentId))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button> *@
-                            </td>
-                        </tr>
-                    }
+                    <tr class="table-row">
+                        <td class="table-cell" style="font-weight:500;">
+                            <div class="d-flex flex-column gap-1">
+                                <p>Senior</p>
+                                <p class="link ms-4">Senior General</p>
+                                <p class="link ms-4">Music</p>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="table-row">
+                        <td class="table-cell" style="font-weight:500;">
+                            <div class="d-flex flex-column gap-1">
+                                <p>Womens</p>
+                                <p class="link ms-4">Homeleague</p>
+                                <p class="link ms-4">Teenstuff</p>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="table-row">
+                        <td class="table-cell" style="font-weight:500;"><p class="link">Mens</p></td>
+                    </tr>
+                    <tr class="table-row">
+                        <td class="table-cell" style="font-weight:500;">
+                            <div class="d-flex flex-column gap-1">
+                                <p>Youth</p>
+                                <div class="d-flex flex-column gap-1 ms-4">
+                                    <p>Youth General</p>
+                                    <p class="link ms-4">Corp Cadet</p>
+                                    <p class="link ms-4">Young People Bible Study</p>
+                                    <p class="link ms-4">Sunday School</p>
+                                    <p class="link ms-4">Junior Soldier</p>
+                                    <p class="link ms-4">Junior Soldier Prep</p>
+                                </div>
+                                <p class="link ms-4">Torchbearer</p>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

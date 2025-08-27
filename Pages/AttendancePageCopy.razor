@@ -1,4 +1,4 @@
-﻿@page "/notification"
+﻿@page "/attendances"
 @layout LandingLayout
 @using GospelReachCapstone.Models
 @inject GospelReachCapstone.Services.MemberService _memberService
@@ -10,12 +10,12 @@
 @inject GospelReachCapstone.Services.GroupMemberService _groupMemberService
 @inject HttpClient Http
 
-<PageTitle>Notification Management</PageTitle>
+<PageTitle>Attendance Tracking</PageTitle>
 
 
 <div class="pages">
     <!--Modal for Adding Department Head-->
-    <div @onclick="ToggleAddGroup" class="addUserModal @(isAddDepartmentModalVisible ? "show" : "")">
+    <div @onclick="ToggleAddGroup" class="addUserModal">
         <div class="addUser" @onclick:stopPropagation>
             
             <!--Add Group-->
@@ -128,13 +128,58 @@
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
         <div>
-            <h4 class="m-0 fw-bold">Notification Management</h4>
-            <p class="m-0 c2" style="font-size: 14px">Manage group and members notification</p>
+            <h4 class="m-0 fw-bold">Attendance Tracking</h4>
+            <p class="m-0 c2" style="font-size: 14px">Track and manage member attendance</p>
+        </div>
+
+        <div>
+            <button hidden="@(isToggleGroup)" class="btn btn-primary p-2 text-white" @onclick="ToggleGroup">Groups</button>
+            <button hidden="@(!isToggleGroup)" class="btn btn-primary p-2 text-white" @onclick="ToggleGroup">Attendance</button>
         </div>
     </div>
 
+    <!--Table Section Attendance=============-->
+    <div hidden="@(isToggleGroup)" class="card w-100 mb-3 cardss">
+
+        <!--Search Section-->
+        <div class="position-relative mb-2">
+            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+            <input @bind="searchString" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name, email, or department..." />
+        </div>
+
+        <p class="mb-2"><em>@attendanceMessage</em></p>
+
+        <div class="table-containers">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead">Name</th>
+                        <th class="thead">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in filteredList)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell" style="font-weight:500;"><p class="link">@item.Id</p></td>
+                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                <!--Edit-->
+                                <button class="btn btn-outline-light border" style="font-size: 13px; border-radius: 10px; padding: 5px 12px;"><span><i class="bi bi-pencil-square"></i></span> Update</button>
+
+                                @* <!--Delete-->
+                                <button @onclick="(() => RemoveDepartment(item.DepartmentId))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button> *@
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
     <!--Group Section=========================-->
-    <div class="card w-100 mb-3 cardss">
+    <div hidden="@(!isToggleGroup)" class="card w-100 mb-3 cardss">
 
         <!--Search Section-->
         <div class="d-flex gap-2">
@@ -176,7 +221,7 @@
 @code {
     //Variable Declarations
     private bool isAddDepartmentModalVisible = false;
-    private string title = "Attendance Tracking";
+    private string title = "Group Management";
     private Group group = new();
     private List<Attendance> attendancesList = new();
     private List<Group> groupList = new();
@@ -462,5 +507,7 @@
         public bool isSelected { get; set; }
         public Member Member { get; set; }
     }
+
+
 }
 

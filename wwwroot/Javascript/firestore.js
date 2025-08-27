@@ -50,7 +50,32 @@
         } catch (error) {
             return { success: false, error: error.message }
         }
-        
+
+    },
+
+    // Get Attendance by month/year
+    async getAttendanceByMonthYear(month, year) {
+        try {
+            // Convert to yyyy-MM-dd strings
+            const jsMonth = month.toString().padStart(2, "0");
+            const firstDay = `${year}-${jsMonth}-01`;
+            const lastDate = new Date(year, month, 0).getDate(); // last day of month
+            const lastDay = `${year}-${jsMonth}-${lastDate.toString().padStart(2, "0")}`;
+
+            const attendanceTable = await db.collection("Attendance")
+                .where("date", ">=", firstDay)
+                .where("date", "<=", lastDay)
+                .get();
+
+            const attendance = attendanceTable.docs.map(items => ({
+                id: items.id,
+                ...items.data()
+            }));
+
+            return { success: true, data: attendance };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
     },
 
     //Adding Attendance
@@ -59,10 +84,12 @@
             const tb = await db.collection("Attendance").add({
                 scheduleId: attendance.scheduleId,
                 date: attendance.date,
+                tithes: attendance.tithes,
+                offering: attendance.offering,
                 count: attendance.count,
                 seekers: attendance.seekers
             });
-            return { success: true, id: tb.id}
+            return { success: true, id: tb.id }
         } catch (error) {
             return { success: false, error: error.message }
         }
@@ -74,12 +101,14 @@
             await db.collection("Attendance").doc(docId).update({
                 scheduleId: attendance.scheduleId,
                 date: attendance.date,
+                tithes: attendance.tithes,
+                offering: attendance.offering,
                 count: attendance.count,
                 seekers: attendance.seekers
             });
             return { success: true }
         } catch (error) {
-            return { success: false, error: error.message } 
+            return { success: false, error: error.message }
         }
     },
 
@@ -108,6 +137,21 @@
         }
     },
 
+    async removeAttendanceMember(id) {
+        try {
+            const snapshot = await db.collection("AttendanceMemberRecord").where("attendanceId", "==", id).get();
+            const batch = db.batch();
+
+            snapshot.forEach(doc => { batch.delete(doc.ref) });
+
+            await batch.commit();
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
 
     //============================================Member Management Section============================================//
     //fetch member list
@@ -116,7 +160,7 @@
             const membersTable = await db.collection("Members").get();
             const member = membersTable.docs.map(items => ({ id: items.id, ...items.data() }));
 
-            return { success: true , data: member }
+            return { success: true, data: member }
         } catch (error) {
             return { success: false, error: error.message }
         }
@@ -219,7 +263,7 @@
             input.style.height = (input.scrollHeight) + "px";
             output.style.height = input.style.height;
         }
-        
+
     },
 
     //============================================Department Management Section============================================//
@@ -230,7 +274,7 @@
 
             return { success: true, data: departments };
         } catch (error) {
-            return { success: false, error: error.message};
+            return { success: false, error: error.message };
         }
     },
 
@@ -257,11 +301,11 @@
 
             return { success: false, error: "Department not found" };
         } catch (error) {
-            return { success: false, error: error.message}
+            return { success: false, error: error.message }
         }
     },
 
-    async updateDepartment(id,department) {
+    async updateDepartment(id, department) {
         try {
             await db.collection("Departments").doc(id).update({
                 departmentName: department.departmentName
@@ -269,7 +313,7 @@
 
             return { success: true }
         } catch (error) {
-            return { success: false, error: error.message}
+            return { success: false, error: error.message }
         }
     },
 
@@ -280,6 +324,19 @@
             return { success: true }
         } catch (error) {
             return { success: false, error: error.message };
+        }
+    },
+
+    //============================================Sub Department Section=======================================================//
+    async getSubDepartment(id) {
+        try {
+            const subtable = await db.collection("SubDepartment").where("departmentId", "==", id).get();
+            const sub = subtable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: sub }
+
+        } catch (error) {
+            return { success: false, error: error.message }
         }
     },
 
@@ -309,7 +366,7 @@
             return { success: false, error: error.message };
         }
     },
-    
+
     async updateDepartmmentMember(id, member) {
         try {
             await db.collection("DepartmentMembers").doc(id).set(member);
@@ -349,6 +406,30 @@
             return { success: true }
         } catch (error) {
             return { success: false, error: error.message }
+        }
+    },
+
+    async getScheduleByDate(month, year) {
+        try {
+            // Convert to yyyy-MM-dd strings
+            const jsMonth = month.toString().padStart(2, "0");
+            const firstDay = `${year}-${jsMonth}-01`;
+            const lastDate = new Date(year, month, 0).getDate(); // last day of month
+            const lastDay = `${year}-${jsMonth}-${lastDate.toString().padStart(2, "0")}`;
+
+            const schedTable = await db.collection("Schedules")
+                .where("startDate", ">=", firstDay)
+                .where("startDate", "<=", lastDay)
+                .get();
+
+            const sched = schedTable.docs.map(items => ({
+                id: items.id,
+                ...items.data()
+            }));
+
+            return { success: true, data: sched };
+        } catch (error) {
+            return { success: false, error: error.message };
         }
     },
 
@@ -526,5 +607,36 @@
         }
     },
 
+    //==========================================Finance Section=================================================
 
+
+    //==========================================Visitor Management Section=================================================
+
+    async getVisitors() {
+        try {
+            const visitorTable = await db.collection("Visitors").get();
+            const visitors = visitorTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: visitors }
+
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async addVisitor(visitor) {
+        try {
+            await db.collection("Visitors").add({
+                firstName: visitor.firstName,
+                middleName: visitor.middleName,
+                lastName: visitor.lastName,
+                invitedByMemberId: visitor.invitedByMemberId,
+                firstVisitDate: visitor.firstVisitDate,
+            });
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
 }

@@ -26,6 +26,20 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        //Getting the Attendance List
+        public async Task<AttendanceResult> GetAttendanceByDateAsync(int month, int year)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getAttendanceByMonthYear", month, year);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult { Success = false, Error = ex.Message };
+            }
+        }
+
 
         //Add Attendance
         public async Task<AttendanceResult> AddAttendanceAsync(Attendance attendance)

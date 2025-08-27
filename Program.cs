@@ -35,5 +35,7 @@ builder.Services.AddScoped<DepartmentService>();
 builder.Services.AddScoped<SubCategoryService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<AttendanceMemberRecordService>();
+builder.Services.AddScoped<SubDepartmentService>();
+builder.Services.AddScoped<VisitorService>();
 
 await builder.Build().RunAsync();

@@ -6,6 +6,12 @@
     font-family: "Inter", sans-serif;
 }
 
+.pages{
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+}
+
 .addUserModal {
     position: fixed;
     top: 0;
@@ -24,6 +30,8 @@
     padding: 2rem 1.5rem;
     background-color: #FFFFFF;
     border-radius: 25px;
+    max-height: calc(100vh - 20vh);
+    overflow: hidden;
 }
 
 .editUser {
@@ -114,6 +122,7 @@ a {
     .link:hover {
         color: rgb(26,86,219);
         font-weight: 600;
+        text-decoration: underline;
     }
 
 .cards {
@@ -122,6 +131,17 @@ a {
     transition: box-shadow 0.3s ease, filter 0.3s ease;
     border: solid .3px rgb(128, 128, 128, 0.08);
     padding: 24px;
+    max-height: calc(100vh - 40vh);
+}
+
+.cardss {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 24px;
+    height:100%;
+    overflow-y: auto;
 }
 
     .cards:hover {
@@ -138,6 +158,11 @@ a {
     }
 
 .table-container {
+    overflow-x: auto;
+    max-height: 200px;
+}
+
+.table-containers {
     overflow-x: auto;
 }
 
@@ -166,19 +191,8 @@ a {
     line-height: 1.25rem;
 }
 
-.searchWith{
-    display: flex;
-    gap: 1rem;
-    width: 100%;
-}
-
-    .searchWith select{
-        padding: .25rem 2rem;
-        width:auto;
-    }
-
-    @media (max-width: 768px) {
-        .page {
+@media (max-width: 768px) {
+    .pages {
         display: block;
     }
 
@@ -186,7 +200,8 @@ a {
         width: 100%;
         margin-top: 1rem;
     }
-    .cards{
+
+    .cards {
         padding: 0;
     }
 
@@ -199,3 +214,4 @@ a {
         flex-direction: column;
     }
 }
+

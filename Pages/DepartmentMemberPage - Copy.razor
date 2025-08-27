@@ -1,0 +1,365 @@
+﻿@page "/departmentMemberCopy"
+@layout LandingLayout
+@using GospelReachCapstone.Models
+@inject GospelReachCapstone.Services.DepartmentMemberService _departmentMemberService
+@inject GospelReachCapstone.Services.MemberService _memberService
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.AppState _appState
+
+<PageTitle>Department Heads</PageTitle>
+
+
+<div class="page">
+    <!--Modal for Adding Department Head-->
+    <div @onclick="ToggleAddMember" class="addUserModal @(isAddDepartmentModalVisible ? "show" : "")">
+        <div class="addUser" @onclick:stopPropagation>
+            <div class="d-flex w-100 justify-content-between">
+                <div>
+                    <h4 class="fw-bold">
+                        Add Member
+                    </h4>
+                    <p style="font-size:14px;">Add and Manage Members</p>
+                </div>
+
+                <div>
+                    <button class="btn btn-primary py-1 px-4 text-white" @onclick="AddSelectedToDepartment">Add</button>
+                </div>
+            </div>
+            
+
+            <!--Table Section-->
+            <div class="card w-100 mb-3 cards">
+
+                <!--Search Section-->
+                <div class="position-relative mb-2">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input @bind="searchMusicMember" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name..." />
+                </div>
+
+                <p class="mb-2"><em>@messages</em></p>
+
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="thead"><input type="checkbox" checked="@selectAll" @onchange="ToggleSelectAll" /></th>
+                                <th class="thead">Name</th>
+                                
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in filteredMusicMember)
+                            {
+                                <tr class="table-row">
+                                    <td class="table-cell"><input type="checkbox" checked="@SelectedMembers.Contains(item.Id)" @onchange="(e) => ToggleMember(item.Id,(bool)e.Value)" /></td>
+                                    <td class="table-cell" style="font-weight:500;">@item.GetFullName()</td>
+                                    
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    @* <div @onclick="ToggleAddMember" class="addUserModal @(isAddDepartmentModalVisible ? "show" : "")">
+        <div class="addUser" @onclick:stopPropagation>
+            <h4 class="fw-bold">
+                Add Member
+            </h4>
+            <p style="font-size:14px;">Add and Manage Members</p>
+
+            <div class="input mt-3">
+                <p>Select Members</p>
+                <select class="form-select p-2 mt-2" @bind="departmentMember.MemberId">
+                    @foreach (var item in members)
+                    {
+                        <option>@item.GetFullName()</option>
+                    }
+                </select>
+            </div>
+
+            <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddMember">Cancel</button>
+                <button disabled="@isValidating" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddDepartment">Add</button>
+            </div>
+
+        </div>
+    </div> *@
+
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <div class="d-flex flex-row gap-2">
+                <h4 class="m-0"><a href="departments" class="link">Departments</a> ></h4>
+                <h4 class="m-0 fw-bold">@DepName</h4>
+            </div>
+            
+            <p class="m-0 c2" style="font-size: 14px">Manage department leaders and their responsibilities.</p>
+        </div>
+
+        <div>
+            <button class="btn btn-primary p-2 text-white" @onclick="ToggleAddMember">Add Member</button>
+        </div>
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+
+        <!--Search Section-->
+        <div class="position-relative mb-2">
+            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+            <input @bind="searchString" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name..." />
+        </div>
+
+        <p class="mb-2"><em>@message</em></p>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead">Name</th>
+                        @if (_appState.SelectedDepartmentId == "VzTQIg7WYg0h6Utksi4J")
+                        {
+                            <th class="thead">Action</th>
+                        }
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in filteredList)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell" style="font-weight:500;">@item.GetFullName()</td>
+                            @if (_appState.SelectedDepartmentId == "VzTQIg7WYg0h6Utksi4J")
+                            {
+                                <td class="table-cell">
+                                    <button @onclick="(() => DeleteMember(item.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code{
+    //Variable Declarations
+    private bool isAddDepartmentModalVisible = false;
+    private bool isValidating = false;
+    private string message = string.Empty;
+    private string messages = string.Empty;
+    private string DepName = string.Empty;
+    private string searchString = string.Empty;
+    private string searchMusicMember = string.Empty;
+    private bool selectAll = false;
+    private bool isSelected = false;
+    private HashSet<string> SelectedMembers = new();
+    private DepartmentMember departmentMember = new();
+    private List<Member> members = new();
+    private List<Member> allMembers = new();
+    private IEnumerable<Member> filteredList => members.Where(u => string.IsNullOrWhiteSpace(searchString) || u.GetFullName().Contains(searchString,StringComparison.OrdinalIgnoreCase)).ToList();
+    private IEnumerable<Member> filteredMusicMember => allMembers.Where(u => string.IsNullOrWhiteSpace(searchMusicMember) || u.GetFullName().Contains(searchMusicMember, StringComparison.OrdinalIgnoreCase)).ToList();
+
+
+    //Load List during page initialization
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMembers();
+    }
+
+    //Getthe membersList
+    private async Task LoadMusicMembers()
+    {
+        var result = await _memberService.GetMembersAsync();
+        if (result.Success)
+        {
+            List<DepartmentMember> musicMem = new();
+            allMembers = result.Data;
+            messages = string.Empty;
+            members = allMembers.Where(u => u.Age > 12).ToList();
+            var results = await _departmentMemberService.GetDepartmentMemberAsync();
+            if (results.Success)
+            {
+                musicMem = results.Data;
+
+                members = members.Where(m => musicMem.Any(d => d.MemberId == m.Id)).ToList();
+                allMembers = result.Data.Where(m => !musicMem.Any(d => d.MemberId == m.Id) && m.Age > 12).ToList();
+
+                if (allMembers != null && allMembers.Count == 0)
+                {
+                    messages = "No members to add";
+                }
+                else
+                {
+                    messages = string.Empty;
+                }
+            }
+            else
+            {
+                message = "Failed to load members...";
+                messages = "Failed to load members...";
+                await _js.InvokeVoidAsync("alert", $"Failed to load members: {result.Error}");
+            }
+        }
+    }
+
+    private void ToggleSelectAll(ChangeEventArgs e)
+    {
+        selectAll = !selectAll;
+        if (selectAll)
+        {
+            SelectedMembers = filteredMusicMember.Select(u => u.Id).ToHashSet();
+        }
+        else
+        {
+            // Clear selection
+            SelectedMembers.Clear();
+        }
+    }
+
+    private void ToggleMember(string name, bool isChecked)
+    {
+        if (isChecked)
+            SelectedMembers.Add(name);
+        else
+            SelectedMembers.Remove(name);
+
+        // If not all are checked, uncheck Select All
+        // selectAll = SelectedMembers.Count == allMembers.Count;
+    }
+
+    private async Task AddSelectedToDepartment()
+    {
+        messages = "Adding members, please wait...";
+        foreach (string item in SelectedMembers)
+        {
+            departmentMember.DepartmentId = _appState.SelectedDepartmentId;
+            departmentMember.MemberId = item;
+            var result = await _departmentMemberService.AddDepartmentMemberAsync(departmentMember);
+        }
+        messages = string.Empty;
+        await GetMembers();
+        await ToggleAddMember();
+        SelectedMembers.Clear();
+        selectAll = false;
+    }
+
+
+    //Toggle Modal
+    private async Task ToggleAddMember()
+    {
+        isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
+        departmentMember = new();
+        await LoadMusicMembers();
+    }
+
+
+    //Fetching Departments List
+    private async Task GetMembers()
+    {
+        string depId = _appState.SelectedDepartmentId;
+        DepName = _appState.SelectedDepartmentName;
+        message = "Fetching database...";
+
+        var result = await _memberService.GetMembersAsync();
+        if (result.Success)
+        {
+            members = result.Data;
+            switch (depId)
+            {
+
+                //Senior
+                case "1iye4Phk5QbwXvAg5viy":
+                    members = members.Where(u => u.Age > 11).ToList();
+                    break;
+
+                //Womens
+                case "aC5nKsB9bFaNQDRJTcvK":
+                    members = members.Where(u => u.Age >= 20 && u.Gender == "Female").ToList();
+                    break;
+
+                //Mens
+                case "qpy23fBev806UZ3DQ6vQ":
+                    members = members.Where(u => u.Age >= 12 && u.Gender == "Male").ToList();
+                    break;
+
+                //Youth Soldiers
+                case "ufnL0XEHEsLZLOp7jdcN":
+                    members = members.Where(u => u.Age <= 35).ToList();
+                    break;
+
+                //Junior Soldiers
+                case "nHtQIkL2Yc94pemEP0S3":
+                    members = members.Where(u => u.Age >= 7 && u.Age <= 12).ToList();
+                    break;
+
+                //Music
+                case "VzTQIg7WYg0h6Utksi4J":
+                    await LoadMusicMembers();
+                    break;
+
+
+            }
+
+            if (members != null && members.Count == 0)
+            {
+                message = "No current members";
+            }
+            else
+            {
+                message = string.Empty;
+            }
+
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", $"Unable to fetch members: {result.Error}");
+        }
+    }
+
+    private async Task DeleteMember(string Id)
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this member?");
+        if (!confirm) return;
+
+        var result = await _departmentMemberService.GetDepartmentMemberAsync();
+
+        if (result.Success)
+        {
+            var dep = result.Data;
+            string? memberToRemove = dep.FirstOrDefault(u => u.MemberId == Id)?.DepartmentMemberId;
+
+            if (memberToRemove != null)
+            {
+                var rem = await _departmentMemberService.RemoveDepartmentMemberAsync(memberToRemove);
+
+                if (rem.Success)
+                {
+                    await GetMembers();
+                    await _js.InvokeVoidAsync("alert", "Member Successfully Removed.");
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Cannot perform operation: " + rem.Error);
+                }
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Cannot perform operation: Member not found.");
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Cannot perform operation: " + result.Error);
+        }
+
+    }
+
+    
+}

@@ -8,6 +8,7 @@
 @inject GospelReachCapstone.Services.SubCategoryService _subCategoryService
 @inject GospelReachCapstone.Services.NotificationService _notificationService
 @inject GospelReachCapstone.Services.AttendanceMemberRecordService _attenanceMemberRecordService
+@inject GospelReachCapstone.Services.VisitorService _visitorsService
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
 @using System.Globalization
@@ -239,7 +240,7 @@
         </div>
 
         <!--Attendance Section Modal-->
-        <div hidden="@(!isAttendanceVisible)" class="addAttendance attend" @onclick:stopPropagation>
+        <div @onclick="HideInviteModal" hidden="@(!isAttendanceVisible)" class="addAttendance attend" @onclick:stopPropagation>
             <div class="d-flex align-content-lg-start justify-content-between">
                 <div>
                     <h4 class="fw-bold">Attendance</h4>
@@ -264,28 +265,38 @@
 
             <div class="userFields mt-3">
                 <div class="inputs">
+                    <p>Tithes</p>
+                    <input type="number" @bind="tithes" min="0" class="form-control p-2 mt-2" />
+                </div>
+
+                <div class="inputs">
+                    <p>Offering</p>
+                    <input type="number" @bind="offering" min="0" class="form-control p-2 mt-2" />
+                </div>
+            </div>
+
+            <div class="userFields mt-3">
+                <div class="inputs">
                     <p>Count</p>
-                    <input type="number" @bind="count" min="0" readonly class="form-control p-2 mt-2" />
+                    <input type="number" @bind="count" readonly min="0" class="form-control p-2 mt-2" />
                 </div>
 
                 <div class="inputs">
                     <p>Seekers</p>
-                    <input type="number" @bind="seekers" min="0" max="@count" class="form-control p-2 mt-2" />
+                    <input type="number" @bind="seekers" min="0" class="form-control p-2 mt-2" />
                 </div>
             </div>
 
-            <!--Table Section-->
+            <div>
 
-            <p class="mt-3">Select People</p>
-            <!--Search Section-->
+            </div>
+            <!--Table Section-->
+            <h5 class="fw-bold mt-3">Members</h5>
+            <!--Members Search Section-->
             <div class="position-relative mt-2">
                 <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
                 <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
             </div>
-
-            <p class="m-2"><em>@groupMemberMessage</em></p>
-
-
             @if (groupMemberList.Count != 0)
             {
                 <div class="table-container mt-2">
@@ -294,6 +305,7 @@
                             <tr>
                                 <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChange" /></th>
                                 <th class="thead" style="width: 100%;">Name</th>
+                                <th class="thead" style="width: 100%;">Action</th>
                             </tr>
                         </thead>
 
@@ -304,7 +316,24 @@
                                     <td class="table-cell" style="width: auto; white-space: nowrap;">
                                         <input @bind="item.isSelected" type="checkbox" />
                                     </td>
-                                    <td class="table-cell" style="width: 100%;">@item.Member.GetFullName()</td>
+                                    <td class="table-cell" style="width: 100%;">
+                                        @item.Member.GetFullName()
+                                        @foreach (var v in localvisitList)
+                                        {
+                                            @if (item.Member.Id == v.InvitedByMemberId)
+                                            {
+                                                <div class="d-flex flex-column gap-1 mt-2">
+                                                    <div class="visitor">
+                                                        <p class="pill6">@v.GetFullName()</p>
+                                                        <i @onclick="() => RemoveFromVisitorsList(v)" class="bi bi-x-circle cursor removes bg-white text-danger"></i>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </td>
+                                    <td class="table-cell" style="width: 100%;">
+                                        <i @onclick="() => ToggleInviteModal(item.Member.Id, attDate)" @onclick:stopPropagation class="bi bi-plus-circle-fill text-primary fs-5 cursor"></i>
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -312,7 +341,82 @@
                 </div>
             }
 
+
+            @if (visitorsList.Count != 0)
+            {
+                <!--Table Section-->
+                <h5 class="fw-bold mt-3">Visitors</h5>
+                <!--Visitors Search Section-->
+                <div class="position-relative mt-2">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input type="text" @bind="visitorsSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
+                </div>
+
+                <p class="m-2"><em>@visitorMessage</em></p>
+
+                <div class="table-container mt-2">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChanges" /></th>
+                                <th class="thead" style="width: 100%;">Name</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in filteredVisitor)
+                            {
+                                <tr>
+                                    <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                        <input @bind="item.isSelected" type="checkbox" />
+                                    </td>
+                                    <td class="table-cell">@item.Visitor.GetFullName()</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+
             <button @onclick="AddOrUpdateAttendance" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+        </div>
+
+        <!--Invite Form Modal-->
+        <div hidden="@(!isInviteVisible)" class="addAttendance cards" style="width: 300px;" @onclick:stopPropagation>
+            <div class="d-flex align-content-lg-start justify-content-between">
+                <div>
+                    <h4 class="fw-bold">Add Visitor</h4>
+                </div>
+                <i @onclick="HideInviteModal" class="bi bi-arrow-return-left fs cursor hover fs-4"></i>
+            </div>
+
+            <!--First Name-->
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-1">
+                    <p>First Name</p>
+                </div>
+                <input @bind="visitor.FirstName" spellcheck="false" type="text" class="form-control p-2 mt-2" placeholder="Enter First Name" />
+            </div>
+
+            <!--Middle Name-->
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-1">
+                    <p>Middle Name</p>
+                    <p style="font-size: 12px; padding: 0; margin: 0; color:gray;">(optional)</p>
+                </div>
+                <input @bind="visitor.MiddleName" spellcheck="false" type="text" class="form-control p-2 mt-2" placeholder="Enter Middle Name" />
+            </div>
+
+            <!--Last Name-->
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-1">
+                    <p>Last Name</p>
+                </div>
+                <input @bind="visitor.LastName" spellcheck="false" type="text" class="form-control p-2 mt-2" placeholder="Enter Last Name" />
+            </div>
+
+            <button @onclick="SaveToVistorsList" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
         </div>
 
         
@@ -497,6 +601,8 @@
     private Attendance att = new();
     private bool isAttendanceVisible = false;
     private int count { get; set; } = 0;
+    private decimal tithes { get; set; } = 0;
+    private decimal offering { get; set; } = 0;
     private int seekers = 0;
     private DateOnly attDate = new DateOnly(2025,9,6);
 
@@ -540,6 +646,18 @@
     private string schedCategory { get; set; } = string.Empty;
     private string schedLocation { get; set; } = string.Empty;
 
+
+
+    //Visitors
+    private bool isInviteVisible { get; set; } = false;
+    private Visitor visitor { get; set; } = new();
+    private List<Visitor> localvisitList = new();
+    private List<VisitorSelection> visitorsList = new();
+    private string visitorMessage = string.Empty;
+    private string visitorsSearch { get; set; } = string.Empty;
+    private IEnumerable<VisitorSelection> filteredVisitor => visitorsList.Where(u => string.IsNullOrWhiteSpace(visitorsSearch) || u.Visitor.GetFullName().Contains(visitorsSearch, StringComparison.OrdinalIgnoreCase));
+
+
     protected override async Task OnInitializedAsync()
     {
         Init();
@@ -548,10 +666,28 @@
         await GetSubCategoriesList();
     }
 
+    //Save to local list
+    private void SaveToVistorsList()
+    {
+        localvisitList.Add(visitor);
+        isInviteVisible = false;
+    }
+
+    //Remove from local list
+    private void RemoveFromVisitorsList(Visitor visitor)
+    {
+        localvisitList.Remove(visitor);
+    }
+
     //Hide Attendance Modal
     private void HideAttendance()
     {
         isAttendanceVisible = false;
+    }
+
+    private void HideInviteModal()
+    {
+        isInviteVisible = false;
     }
 
     //get sub category id and name
@@ -590,6 +726,16 @@
         {
             await _js.InvokeVoidAsync("alert", result.Error);
         }
+    }
+
+    //Toggle Add Invite
+    private void ToggleInviteModal(string Id, DateOnly date)
+    {
+        visitor = new();
+        isInviteVisible = !isInviteVisible;
+
+        visitor.InvitedByMemberId = Id;
+        visitor.FirstVisitDate = date;
     }
 
 
@@ -654,6 +800,29 @@
     {
         isAttendanceVisible = true;
         await GetGroupName();
+        await GetVisitors();
+    }
+
+    private async Task GetVisitors()
+    {
+        var result = await _visitorsService.GetVisitorsAsync();
+
+        if (result.Success)
+        {
+            var visitors = result.Data;
+
+            var vm = visitors.Select(u => new VisitorSelection
+            {
+                isSelected = true,
+                Visitor = u
+            });
+
+            visitorsList = vm.ToList();
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to get visitors data: " + result.Error);
+        }
     }
 
     //Get Upcoming list of schedules
@@ -736,6 +905,16 @@
 
     }
 
+    private async Task OnCheckChanges(ChangeEventArgs e)
+    {
+        bool isChecked = (bool)e.Value!;
+
+        foreach (var item in visitorsList)
+        {
+            item.isSelected = isChecked;
+        }
+    }
+
     private string SwitchClass(string name)
     {
         return name switch
@@ -798,6 +977,10 @@
         sDate = sched.StartDate;
         eDate = sched.EndDate;
         isSub = false;
+        tithes = 0;
+        offering = 0;
+        seekers = 0;
+        count = 0;
         setType(1);
         GetClass(1);
 
@@ -1186,14 +1369,40 @@
         var existing = Attendances.FirstOrDefault(u => u.ScheduleId == sched.Id && u.Date == attDate);
         if (existing != null)
         {
-            existing.Count = count;
+            int visitorsCount = visitorsList.Count(u => u.isSelected);
+            existing.Count = groupMemberList.Count(u => u.isSelected) + visitorsCount;
             existing.Seekers = seekers;
+            existing.Tithes = tithes;
+            existing.Offering = offering;
 
             var result = await _attendance.UpdateAttendanceAsync(existing.Id, existing);
             if (result.Success)
             {
-                await GetAttendanceList();
-                await _js.InvokeVoidAsync("alert", "Attendance saved successfully");
+                var removeResultAttenance = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(existing.Id);
+                if (removeResultAttenance.Success)
+                {
+                    var membersToAdd = groupMemberList.Where(u => u.isSelected).ToList();
+                    @foreach (var item in membersToAdd)
+                    {
+                        var a = new AttendanceMemberRecord { AttendanceId = existing.Id, IsPresent = true, MemberId = item.Member.Id };
+                        var addAttendanceMemberResult = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(a);
+                    }
+
+                    var visitorsToAdd = visitorsList.Where(u => u.isSelected).ToList();
+                    @foreach (var item in visitorsToAdd)
+                    {
+                        var b = new AttendanceMemberRecord { AttendanceId = existing.Id, IsPresent = true, MemberId = item.Visitor.Id};
+                        var addAttendanceMemberResult = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(b);
+                    }
+
+                    await GetAttendanceList();
+                    await _js.InvokeVoidAsync("alert", "Attendance saved successfully");
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Failed to remove attendanceMember: " + removeResultAttenance.Error);
+                }
+
             }
             else
             {
@@ -1204,9 +1413,11 @@
         {
 
             att.ScheduleId = sched.Id;
-            att.Count = count;
+            att.Count = groupMemberList.Count(u => u.isSelected);
             att.Seekers = seekers;
             att.Date = attDate;
+            att.Tithes = tithes;
+            att.Offering = offering;
 
             var result = await _attendance.AddAttendanceAsync(att);
 
@@ -1222,11 +1433,17 @@
                         var add = new AttendanceMemberRecord { AttendanceId = attId, MemberId = item.Member.Id, IsPresent = true };
                         var results = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(add);
                     }
+
+                    @foreach (var item in localvisitList)
+                    {
+                        var results = await _visitorsService.AddVisitorAsync(item);
+                    }
                 }
                 count = 0;
                 seekers = 0;
                 await GetAttendanceList();
                 isAddModalVisible = false;
+                localvisitList.Clear();
                 await _js.InvokeVoidAsync("alert", "Attendance saved successfully");
 
             }
@@ -1300,7 +1517,15 @@
                 }
                 else
                 {
-                    groupMemberMessage = $"{res.Data.Count} members found";
+                    if (res.Data.Count > 1)
+                    {
+                        groupMemberMessage = $"{res.Data.Count} members found";
+                    }
+                    else
+                    {
+                        groupMemberMessage = $"{res.Data.Count} member found";
+                    }
+
                     var resMem = await _memberService.GetMembersAsync();
 
                     if (resMem.Success)
@@ -1424,7 +1649,7 @@ Gospel Reach Team
             await _js.InvokeVoidAsync("alert", "Failed to send email: " + result.Error);
         }
 
-        
+
         // var email = new { To = emailList, Subject = subject, Body = body };
 
         // try
@@ -1445,5 +1670,11 @@ Gospel Reach Team
     {
         public bool isSelected { get; set; }
         public Member Member { get; set; }
+    }
+
+    private class VisitorSelection
+    {
+        public bool isSelected { get; set; }
+        public Visitor Visitor { get; set; }
     }
 }
