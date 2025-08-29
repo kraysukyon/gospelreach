@@ -423,7 +423,7 @@
     </div>
 
 
-    <div class="lcontainer" hidden="@(isListVisible)">
+    @* <div class="lcontainer" hidden="@(isListVisible)">
         <div class="d-flex align-items-center justify-content-center gap-2">
             <div class="l1"></div>
             Event
@@ -443,11 +443,11 @@
             <div class="l4"></div>
             Others
         </div>
-    </div>
+    </div> *@
 
 
     <!--Calendar View Section-->
-    <div class="calendar-container" hidden="@(isListVisible)">
+    <div class="calendar-container mt-5" hidden="@(isListVisible)">
         <div class="calendar-header">
             <div class="d-flex gap-2 align-items-center">
                 <button class="btn today" @onclick="setDateToday">Date Today</button>
@@ -502,7 +502,14 @@
                                 <td class="table-cell" style="font-weight:500;">@item.Date</td>
                                 <td class="table-cell" style="font-weight:500;">@item.Category</td>
                                 <td class="table-cell" style="font-weight:500;">@item.Title</td>
-                                <td @onclick:stopPropagation @onclick="(() => OpenEdit(item.AttendanceId))" class="table-cell d-flex gap-2 hover" style="padding: 24px 24px; border-bottom: none; width: auto;">View</td>
+                                <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none; width: auto;">
+                                    <div class="d-flex gap-1">
+                                        <p @onclick:stopPropagation @onclick="(() => OpenEdit(item.AttendanceId))" class="hover">View</p>
+                                        <div style="border-left: 1px solid #ccc;height: 100%;"></div>
+                                        <p class="hover">Attendees</p>
+                                    </div>
+                                    
+                                </td>
                             </tr>
                         }
                     </tbody>

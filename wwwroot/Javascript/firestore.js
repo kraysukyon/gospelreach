@@ -594,7 +594,7 @@
 
     async removeGroupMembers(id) {
         try {
-            const snapshot = await db.collection("GroupMembers").where("groupId", "==", id).get();
+            const snapshot = await db.collection("GroupMembers").where("memberId", "==", id).get();
             const batch = db.batch();
 
             snapshot.forEach(doc => { batch.delete(doc.ref) });

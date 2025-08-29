@@ -30,9 +30,23 @@
     padding: 2rem 1.5rem;
     background-color: #FFFFFF;
     border-radius: 25px;
-    max-height: calc(100vh - 20vh);
-    overflow: hidden;
+    max-height: calc(100vh - 10vh);
+    height: 90vh;
+    overflow-y: auto;
 }
+
+.addMember {
+    display: flex;
+    flex-direction: column;
+    width: 550px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+    max-height: calc(100vh - 10vh);
+    height: 90vh;
+    overflow-y: auto;
+}
+
 
 .editUser {
     display: flex;
@@ -119,6 +133,21 @@ a {
     text-decoration: none;
 }
 
+
+.boot {
+    margin-top: -4px;
+    opacity: .50;
+}
+
+.cursor {
+    cursor: pointer;
+}
+
+.hover:hover {
+    opacity: 1;
+    color: #2768ee;
+}
+
     .link:hover {
         color: rgb(26,86,219);
         font-weight: 600;
@@ -148,6 +177,37 @@ a {
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
 
+.groupAndMembers{
+    display: flex;
+    gap:1rem;
+    overflow: hidden;
+}
+
+.groupPanel {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    height: 100%;
+    width: 0;
+    opacity: 0;
+}
+
+.groupPanel .table-containers{
+    overflow-y: auto;
+    margin-bottom: 1rem;
+
+}
+
+.grows {
+    opacity: 1;
+    transition: display .3s ease-in, width .3s ease, opacity 0.3s ease-in;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 500px;
+    padding: 24px;
+}
+
 .search {
     padding: .5rem .75rem;
     padding-left: 2.5rem;
@@ -159,7 +219,7 @@ a {
 
 .table-container {
     overflow-x: auto;
-    max-height: 200px;
+    overflow-y: auto;
 }
 
 .table-containers {

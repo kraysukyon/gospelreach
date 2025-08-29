@@ -15,11 +15,11 @@
 
 <div class="pages">
     <!--Modal for Adding Department Head-->
-    <div @onclick="ToggleAddGroup" class="addUserModal @(isAddDepartmentModalVisible ? "show" : "")">
-        <div class="addUser" @onclick:stopPropagation>
+    <div @onclick="ToggleBackModal" class="addUserModal @(isAddDepartmentModalVisible ? "show" : "")">
+        <div hidden="@(!isView)" class="addUser" @onclick:stopPropagation>
             
             <!--Add Group-->
-            <div hidden="@(isView)">
+            <div >
                 <h4 class="fw-bold">
                     @title
                 </h4>
@@ -69,19 +69,18 @@
             </div>
 
 
-            <!--View Group and Members-->
-            <div hidden="@(!isView)">
-                <h4 class="fw-bold">
-                    @title
-                </h4>
-                <p style="font-size:14px;">Update group and members.</p>
-                <div class="input mt-3">
-                    <p>Group Name</p>
-                    <div class="pword mt-2">
-                        <input @bind="group.Name" spellcheck="false" type="text" placeholder="Enter group name" />
-                    </div>
-                </div>
+            
+            
+        </div>
 
+        <!--Add Members to Group-->
+        <div hidden="@(!isAddMemberVisible)" class="addMember" @onclick:stopPropagation>
+            <!--Add Group-->
+            <div hidden="@(isView)">
+                <h4 class="fw-bold">
+                    Add Member
+                </h4>
+                <p style="font-size:14px;">Create group and select members.</p>
                 <!--Table Section-->
 
                 <p class="mt-3">Select People</p>
@@ -91,20 +90,18 @@
                     <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
                 </div>
 
-                <p class="mb-2 mt-2 ms-2"><em>@groupMemberMessage</em></p>
-
 
                 <div class="table-container mt-2">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th class="thead" style="width: auto; white-space: nowrap;"><input checked @onchange="ToggleCheckBoxUpdate" type="checkbox" /></th>
+                                <th class="thead" style="width: auto; white-space: nowrap;"><input checked @onchange="ToggleCheckbox" type="checkbox" /></th>
                                 <th class="thead" style="width: 100%;">Name</th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            @foreach (var item in groupMemberList)
+                            @foreach (var item in filteredMember)
                             {
                                 <tr>
                                     <td class="table-cell" style="width: auto; white-space: nowrap;">
@@ -117,71 +114,120 @@
                     </table>
                 </div>
 
-                <button @onclick="UpdateGroupAndMembers" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+                <button @onclick="() => AddMembers(groupId)" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
             </div>
-            
-
-            
         </div>
     </div>
-
     <!--Header Section-->
-    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-3">
         <div>
-            <h4 class="m-0 fw-bold">Notification Management</h4>
-            <p class="m-0 c2" style="font-size: 14px">Manage group and members notification</p>
+            <h4 class="m-0 fw-bold">Group Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Manage group and members</p>
         </div>
     </div>
 
-    <!--Group Section=========================-->
-    <div class="card w-100 mb-3 cardss">
+    <div class="groupAndMembers">
+        <div class="d-flex flex-grow-1">
+            <!--Group Section=========================-->
+            <div class="card w-100 mb-3 cardss">
+                <h4 class="m-0 fw-bold mb-3">Group</h4>
+                <!--Search Section-->
+                <div class="d-flex gap-2">
+                    <div class="position-relative w-100">
+                        <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                        <input @bind="groupSearch" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search group..." />
+                    </div>
 
-        <!--Search Section-->
-        <div class="d-flex gap-2">
-            <div class="position-relative w-100">
-                <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                <input @bind="searchString" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search group..." />
+                    <button class="btn btn-primary px-4 py-2 text-white m-0" @onclick="ToggleAddGroup" style="width: 100px;">Add</button>
+
+                </div>
+
+                <p class="mb-2 mt-2 ms-2"><em>@groupMessage</em></p>
+
+                <div class="table-containers">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="thead">Group</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in filteredGroupList)
+                            {
+                                <tr class="table-row">
+                                    <td class="table-cell" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))" style="font-weight:500;"><p class="link">@item.Name</p></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!--View Group Panel-->
+        <div class="groupPanel @(isViewPanel ? "grows" : "")">
+            <div>
+                <div class="d-flex gap-3 w-auto align-items-start">
+                    <h4 class="m-0 fw-bold mb-3">@groupName</h4>
+                    <i class="bi bi-pencil-square p-0 fs-4 cursor" style="margin-top: -4px; opacity: .50;"></i>
+                </div>
+                
+                <!--Search Section-->
+                <div class="d-flex gap-2">
+                    <div class="position-relative w-100">
+                        <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                        <input @bind="existingMemberSearch" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search group..." />
+                    </div>
+                </div>
+
+                <p class="mb-2 mt-2 ms-2"><em>@viewMembersMessage</em></p>
+            </div>
+            
+
+            <div class="table-containers">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="thead" style="width: auto; white-space: nowrap;"><input @onchange="ToggleMembersCheckbox" type="checkbox" /></th>
+                            <th class="thead">Name</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in filteredExistingMemberList)
+                        {
+                            <tr class="table-row">
+                                <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                    <input @bind="item.isSelected" type="checkbox" />
+                                </td>
+                                <td class="table-cell" style="font-weight:500;"><p class="link">@item.Member.GetFullName()</p></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
 
-            <button class="btn btn-primary px-4 py-2 text-white m-0" @onclick="ToggleAddGroup">Add</button>
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-danger px-4 py-2 text-white m-0" @onclick="RemoveMembers" style="width: 100px;">Delete</button>
+                <button class="btn btn-primary px-4 py-2 text-white m-0" @onclick="() => ToggleShowMember(groupId)" style="width: 100px;">Add</button>
+            </div>
 
-        </div>
-
-        <p class="mb-2 mt-2 ms-2"><em>@groupMessage</em></p>
-
-        <div class="table-containers">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="thead">Group</th>
-                        <th class="thead">Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var item in filteredGroupList)
-                    {
-                        <tr class="table-row">
-                            <td class="table-cell" @onclick="(() => GetGroupAndMembers(item.Id))" style="font-weight:500;"><p class="link">@item.Name</p></td>
-                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
         </div>
     </div>
+    
 </div>
 
 @code {
     //Variable Declarations
     private bool isAddDepartmentModalVisible = false;
-    private string title = "Attendance Tracking";
+    private string title = "Add Group";
     private Group group = new();
     private List<Attendance> attendancesList = new();
     private List<Group> groupList = new();
     private List<GroupMemberSelection> groupMemberList { get; set; } = new();
     private List<GroupMemberSelection> groupMemberSelectionList { get; set; } = new();
+    private List<GroupMemberSelection> existingMemberList { get; set; } = new();
     private bool isValidating = false;
     private bool isView = false;
     private string groupMessage = string.Empty;
@@ -193,11 +239,19 @@
     private string memberSearch = string.Empty;
     private string groupSearch { get; set; } = string.Empty;
     private string groupMemberSearch { get; set; } = string.Empty;
+    private string viewMemberSearch { get; set; } = string.Empty;
+    private bool isViewPanel = false;
+    private string groupName = string.Empty;
+    private string groupId = string.Empty;
+    private string viewMembersMessage = string.Empty;
+    private bool isAddMemberVisible = false;
+    private string existingMemberSearch = string.Empty;
 
     private IEnumerable<GroupMemberSelection> filteredMember => groupMemberSelectionList.Where(u => string.IsNullOrWhiteSpace(memberSearch) || u.Member.GetFullName().Contains(memberSearch, StringComparison.OrdinalIgnoreCase));
     private IEnumerable<Attendance> filteredList => attendancesList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Date.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
     private IEnumerable<Group> filteredGroupList => groupList.Where(u => string.IsNullOrWhiteSpace(groupSearch) || u.Name.Contains(groupSearch, StringComparison.OrdinalIgnoreCase));
     private IEnumerable<GroupMemberSelection> filteredGroupMemberList => groupMemberList.Where(u => string.IsNullOrWhiteSpace(groupMemberSearch));
+    private IEnumerable<GroupMemberSelection> filteredExistingMemberList => existingMemberList.Where(u => string.IsNullOrWhiteSpace(existingMemberSearch) || u.Member.GetFullName().Contains(existingMemberSearch, StringComparison.OrdinalIgnoreCase));
 
     //Email
     private string body = "Hello everyone, this is a test email!";
@@ -206,8 +260,62 @@
     //Load List during page initialization
     protected override async Task OnInitializedAsync()
     {
-        await GetattendancesList();
         await GetAllGroups();
+    }
+
+    private async Task RemoveMembers()
+    {
+        var membersToDelete = existingMemberList.Where(u => u.isSelected).ToList();
+
+        foreach (var item in membersToDelete)
+        {
+            var result = await _groupMemberService.RemoveGroupMembersAsync(item.Member.Id);
+        }
+
+        await _js.InvokeVoidAsync("alert", "Members successfully deleted!");
+        await GetGroupAndMembers(groupId,groupName);
+
+    }
+
+    //Toggle checkboxes
+    private void ToggleMembersCheckbox(ChangeEventArgs e)
+    {
+        bool isCheck = (bool)e.Value!;
+
+        foreach (var item in existingMemberList)
+        {
+            item.isSelected = isCheck;
+        }
+    }
+
+    //Add Members to Existing group
+    private async Task AddMembers(string Id)
+    {
+        var memToAdd = groupMemberSelectionList.Where(u => u.isSelected).ToList();
+
+        if (memToAdd != null)
+        {
+            foreach (var item in memToAdd)
+            {
+                var m = new GroupMember
+                    {
+                        GroupId = Id,
+                        MemberId = item.Member.Id
+                    };
+                var result = await _groupMemberService.AddGroupMembersAsync(m);
+            }
+
+
+            await GetGroupAndMembers(groupId, groupName);
+            isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
+            await _js.InvokeVoidAsync("alert", "Members Added Successfully!");
+
+
+        }
+        else
+        {
+
+        }
     }
 
     //Get All members
@@ -232,83 +340,58 @@
         }
     }
 
-    //Toogle View Group and Member
-    private void ToggleViewGroup()
-    {
-        title = "Update Group";
-        isView = true;
-        isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
-    }
-
     //Get Group and its members
-    private async Task GetGroupAndMembers(string Id)
+    private async Task GetGroupAndMembers(string Id, string Name)
     {
-        var result = await _groupService.GetGroupByIdAsync(Id);
+        existingMemberList.Clear();
+        viewMembersMessage = "Fetching data, please wait...";
+        isViewPanel = true;
+        groupName = Name;
+        groupId = Id;
+
+        var result = await _groupMemberService.GetGroupMembersByGroupIdAsync(Id);
+
 
         if (result.Success)
         {
-
-            group = new Group { Id = result.Group.Id, Name = result.Group.Name };
-            ToggleViewGroup();
-
-            var res = await _groupMemberService.GetGroupMembersByGroupIdAsync(Id);
-
-            if (res.Success)
+            if (result.Data != null)
             {
-
-                if (res.Data == null)
+                var results = await _memberService.GetMembersAsync();
+                if (results.Success)
                 {
-                    groupMemberMessage = "No members found";
-                    var resMem = await _memberService.GetMembersAsync();
+                    var memIds = result.Data.Select(u => u.MemberId).ToHashSet();
+                    var mems = results.Data.Where(u => memIds.Contains(u.Id)).ToList();
 
-                    if (resMem.Success)
+                    if (memIds == null && mems == null)
                     {
-                        var member = resMem.Data;
-
-                        groupMemberList = member.Select(u => new GroupMemberSelection
-                        {
-                            Member = u,
-                            isSelected = true
-                        }).ToList();
+                        viewMembersMessage = "No members found";
+                        return;
                     }
+
+                    existingMemberList = mems.Select(m => new GroupMemberSelection
+                    {
+                        Member = m,
+                        isSelected = false
+                    }).ToList();
+
+                    viewMembersMessage = string.Empty;
                 }
                 else
                 {
-                    groupMemberMessage = $"{res.Data.Count} members found";
-                    var resMem = await _memberService.GetMembersAsync();
-
-                    if (resMem.Success)
-                    {
-                        //Get all members
-                        var allMembers = resMem.Data;
-
-                        //Get members who belong to the group
-                        var groupMembers = res.Data;
-                        var groupMembersId = groupMembers.Select(u => u.MemberId).ToHashSet();
-
-                        //Build Selection list with condition
-                        groupMemberList = allMembers.Select(m => new GroupMemberSelection
-                        {
-                            Member = m,
-                            isSelected = groupMembersId.Contains(m.Id)
-                        }).ToList();
-
-                    }
-                    else
-                    {
-                        await _js.InvokeVoidAsync("alert", "Members not found: " + resMem.Error);
-                    }
+                    viewMembersMessage = "There was an error retrieving the data. Please try again.";
                 }
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", "Group not found: " + result.Error);
+                existingMemberList.Clear();
+                viewMembersMessage = "No members found";
             }
+
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Group not found: " + result.Error);
-            await GetAllGroups();
+            await _js.InvokeVoidAsync("alert", "Failed to get data");
+            viewMembersMessage = "There was an error retrieving the data. Please try again.";
         }
     }
 
@@ -353,7 +436,13 @@
         if (result.Success)
         {
             groupList = result.Data;
-            groupMessage = $"{groupList.Count} data found";
+
+            if (groupList == null || groupList.Count == 0)
+            {
+                groupMessage = "No records found";
+            }
+
+            groupMessage = string.Empty;
         }
         else
         {
@@ -381,24 +470,6 @@
         }
     }
 
-    //Fetching Departments List
-    private async Task GetattendancesList()
-    {
-        attendanceMessage = "Fetching Files...";
-        var result = await _attendance.GetAttendanceAsync();
-
-        if (result.Success)
-        {
-            attendancesList = result.Data;
-
-            attendanceMessage = $"{attendancesList.Count} data found";
-        }
-        else
-        {
-            await _js.InvokeVoidAsync("alert", "Failed to load departments: " + result.Error);
-            attendanceMessage = "Failed to get data. please refresh page";
-        }
-    }
 
     //Adding Groups and Members
     private async Task AddGroupAndMembers()
@@ -441,13 +512,52 @@
     }
 
     //Toggle Modal
+    private void ToggleBackModal()
+    {
+        isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
+
+    }
+
     private async Task ToggleAddGroup()
     {
-        title = "Add Group";
-        isView = false;
-        group = new(); // Reset department object
-        isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
+        ToggleBackModal();
+        group = new();
+        isAddMemberVisible = false;
         await GetAllMembers();
+        isView = true;
+    }
+
+    private async Task ToggleShowMember(string Id)
+    {
+        isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
+        isView = false;
+
+        var result = await _memberService.GetMembersAsync();
+
+
+        if (result.Success)
+        {
+            var results = await _groupMemberService.GetGroupMembersByGroupIdAsync(Id);
+
+            if (results.Success)
+            {
+                
+                var members = result.Data;
+                var Ids = results.Data.Select(u => u.MemberId).ToHashSet();
+
+                groupMemberSelectionList = members.Where(u => !Ids.Contains(u.Id)).Select(u => new GroupMemberSelection
+                {
+                    isSelected = true,
+                    Member = u
+                }).ToList();
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to get members: " + result.Error);
+        }
+
+        isAddMemberVisible = !isAddMemberVisible;
     }
 
     //Toggle Group modal
@@ -462,5 +572,7 @@
         public bool isSelected { get; set; }
         public Member Member { get; set; }
     }
+
+    
 }
 

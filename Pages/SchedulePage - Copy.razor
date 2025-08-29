@@ -1,4 +1,4 @@
-﻿@page "/schedules"
+﻿@page "/scheduless"
 @layout LandingLayout
 @inject GospelReachCapstone.Services.ScheduleService _schedule
 @inject GospelReachCapstone.Services.AttendanceService _attendance
@@ -51,7 +51,7 @@
                         <p>Title</p>
                     </div>
                     
-                    <input @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
+                    <input readonly="@(isSub)" @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
                 </div>
 
                 <!--Type-->
@@ -63,7 +63,16 @@
 
                     <div class="cat">
                         <button @onclick="(() => setType(1))" class="btn type @GetClass(1)"><i class="bi bi-star"></i> Event</button>
-                        <button @onclick="(() => setType(2))" class="btn type @GetClass(2)"><i class="bi bi-book"></i> Meeting</button>
+                        <div class="meet">
+                            @* <button @onclick="(() => setType(2))" class="btn type @GetClass(2) w-100" style="font-size: 12px; line-height:1.2;"><i class="bi bi-book"></i> Weekly<br />Meeting</button> *@
+                            <select @onchange="getSubCatValue" @onclick="(() => setType(2))" class="form-control p-2">
+                                <option value=""><i class="bi bi-book"></i> Weekly Meeting</option>
+                                @foreach(var item in subCategorieList)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                        </div>
                         <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Service</button>
                         <button @onclick="(() => setType(4))" class="btn type @GetClass(4)"><i class="bi bi-houses"></i> Others</button>
                     </div>
@@ -693,6 +702,29 @@
         isInviteVisible = false;
     }
 
+    //get sub category id and name
+    private void getSubCatValue(ChangeEventArgs e)
+    {
+        string Id = e.Value!.ToString()!;
+
+        if (!string.IsNullOrEmpty(Id))
+        {
+            var sub = subCategorieList.FirstOrDefault(u => u.Id == Id);
+
+            if(sub != null)
+            {
+                isSub = true;
+                eventTitle = sub.Name;
+                subCategory = sub.Id;
+            }
+        }
+        else
+        {
+            isSub = false;
+            eventTitle = string.Empty;
+        }
+    }
+
     //Get subcategories
     private async Task GetSubCategoriesList()
     {
@@ -918,7 +950,7 @@
                 subCategory = string.Empty;
                 break;
             case 2:
-                eventCategory = "Meeting";
+                eventCategory = "Weekly Meeting";
                 break;
             case 3:
                 isSub = false;

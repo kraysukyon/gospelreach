@@ -23,7 +23,7 @@
                 <div class="d-flex align-items-center">
                     <i class="bi bi-person"></i>
                 </div>
-                <a href="user-management" class="text-decoration-none c2">User<br />Management</a>
+                <a href="user-management" class="text-decoration-none c2">User</a>
             </div>
 
             <!--Departments-->
@@ -67,23 +67,15 @@
                 <div class="d-flex align-items-center">
                     <i class="bi bi-people"></i>
                 </div>
-                <a href="membermanagement" class="text-decoration-none c2">Member<br />Management</a>
-            </div>
-
-            <!--Visitor Management-->
-            <div class="@GetClass(10, "link")" @onclick="() => SetActive(10)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-person-gear"></i>
-                </div>
-                <a href="visitors" class="text-decoration-none c2">Visitor<br />Management</a>
+                <a href="membermanagement" class="text-decoration-none c2">Member</a>
             </div>
 
             <!--Group Management-->
             <div class="@GetClass(4, "link")" @onclick="() => SetActive(4)">
                 <div class="d-flex align-items-center">
-                    <i class="bi bi-bell"></i>
+                    <i class="bi bi-collection"></i>
                 </div>
-                <a href="notification" class="text-decoration-none c2">Notification<br />Management</a>
+                <a href="notification" class="text-decoration-none c2">Group</a>
             </div>
 
             <!--Tracking-->
@@ -227,11 +219,6 @@
                 Navs.NavigateTo("schedules");
                 isSubDepartmentVisible = false;
                 break;
-            case 10:
-                Navs.NavigateTo("visitors");
-                isSubDepartmentVisible = false;
-                break;
-
         }
         await OnActiveChanged.InvokeAsync(); //Notify the homelayout
     }

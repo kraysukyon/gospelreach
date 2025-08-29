@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "GospelReachCapstone",
   "resources": {
-    "hash": "sha256-8cq44R3ps+Sb0+z1yvurDEuxGmHXhnKatsfXb0amIMw=",
+    "hash": "sha256-w0QzgcYDgVEG70nCnC+k+xKUaPe9SufQjYSZksg5x8A=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-7j8Y9I6JgJ/4/1qxU6eOJPc3NpvZVd7ILs8OdPuQuTI="
     },
@@ -49,7 +49,7 @@
       "System.Text.Json.wasm": "sha256-MhPsK7a0kKmkzTWCS7GDFBlN/72bNVqMC9Mt+6R3lk0=",
       "System.Text.RegularExpressions.wasm": "sha256-KIFkQNM9DAdZ+bcfnfBzZZ1XCKki0+dF/0o4P6B/auo=",
       "System.Private.CoreLib.wasm": "sha256-OniZDaeUrHL9nOGqLPJglJWZJM7eh7909Jv1foYsLMU=",
-      "GospelReachCapstone.wasm": "sha256-VYjmanPPL/S2e9YhRt5Jymjp8SpS1uPlIOUfVQHzyMM="
+      "GospelReachCapstone.wasm": "sha256-y9qJInCmWxIco5DHB4BLnS1CI0gL1CIsa7VoYOtu8nE="
     }
   },
   "cacheBootResources": true,
