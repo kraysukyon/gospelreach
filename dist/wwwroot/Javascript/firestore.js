@@ -561,6 +561,50 @@
         }
     },
 
+    async removeGroup(id) {
+        try {
+            const groupTable = db.collection("Groups").doc(id);
+            const group = await groupTable.get();
+
+            if (group.exists) {
+                const snapshot = await db.collection("GroupMembers").where("groupId", "==", id).get();
+                const batch = db.batch();
+
+                snapshot.forEach(doc => { batch.delete(doc.ref) });
+
+                await batch.commit();
+
+                await db.collection("Groups").doc(id).delete();
+                
+
+                return { success: true }
+            }
+
+            return { success: false, error: "Group not found" };
+        } catch (error) {
+            return {success: false, error: error.message}
+        }
+    },
+
+    async renameGroup(Id, groupName) {
+        try {
+            const groupTable = db.collection("Groups").doc(Id);
+            const group = await groupTable.get();
+
+            if (group.exists) {
+                await db.collection("Groups").doc(Id).update({
+                    name: groupName
+                });
+
+                return {success: true}
+            }
+
+            return {success: false, error: "Group does not exist"}
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
     //============================================GroupMember Section============================================//
     async getGroupMembersByGroupId(id) {
         try {

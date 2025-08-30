@@ -2823,6 +2823,11 @@ a[b-few9ehv55j] {
         text-decoration: underline;
     }
 
+.renameModal[b-few9ehv55j] {
+    width: 400px;
+    background-color: white;
+}
+
 .cards[b-few9ehv55j] {
     border-radius: .75rem;
     box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
@@ -2920,6 +2925,39 @@ a[b-few9ehv55j] {
     line-height: 1.25rem;
 }
 
+.optionDot[b-few9ehv55j] {
+    position: relative;
+    width: 110px;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    height:100%;
+}
+
+.optionDotChild[b-few9ehv55j] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: white;
+    border: solid 1px #000000bf;
+    border-radius: 12px;
+}
+
+.optionDotChild p[b-few9ehv55j]{
+    padding: 5px 15px;
+}
+
+    .optionDotChild p:hover[b-few9ehv55j] {
+        color: rgb(26,86,219);
+        cursor: pointer;
+    }
+
+.groupButton[b-few9ehv55j]{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap:1rem;
+    margin-top:1.5rem;
+}
 @media (max-width: 768px) {
     .pages[b-few9ehv55j] {
         display: block;

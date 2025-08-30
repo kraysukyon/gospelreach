@@ -69,6 +69,42 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        //Remove group
+        public async Task<GroupResult> RemoveGroupAsync(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<GroupResult>("firestoreFunctions.removeGroup", Id);
+                return result;
+            }
+            catch(JSException jsEx)
+            {
+                return new GroupResult { Success = false, Error = jsEx.Message };
+            }
+            catch (Exception ex)
+            {
+                return new GroupResult { Success = false, Error = ex.Message };
+            }
+        }
+
+        //Rename Group
+        public async Task<GroupResult> RenameGroupAsync(string Id, string Name)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<GroupResult>("firestoreFunctions.renameGroup", Id, Name);
+                return result;
+            }
+            catch (JSException jsEx)
+            {
+                return new GroupResult { Success = false, Error = jsEx.Message };
+            }
+            catch (Exception ex)
+            {
+                return new GroupResult { Success = false, Error = ex.Message };
+            }
+        }
+
     }
 
     public class GroupResult

@@ -90,6 +90,7 @@
                     <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
                 </div>
 
+                <p class="mb-2 mt-2 ms-2"><em>@addMemberMessage</em></p>
 
                 <div class="table-container mt-2">
                     <table class="table">
@@ -115,6 +116,23 @@
                 </div>
 
                 <button @onclick="() => AddMembers(groupId)" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+            </div>
+        </div>
+
+        <!--Rename Modal-->
+        <div @onclick:stopPropagation class="cards renameModal">
+            <h4 class="fw-bold">
+                Rename this Group
+            </h4>
+            <p style="font-size:14px;">You are about to rename this group</p>
+
+            <div class="position-relative mt-3">
+                <input readonly="@(isWorking)" @bind="groupName" type="text" class="form-control border p-2" placeholder="Enter group name..." />
+            </div>
+
+            <div class="groupButton">
+                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleBackModal">Cancel</button>
+                <button @onclick="() => UpdateGroupName(groupId)" disabled="@(isWorking)" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Save</button>
             </div>
         </div>
     </div>
@@ -149,6 +167,7 @@
                         <thead>
                             <tr>
                                 <th class="thead">Group</th>
+                                <th class="thead"></th>
                             </tr>
                         </thead>
 
@@ -156,7 +175,19 @@
                             @foreach (var item in filteredGroupList)
                             {
                                 <tr class="table-row">
-                                    <td class="table-cell" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))" style="font-weight:500;"><p class="link">@item.Name</p></td>
+                                    <td class="table-cell" style="width: 100%; font-weight: 500;" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))"><p class="link">@item.Name</p></td>
+                                    <td class="table=cell">
+                                        <div  class="optionDot">
+                                            <i @onclick="() => ToggleOption(item.Id)" class="bi bi-three-dots-vertical cursor hover"></i>
+                                            @if (SelectedRow == item.Id)
+                                            {
+                                                <div class="optionDotChild">
+                                                    <p @onclick="() => RenameGroupModal(item.Id, item.Name)">Rename</p>
+                                                    <p @onclick="() => DeleteGroup(item.Id)">Delete</p>
+                                                </div>
+                                            }
+                                        </div>
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -170,7 +201,6 @@
             <div>
                 <div class="d-flex gap-3 w-auto align-items-start">
                     <h4 class="m-0 fw-bold mb-3">@groupName</h4>
-                    <i class="bi bi-pencil-square p-0 fs-4 cursor" style="margin-top: -4px; opacity: .50;"></i>
                 </div>
                 
                 <!--Search Section-->
@@ -233,6 +263,7 @@
     private string groupMessage = string.Empty;
     private string attendanceMessage = string.Empty;
     private string groupMemberMessage = string.Empty;
+    private string addMemberMessage = string.Empty;
     private bool isToggleGroup = false;
     private bool isAllSelected { get; set; } = true;
     private string searchString = string.Empty;
@@ -246,6 +277,7 @@
     private string viewMembersMessage = string.Empty;
     private bool isAddMemberVisible = false;
     private string existingMemberSearch = string.Empty;
+    private bool isOptionVisible = false;
 
     private IEnumerable<GroupMemberSelection> filteredMember => groupMemberSelectionList.Where(u => string.IsNullOrWhiteSpace(memberSearch) || u.Member.GetFullName().Contains(memberSearch, StringComparison.OrdinalIgnoreCase));
     private IEnumerable<Attendance> filteredList => attendancesList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Date.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -256,11 +288,81 @@
     //Email
     private string body = "Hello everyone, this is a test email!";
     private string status = "";
+    private string? SelectedRow = null;
+
+    private bool isWorking = false;
 
     //Load List during page initialization
     protected override async Task OnInitializedAsync()
     {
         await GetAllGroups();
+    }
+
+    //Update Group Name
+    private async Task UpdateGroupName(string Id)
+    {
+        isWorking = true;
+        var result = await _groupService.RenameGroupAsync(Id, groupName);
+
+        if (result.Success)
+        {
+            groupId = string.Empty;
+            groupName = string.Empty;
+            isViewPanel = false;
+            ToggleBackModal();
+            await GetAllGroups();
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to rename group: " + result.Error);
+        }
+
+        isWorking = false;
+    }
+
+    //Open Rename Modal
+    private void RenameGroupModal(string Id, string Name)
+    {
+        groupName = Name;
+        ToggleBackModal();
+    }
+
+    //Delete
+    private async Task DeleteGroup(string Id)
+    {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Are you sure want to delete this group?");
+
+        if (!confirm) return;
+
+        var result = await _groupService.RemoveGroupAsync(Id);
+
+        if (result.Success)
+        {
+            await _js.InvokeVoidAsync("alert", "Group successfully deleted!");
+            isViewPanel = false;
+            await GetAllGroups();
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to delete group: " + result.Error);
+        }
+    }
+
+    private void HideOption()
+    {
+        SelectedRow = null;
+    }
+
+    private void ToggleOption(string Id)
+    {
+        if (SelectedRow == Id)
+        {
+            SelectedRow = null;
+        }
+        else
+        {
+            SelectedRow = Id;
+        }
     }
 
     private async Task RemoveMembers()
@@ -298,10 +400,10 @@
             foreach (var item in memToAdd)
             {
                 var m = new GroupMember
-                    {
-                        GroupId = Id,
-                        MemberId = item.Member.Id
-                    };
+                {
+                    GroupId = Id,
+                    MemberId = item.Member.Id
+                };
                 var result = await _groupMemberService.AddGroupMembersAsync(m);
             }
 
@@ -515,7 +617,8 @@
     private void ToggleBackModal()
     {
         isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
-
+        isView = false;
+        isAddMemberVisible = false;
     }
 
     private async Task ToggleAddGroup()
@@ -529,7 +632,10 @@
 
     private async Task ToggleShowMember(string Id)
     {
+        addMemberMessage = "Fetching data, please wait...";
+        groupMemberSelectionList.Clear();
         isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
+        isAddMemberVisible = true;
         isView = false;
 
         var result = await _memberService.GetMembersAsync();
@@ -541,23 +647,48 @@
 
             if (results.Success)
             {
-                
-                var members = result.Data;
-                var Ids = results.Data.Select(u => u.MemberId).ToHashSet();
-
-                groupMemberSelectionList = members.Where(u => !Ids.Contains(u.Id)).Select(u => new GroupMemberSelection
+                if(results.Success && results.Error != null)
                 {
-                    isSelected = true,
-                    Member = u
-                }).ToList();
+                    groupMemberSelectionList = result.Data.Select(u => new GroupMemberSelection
+                    {
+                        isSelected = true,
+                        Member = u
+                    }).ToList();
+
+                    addMemberMessage = string.Empty;
+                }
+                else
+                {
+                    var members = result.Data;
+                    var Ids = results.Data.Select(u => u.MemberId).ToHashSet();
+
+                    groupMemberSelectionList = members.Where(u => !Ids.Contains(u.Id)).Select(u => new GroupMemberSelection
+                    {
+                        isSelected = true,
+                        Member = u
+                    }).ToList();
+
+                    if (groupMemberSelectionList.Count == 0)
+                    {
+                        addMemberMessage = "No members can be added";
+                    }
+                    else
+                    {
+                        addMemberMessage = string.Empty;
+                    }
+                }
+                
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("Failed to get members: " + results.Error);
             }
         }
         else
         {
             await _js.InvokeVoidAsync("alert", "Failed to get members: " + result.Error);
-        }
 
-        isAddMemberVisible = !isAddMemberVisible;
+        }
     }
 
     //Toggle Group modal
