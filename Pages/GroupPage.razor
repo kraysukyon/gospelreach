@@ -75,52 +75,49 @@
 
         <!--Add Members to Group-->
         <div hidden="@(!isAddMemberVisible)" class="addMember" @onclick:stopPropagation>
-            <!--Add Group-->
-            <div hidden="@(isView)">
-                <h4 class="fw-bold">
-                    Add Member
-                </h4>
-                <p style="font-size:14px;">Create group and select members.</p>
-                <!--Table Section-->
+            <h4 class="fw-bold">
+                Add Member
+            </h4>
+            <p style="font-size:14px;">Create group and select members.</p>
+            <!--Table Section-->
 
-                <p class="mt-3">Select People</p>
-                <!--Search Section-->
-                <div class="position-relative mt-2">
-                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                    <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
-                </div>
-
-                <p class="mb-2 mt-2 ms-2"><em>@addMemberMessage</em></p>
-
-                <div class="table-container mt-2">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th class="thead" style="width: auto; white-space: nowrap;"><input checked @onchange="ToggleCheckbox" type="checkbox" /></th>
-                                <th class="thead" style="width: 100%;">Name</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @foreach (var item in filteredMember)
-                            {
-                                <tr>
-                                    <td class="table-cell" style="width: auto; white-space: nowrap;">
-                                        <input @bind="item.isSelected" type="checkbox" />
-                                    </td>
-                                    <td class="table-cell" style="width: 100%;">@item.Member.GetFullName()</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                <button @onclick="() => AddMembers(groupId)" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+            <p class="mt-3">Select People</p>
+            <!--Search Section-->
+            <div class="position-relative mt-2">
+                <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
             </div>
+
+            <p class="mb-2 mt-2 ms-2"><em>@addMemberMessage</em></p>
+
+            <div class="table-container mt-2">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="thead" style="width: auto; white-space: nowrap;"><input checked @onchange="ToggleCheckbox" type="checkbox" /></th>
+                            <th class="thead" style="width: 100%;">Name</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in filteredMember)
+                        {
+                            <tr>
+                                <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                    <input @bind="item.isSelected" type="checkbox" />
+                                </td>
+                                <td class="table-cell" style="width: 100%;">@item.Member.GetFullName()</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <button @onclick="() => AddMembers(groupId)" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
         </div>
 
         <!--Rename Modal-->
-        <div @onclick:stopPropagation class="cards renameModal">
+        <div hidden="@(!isRenameVisible)" @onclick:stopPropagation class="cards renameModal">
             <h4 class="fw-bold">
                 Rename this Group
             </h4>
@@ -144,7 +141,7 @@
         </div>
     </div>
 
-    <div class="groupAndMembers">
+    <div @onclick="HideOption" class="groupAndMembers">
         <div class="d-flex flex-grow-1">
             <!--Group Section=========================-->
             <div class="card w-100 mb-3 cardss">
@@ -177,7 +174,7 @@
                                 <tr class="table-row">
                                     <td class="table-cell" style="width: 100%; font-weight: 500;" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))"><p class="link">@item.Name</p></td>
                                     <td class="table=cell">
-                                        <div  class="optionDot">
+                                        <div @onclick:stopPropagation class="optionDot">
                                             <i @onclick="() => ToggleOption(item.Id)" class="bi bi-three-dots-vertical cursor hover"></i>
                                             @if (SelectedRow == item.Id)
                                             {
@@ -278,6 +275,7 @@
     private bool isAddMemberVisible = false;
     private string existingMemberSearch = string.Empty;
     private bool isOptionVisible = false;
+    private bool isRenameVisible = false;
 
     private IEnumerable<GroupMemberSelection> filteredMember => groupMemberSelectionList.Where(u => string.IsNullOrWhiteSpace(memberSearch) || u.Member.GetFullName().Contains(memberSearch, StringComparison.OrdinalIgnoreCase));
     private IEnumerable<Attendance> filteredList => attendancesList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Date.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -309,6 +307,8 @@
             groupId = string.Empty;
             groupName = string.Empty;
             isViewPanel = false;
+            SelectedRow = null;
+            isRenameVisible = false;
             ToggleBackModal();
             await GetAllGroups();
         }
@@ -323,6 +323,7 @@
     //Open Rename Modal
     private void RenameGroupModal(string Id, string Name)
     {
+        groupId = Id;
         groupName = Name;
         ToggleBackModal();
     }

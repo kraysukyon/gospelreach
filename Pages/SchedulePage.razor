@@ -19,219 +19,492 @@
 
 
 <div class="pages">
-    <div @onclick="ToggleModal" class="addEventModal @(isAddModalVisible ? "show" : "")">
+    <div @onclick="ToggleModal" class="addEventModal @(BackgroundModal ? "show" : "")">
 
-        <!--Title-->
-        <div hidden="@(isAttendanceVisible)" class="addEvents" @onclick:stopPropagation @onclick="closeOption">
+        <!--=================================Add Schedule===============================-->
+        <div @onclick:stopPropagation hidden="@(!isAddSched)" class="cards">
             <div class="d-flex justify-content-between mb-3">
                 <div>
                     <h4 class="fw-bold">
-                        @title
+                        New Schedule
+                    </h4>
+                </div>
+            </div>
+
+            <!--Title-->
+            <div class="input mt-4">
+                <div class="title">
+                    <i class="bi bi-pencil-square"></i>
+                    <p>Title</p>
+                </div>
+
+                <input readonly="@(isDepartment)" @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
+            </div>
+
+            <!--Type-->
+            <div class="input mt-3">
+                <div class="title">
+                    <i class="bi bi-ui-radios-grid"></i>
+                    <p>Type</p>
+                </div>
+
+                <div class="cat">
+                    <button @onclick="(() => setType(1))" class="btn type @GetClass(1)"><i class="bi bi-star"></i> Event</button>
+                    <button @onclick="(() => setType(2))" class="btn type @GetClass(2)"><i class="bi bi-book"></i> Department</button>
+                    <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Service</button>
+                    <button @onclick="(() => setType(4))" class="btn type @GetClass(4)"><i class="bi bi-houses"></i> Others</button>
+                </div>
+            </div>
+
+            <!--Departments-->
+            <div hidden="@(!isDepartmentVisible)" class="input mt-3">
+                <div class="title">
+                    @* <i class="bi bi-calendar-check"></i>
+                    <p>Date</p> *@
+                </div>
+
+
+                <div class="date">
+                    <select value="@selectedDepartment" @onchange="OnDepartmentChange" class="form-select text-center p-2">
+                        @foreach (var category in Categories)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </select>
+                    <i class="bi bi-arrow-right"></i>
+                    <select @onchange="OnDivisionChange" disabled="@(selectedDepartment == "Mens")" class="form-select text-center p-2">
+                        @if (SubCategories.Any())
+                        {
+                            @foreach (var sub in SubCategories)
+                            {
+                                <option value="@sub.Id">@sub.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!--Date-->
+            <div class="input mt-3">
+                <div class="title">
+                    <i class="bi bi-calendar-check"></i>
+                    <p>Date</p>
+                </div>
+
+
+                <div class="date">
+                    <input @bind="sDate" @bind:event="onchange" @bind:after="OnChangeDate" type="date" class="form-control p-2" />
+                    <i class="bi bi-arrow-right"></i>
+                    <input @bind="eDate" type="date" class="form-control p-2" />
+                </div>
+            </div>
+
+            <!--Time-->
+            <div class="inputTime mt-3">
+                <div class="title mt-2">
+                    <i class="bi bi-clock"></i>
+                    <p>Time</p>
+                </div>
+
+                <div class="dates">
+                    <div class="date">
+                        <input readonly="@(isCustom)" @bind="sTime" type="time" class="form-control p-2" />
+                        <i class="bi bi-arrow-right"></i>
+                        <input readonly="@(isCustom)" @bind="eTime" type="time" class="form-control p-2" />
+                    </div>
+
+                    <!--Radio button for time option-->
+                    <div class="time">
+                        <div class="d-flex gap-1 align-items-center">
+                            <input checked type="radio" @onchange="(() => OnChangeRadio(0))" id="custom" name="time" />
+                            <label for="custom">Custom</label>
+                        </div>
+
+                        <div class="d-flex gap-1 align-items-center">
+                            <input @onchange="(() => OnChangeRadio(1))" type="radio" id="allday" name="time" />
+                            <label for="allday">All day</label>
+                        </div>
+
+                        <div class="d-flex gap-1 align-items-center">
+                            <input @onchange="(() => OnChangeRadio(2))" type="radio" id="morning" name="time" />
+                            <label for="morning">Morning</label>
+                        </div>
+
+                        <div class="d-flex gap-1 align-items-center">
+                            <input @onchange="(() => OnChangeRadio(3))" type="radio" id="afternoon" name="time" />
+                            <label for="afternoon">Afternoon</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Venue-->
+            <div class="input">
+                <div class="title">
+                    <i class="bi bi-geo-alt"></i>
+                    <p>Venue</p>
+                </div>
+
+                <input spellcheck="false" @bind="sched.Location" type="text" class="form-control p-2" placeholder="Add Venue" />
+            </div>
+
+            <!--Description-->
+            <div class="input inputD mt-3 mb-3">
+                <div class="title mt-2">
+                    <i class="bi bi-list-ul"></i>
+                    <p>Details</p>
+                </div>
+
+                <textarea @bind="sched.Description" @ref="textarea" @oninput="ResizeDet" type="text" spellcheck="false" class="form-control p-2" placeholder="Add Details" />
+            </div>
+
+            <!--Attendees-->
+            <div class="input mt-3">
+                <div class="title mt-2">
+                    <input id="att" checked @onchange="ToggleAttendee" type="checkbox" />
+                    @* <i class="bi bi-bell"></i> *@
+                    <label class="cursor" for="att">Attendee</label>
+                </div>
+
+                <div class="date">
+                    <select disabled="@(!isAttendee)" @onchange="OnChangeAttendee" class="form-select text-center p-2">
+                        <option value="All">All</option>
+                        <option value="Group">Groups</option>
+                    </select>
+                    <i class="bi bi-arrow-right"></i>
+                    <select disabled="@(!isAttendee || Attendee == "All")" class="form-select text-center p-2">
+                        @foreach (var item in filteredGroupList)
+                        {
+                            if (item.Name != "All Members")
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                
+            </div>
+
+            <!--Notification-->
+            <div class="input inputD mt-3 mb-3">
+                <div class="title mt-2">
+                    <input id="chk" checked @onchange="ToggleNotify" type="checkbox" />
+                    @* <i class="bi bi-bell"></i> *@
+                    <label class="cursor" for="chk">Notify</label>
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <select disabled="@(!isNotify)" @bind="groupMemberId" class="form-select p-2 text-center">
+                        <option value="">Select Group</option>
+                        @foreach (var item in groupList)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </select>
+                    <div class="email">
+                        <input readonly="@(!isNotify)" spellcheck="false" @bind="emailToAdd" type="text" class="form-control p-2 pe-5" placeholder="Add Email" />
+                        <i @onclick="AddToEmailList" class="bi bi-plus-circle-fill text-primary fs-5 cursor add"></i>
+                    </div>
+
+                    <div class="addedEmail">
+                        @foreach (var item in emailList)
+                        {
+                            <div class="emails">
+                                <p class="pill5">@item</p>
+                                <i @onclick="() => RemoveToEmailList(item)" class="bi bi-x-circle cursor remove bg-white text-danger"></i>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="addOptions mt-4 d-block d-md-flex gap-2" style="justify-self: end;">
+                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
+                <button hidden="@(title != "New Schedule")" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addEvent">Create</button>
+                <button hidden="@(title == "New Schedule")" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
+            </div>
+        </div>
+
+        <!--=================================Update Schedule===============================-->
+        <div @onclick:stopPropagation hidden="@(!isUpdateView)" class="cards">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <h4 class="fw-bold">
+                        Update Schedule
                     </h4>
                 </div>
 
-                <div class="options" hidden="@(title == "Update Details" || title == "New Schedule")">
+                <div class="options">
                     <i class="bi bi-three-dots-vertical optionIcon cursor fs-4" @onclick="ToggleOption" @onclick:stopPropagation></i>
-                    <div class="options-child" hidden="@(!isOptionVisible)">
+                    <div class="options-child">
                         <div class="cursor fsx" @onclick="ToggleUpdateUI">Update</div>
                         <div class="cursor fsx" @onclick="(() => removeSchedule(sched.Id))">Remove</div>
                     </div>
                 </div>
 
                 <i hidden="@(title == "Details" || title == "New Schedule")" class="bi bi-arrow-return-left fs cursor hover" @onclick="ReturnView"></i>
-                
+
             </div>
 
-            <!--Add Schedule-->
-            <div hidden="@(!isEditMode)">
-                <!--Title-->
-                <div class="input mt-4">
-                    <div class="title">
-                        <i class="bi bi-pencil-square"></i>
-                        <p>Title</p>
-                    </div>
-                    
-                    <input @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
+            <!--Title-->
+            <div class="input mt-4">
+                <div class="title">
+                    <i class="bi bi-pencil-square"></i>
+                    <p>Title</p>
                 </div>
 
-                <!--Type-->
-                <div class="input mt-3">
-                    <div class="title">
-                        <i class="bi bi-ui-radios-grid"></i>
-                        <p>Type</p>
-                    </div>
+                <input readonly="@(isDepartment)" @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
+            </div>
 
-                    <div class="cat">
-                        <button @onclick="(() => setType(1))" class="btn type @GetClass(1)"><i class="bi bi-star"></i> Event</button>
-                        <button @onclick="(() => setType(2))" class="btn type @GetClass(2)"><i class="bi bi-book"></i> Meeting</button>
-                        <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Service</button>
-                        <button @onclick="(() => setType(4))" class="btn type @GetClass(4)"><i class="bi bi-houses"></i> Others</button>
-                    </div>
+            <!--Type-->
+            <div class="input mt-3">
+                <div class="title">
+                    <i class="bi bi-ui-radios-grid"></i>
+                    <p>Type</p>
                 </div>
 
-                <!--Date-->
-                <div class="input mt-3">
-                    <div class="title">
-                        <i class="bi bi-calendar-check"></i>
-                        <p>Date</p>
-                    </div>
+                <div class="cat">
+                    <button @onclick="(() => setType(1))" class="btn type @GetClass(1)"><i class="bi bi-star"></i> Event</button>
+                    <button @onclick="(() => setType(2))" class="btn type @GetClass(2)"><i class="bi bi-book"></i> Department</button>
+                    <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Service</button>
+                    <button @onclick="(() => setType(4))" class="btn type @GetClass(4)"><i class="bi bi-houses"></i> Others</button>
+                </div>
+            </div>
 
-                    
+            <!--Departments-->
+            <div hidden="@(!isDepartmentVisible)" class="input mt-3">
+                <div class="title">
+                    @* <i class="bi bi-calendar-check"></i>
+                    <p>Date</p> *@
+                </div>
+
+
+                <div class="date">
+                    <select value="@selectedDepartment" @onchange="OnDepartmentChange" class="form-select text-center p-2">
+                        @foreach (var category in Categories)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </select>
+                    <i class="bi bi-arrow-right"></i>
+                    <select @onchange="OnDivisionChange" disabled="@(selectedDepartment == "Mens")" class="form-select text-center p-2">
+                        @if (SubCategories.Any())
+                        {
+                            @foreach (var sub in SubCategories)
+                            {
+                                <option value="@sub.Id">@sub.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!--Date-->
+            <div class="input mt-3">
+                <div class="title">
+                    <i class="bi bi-calendar-check"></i>
+                    <p>Date</p>
+                </div>
+
+
+                <div class="date">
+                    <input @bind="sDate" @bind:event="onchange" @bind:after="OnChangeDate" type="date" class="form-control p-2" />
+                    <i class="bi bi-arrow-right"></i>
+                    <input @bind="eDate" type="date" class="form-control p-2" />
+                </div>
+            </div>
+
+            <!--Time-->
+            <div class="inputTime mt-3">
+                <div class="title mt-2">
+                    <i class="bi bi-clock"></i>
+                    <p>Time</p>
+                </div>
+
+                <div class="dates">
                     <div class="date">
-                        <input @bind="sDate" @bind:event="onchange" @bind:after="OnChangeDate" type="date" class="form-control p-2" />
+                        <input readonly="@(isCustom)" @bind="sTime" type="time" class="form-control p-2" />
                         <i class="bi bi-arrow-right"></i>
-                        <input @bind="eDate" type="date" class="form-control p-2" />
-                    </div>
-                </div>
-
-                <!--Time-->
-                <div class="inputTime mt-3">
-                    <div class="title mt-2">
-                        <i class="bi bi-clock"></i>
-                        <p>Time</p>
+                        <input readonly="@(isCustom)" @bind="eTime" type="time" class="form-control p-2" />
                     </div>
 
-                    <div class="dates">
-                        <div class="date">
-                            <input readonly="@(isCustom)" @bind="sTime" type="time" class="form-control p-2" />
-                            <i class="bi bi-arrow-right"></i>
-                            <input readonly="@(isCustom)" @bind="eTime" type="time" class="form-control p-2" />
+                    <!--Radio button for time option-->
+                    <div class="time">
+                        <div class="d-flex gap-1 align-items-center">
+                            <input checked type="radio" @onchange="(() => OnChangeRadio(0))" id="custom" name="time" />
+                            <label for="custom">Custom</label>
                         </div>
 
-                        <!--Radio button for time option-->
-                        <div class="time">
-                            <div class="d-flex gap-1 align-items-center">
-                                <input checked type="radio" @onchange="(() => OnChangeRadio(0))" id="custom" name="time"/>
-                                <label for="custom">Custom</label>
-                            </div>
+                        <div class="d-flex gap-1 align-items-center">
+                            <input @onchange="(() => OnChangeRadio(1))" type="radio" id="allday" name="time" />
+                            <label for="allday">All day</label>
+                        </div>
 
-                            <div class="d-flex gap-1 align-items-center">
-                                <input @onchange="(() => OnChangeRadio(1))" type="radio" id="allday" name="time" />
-                                <label for="allday">All day</label>
-                            </div>
+                        <div class="d-flex gap-1 align-items-center">
+                            <input @onchange="(() => OnChangeRadio(2))" type="radio" id="morning" name="time" />
+                            <label for="morning">Morning</label>
+                        </div>
 
-                            <div class="d-flex gap-1 align-items-center">
-                                <input @onchange="(() => OnChangeRadio(2))" type="radio" id="morning" name="time" />
-                                <label for="morning">Morning</label>
-                            </div>
-
-                            <div class="d-flex gap-1 align-items-center">
-                                <input @onchange ="(() => OnChangeRadio(3))" type="radio" id="afternoon" name="time" />
-                                <label for="afternoon">Afternoon</label>
-                            </div>
+                        <div class="d-flex gap-1 align-items-center">
+                            <input @onchange="(() => OnChangeRadio(3))" type="radio" id="afternoon" name="time" />
+                            <label for="afternoon">Afternoon</label>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!--Venue-->
-                <div class="input">
-                    <div class="title">
-                        <i class="bi bi-geo-alt"></i>
-                        <p>Venue</p>
-                    </div>
-                    
-                    <input spellcheck="false" @bind="sched.Location" type="text" class="form-control p-2" placeholder="Add Venue" />
+            <!--Venue-->
+            <div class="input">
+                <div class="title">
+                    <i class="bi bi-geo-alt"></i>
+                    <p>Venue</p>
                 </div>
 
-                <!--Description-->
-                <div class="input inputD mt-3 mb-3">
-                    <div class="title mt-2">
-                        <i class="bi bi-list-ul"></i>
-                        <p>Details</p>
-                    </div>
-                    
-                    <textarea @bind="sched.Description" @ref="textarea" @oninput="ResizeDet" type="text" spellcheck="false" class="form-control p-2" placeholder="Add Details" />
+                <input spellcheck="false" @bind="sched.Location" type="text" class="form-control p-2" placeholder="Add Venue" />
+            </div>
+
+            <!--Description-->
+            <div class="input inputD mt-3 mb-3">
+                <div class="title mt-2">
+                    <i class="bi bi-list-ul"></i>
+                    <p>Details</p>
                 </div>
 
-                <!--Notification-->
-                <div class="input inputD mt-3 mb-3">
-                    <div class="title mt-2">
-                        <input id="chk" checked @onchange="ToggleNotify" type="checkbox"/>
-                        @* <i class="bi bi-bell"></i> *@
-                        <label class="cursor" for="chk">Notify</label>
-                    </div>
+                <textarea @bind="sched.Description" @ref="textarea" @oninput="ResizeDet" type="text" spellcheck="false" class="form-control p-2" placeholder="Add Details" />
+            </div>
 
-                    <div class="d-flex flex-column gap-2">
-                        <select disabled="@(!isNotify)" @bind="groupMemberId" class="form-control p-2 text-center">
-                            <option value="">Select Group</option>
-                            @foreach (var item in groupList)
+            <!--Attendees-->
+            <div class="input mt-3">
+                <div class="title mt-2">
+                    <input id="att" checked @onchange="ToggleAttendee" type="checkbox" />
+                    @* <i class="bi bi-bell"></i> *@
+                    <label class="cursor" for="att">Attendee</label>
+                </div>
+
+                <div class="date">
+                    <select disabled="@(!isAttendee)" @onchange="OnChangeAttendee" class="form-select text-center p-2">
+                        <option value="All">All</option>
+                        <option value="Group">Groups</option>
+                    </select>
+                    <i class="bi bi-arrow-right"></i>
+                    <select disabled="@(!isAttendee || Attendee == "All")" class="form-select text-center p-2">
+                        @foreach (var item in filteredGroupList)
+                        {
+                            if (item.Name != "All Members")
                             {
                                 <option value="@item.Id">@item.Name</option>
                             }
-                        </select>
-                        <div class="email">
-                            <input readonly="@(!isNotify)" spellcheck="false" @bind="emailToAdd" type="text" class="form-control p-2 pe-5" placeholder="Add Email" />
-                            <i @onclick="AddToEmailList" class="bi bi-plus-circle-fill text-primary fs-5 cursor add"></i>
-                        </div>
-
-                        <div class="addedEmail">
-                            @foreach (var item in emailList)
-                            {
-                                <div class="emails">
-                                    <p class="pill5">@item</p>
-                                    <i @onclick="() => RemoveToEmailList(item)" class="bi bi-x-circle cursor remove bg-white text-danger"></i>
-                                </div>
-                            }
-                        </div>
-                        
-                    </div>
-                    
+                        }
+                    </select>
                 </div>
 
-                <div class="addOptions mt-4 d-block d-md-flex gap-2" style="justify-self: end;">
+
+            </div>
+
+            <!--Notification-->
+            <div class="input inputD mt-3 mb-3">
+                <div class="title mt-2">
+                    <input id="chk" checked @onchange="ToggleNotify" type="checkbox" />
+                    @* <i class="bi bi-bell"></i> *@
+                    <label class="cursor" for="chk">Notify</label>
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <select disabled="@(!isNotify)" @bind="groupMemberId" class="form-select p-2 text-center">
+                        <option value="">Select Group</option>
+                        @foreach (var item in groupList)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </select>
+                    <div class="email">
+                        <input readonly="@(!isNotify)" spellcheck="false" @bind="emailToAdd" type="text" class="form-control p-2 pe-5" placeholder="Add Email" />
+                        <i @onclick="AddToEmailList" class="bi bi-plus-circle-fill text-primary fs-5 cursor add"></i>
+                    </div>
+
+                    <div class="addedEmail">
+                        @foreach (var item in emailList)
+                        {
+                            <div class="emails">
+                                <p class="pill5">@item</p>
+                                <i @onclick="() => RemoveToEmailList(item)" class="bi bi-x-circle cursor remove bg-white text-danger"></i>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="addOptions mt-4 d-block d-md-flex gap-2" style="justify-self: end;">
+                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
+                <button hidden="@(title != "New Schedule")" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addEvent">Create</button>
+                <button hidden="@(title == "New Schedule")" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
+            </div>
+        </div>
+
+        <!--==================================View Modal===================================-->
+        <div hidden="@(!isView)" class="addEvents" @onclick:stopPropagation @onclick="closeOption">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <h4 class="fw-bold">Details</h4>
+                </div>
+
+                <div class="options">
+                    <i class="bi bi-three-dots-vertical optionIcon cursor fs-4" @onclick="ToggleOption" @onclick:stopPropagation></i>
+                    <div hidden="@(isOptionVisible)" class="options-child">
+                        <div class="cursor fsx" @onclick="ToggleUpdateUI">Update</div>
+                        <div class="cursor fsx" @onclick="(() => removeSchedule(sched.Id))">Remove</div>
+                    </div>
+                </div>
+
+                <i hidden="@(title == "Details" || title == "New Schedule")" class="bi bi-arrow-return-left fs cursor hover" @onclick="ReturnView"></i>
+
+            </div>
+            <div class="iconText">
+                <i class="bi bi-activity text-primary"></i>
+                <p class="fs"><strong>@sched.CategoryId</strong></p>
+            </div>
+
+            <div class="iconText">
+                <i class="bi bi-bookmark-check fs"></i>
+                <p class="fs">@sched.Title</p>
+            </div>
+
+            <div class="iconText">
+                <i class="bi bi-calendar-event fs"></i>
+                <p class="fs">@sched.StartDate - @sched.EndDate</p>
+            </div>
+
+            <div class="iconText">
+                <i class="bi bi-clock fs"></i>
+                <p class="fs">@(sched.TimeOption == "Custom" ? $"{sched.StartTime} - {sched.EndTime}" : $"{sched.TimeOption} {sched.StartTime} - {sched.EndTime}")</p>
+            </div>
+
+            <div class="iconText">
+                <i class="bi bi-geo-alt fs"></i>
+                <p class="fs">@sched.Location</p>
+            </div>
+
+            <div class="iconText">
+                <i class="bi bi-list-columns fs"></i>
+                <pre class="form-control border border-0" style="max-height: 200px; overflow-y: auto;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
+            </div>
+
+            <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-md-between">
+                <button hidden="@(title == "New Schedule" || title == "Update Details")" @onclick="ToggleAttendance" class="btn attBtn">Attendance</button>
+                <div>
                     <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
-                    <button hidden="@(title != "New Schedule")" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addEvent">Create</button>
-                    <button hidden="@(title == "New Schedule")" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
+                    <button hidden="@(!isAddSched)" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
                 </div>
             </div>
-
-            <!--View Modal-->
-            <div hidden="@(isEditMode)" class="viewMod">
-                <div class="iconText">
-                    <i class="bi bi-activity text-primary"></i>
-                    <p class="fs"><strong>@sched.Category</strong></p>
-                </div>
-
-                <div class="iconText">
-                    <i class="bi bi-bookmark-check fs"></i>
-                    <p class="fs">@sched.Title</p>
-                </div>
-
-                <div class="iconText">
-                    <i class="bi bi-calendar-event fs"></i>
-                    <p class="fs">@sched.StartDate - @sched.EndDate</p>
-                </div>
-
-                <div class="iconText">
-                    <i class="bi bi-clock fs"></i>
-                    <p class="fs">@(sched.TimeOption == "Custom" ? $"{sched.StartTime} - {sched.EndTime}" : $"{sched.TimeOption} {sched.StartTime} - {sched.EndTime}")</p>
-                </div>
-
-                <div class="iconText">
-                    <i class="bi bi-geo-alt fs"></i>
-                    <p class="fs">@sched.Location</p>
-                </div>
-
-                <div class="iconText">
-                    <i class="bi bi-list-columns fs"></i>
-                    <pre class="form-control border border-0" style="max-height: 200px; overflow-y: auto;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
-                </div>
-
-                <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-md-between">
-                    <button hidden="@(title == "New Schedule" || title == "Update Details")" @onclick="ToggleAttendance" class="btn attBtn">Attendance</button>
-                    <div>
-                        <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
-                        <button hidden="@(!isEditMode)" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
-                    </div>
-                </div>
-
-            </div>
-
-            
         </div>
 
         <!--Attendance Section Modal-->
-        <div @onclick="HideInviteModal" hidden="@(!isAttendanceVisible)" class="addAttendance attend" @onclick:stopPropagation>
+        <div @onclick="HideInviteModal" hidden="@(!isAttendanceVisible)" class="addAttendance" @onclick:stopPropagation>
             <div>
                 <div class="d-flex align-content-lg-start justify-content-between">
                     <div>
@@ -255,7 +528,7 @@
                     </div>
                 </div>
 
-                <div class="userFields mt-3">
+                @* <div class="userFields mt-3">
                     <div class="inputs">
                         <p>Tithes</p>
                         <input type="number" @bind="tithes" min="0" class="form-control p-2 mt-2" />
@@ -265,9 +538,9 @@
                         <p>Offering</p>
                         <input type="number" @bind="offering" min="0" class="form-control p-2 mt-2" />
                     </div>
-                </div>
+                </div> *@
 
-                <div class="userFields mt-3">
+                @* <div class="userFields mt-3">
                     <div class="inputs">
                         <p>Count</p>
                         <input type="number" @bind="count" readonly min="0" class="form-control p-2 mt-2" />
@@ -277,20 +550,70 @@
                         <p>Seekers</p>
                         <input type="number" @bind="seekers" min="0" class="form-control p-2 mt-2" />
                     </div>
-                </div>
+                </div> *@
 
                 <div>
                 </div>
-                
-                
-                
             </div>
 
-            <div class="tab">
+            <div>
+                <!--Table Section-->
+                <h5 class="fw-bold mt-3">Members</h5>
+                <!--Members Search Section-->
+                <div class="position-relative mt-2">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
+                </div>
+                @if (groupMemberList.Count != 0)
+                {
+                    <div class="table-container mt-2">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChange" /></th>
+                                    <th class="thead" style="width: 100%;">Name</th>
+                                    <th class="thead" style="width: 100%;">Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var item in filteredMember)
+                                {
+                                    <tr>
+                                        <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                            <input @bind="item.isSelected" type="checkbox" />
+                                        </td>
+                                        <td class="table-cell" style="width: 100%;">
+                                            @item.Member.GetFullName()
+                                            @foreach (var v in localvisitList)
+                                            {
+                                                @if (item.Member.Id == v.InvitedByMemberId)
+                                                {
+                                                    <div class="d-flex flex-column gap-1 mt-2">
+                                                        <div class="visitor">
+                                                            <p class="pill6">@v.GetFullName()</p>
+                                                            <i @onclick="() => RemoveFromVisitorsList(v)" class="bi bi-x-circle cursor removes bg-white text-danger"></i>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </td>
+                                        <td class="table-cell" style="width: 100%;">
+                                            <i @onclick="() => ToggleInviteModal(item.Member.Id, attDate)" @onclick:stopPropagation class="bi bi-plus-circle-fill text-primary fs-5 cursor"></i>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            @* <div class="tab">
                 <div>
-                    <!--Table Section-->
+                    
                     <h5 class="fw-bold mt-3">Members</h5>
-                    <!--Members Search Section-->
+                    
                     <div class="position-relative mt-2">
                         <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
                         <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
@@ -343,9 +666,9 @@
                 <div>
                     @if (visitorsList.Count != 0)
                     {
-                        <!--Table Section-->
+                        
                         <h5 class="fw-bold mt-3">Visitors</h5>
-                        <!--Visitors Search Section-->
+                        
                         <div class="position-relative mt-2">
                             <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
                             <input type="text" @bind="visitorsSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
@@ -377,7 +700,7 @@
                         </div>
                     }
                 </div>
-            </div>
+            </div> *@
 
 
             
@@ -433,7 +756,7 @@
         </div>
 
         <div>
-            <button @onclick="ToggleModal" class="btn btn-primary p-2 px-3 text-white link w-100"><i class="bi bi-plus-circle-fill text-white me-2"></i>Add</button>
+            <button @onclick="ToggleAddSched" class="btn btn-primary p-2 px-3 text-white link w-100"><i class="bi bi-plus-circle-fill text-white me-2"></i>Add</button>
         </div>
     </div>
 
@@ -500,9 +823,9 @@
                                     a.ScheduleId == item.Id &&
                                     a.Date == new DateOnly(SelectedYear, SelectedMonth, day));
 
-                                    
 
-                                    <div class="@SwitchClass(item.Category)" @onclick="(() => OpenEdit(item.Id, new DateOnly(SelectedYear, SelectedMonth, day)))">@item.Title</div>
+
+                                    <div class="@SwitchClass(item.CategoryId)" @onclick="(() => OpenEdit(item.Id, new DateOnly(SelectedYear, SelectedMonth, day)))">@item.Title</div>
                                 }
                             </div>
                         }
@@ -569,6 +892,7 @@
     private List<Schedule> schedulesListView = new();
     private List<SubCategory> subCategorieList = new();
     ElementReference textarea;
+    private bool isView = false;
     private string title = "New Schedule";
     private string eventTitle { get; set; } = string.Empty;
     private string eventCategory { get; set; } = "Event";
@@ -576,13 +900,16 @@
     private DateOnly eDate { get; set; }
     private DateTime sDateTime { get; set; } = DateTime.Today;
     private string subCategory { get; set; } = string.Empty;
+    private bool isDepartmentVisible = false;
     private bool isSub { get; set; } = false;
-    private bool isAddModalVisible = false;
+    private bool BackgroundModal = false;
     private Schedule sched = new();
     private string searchSched = string.Empty;
     private string messages = string.Empty;
     private int index = 1;
+    private bool isDepartment = false;
     private string selectedStatus = "Upcoming";
+    private bool isUpdateView = false;
     private IEnumerable<Schedule> filteredSched => schedulesListView.Where(u => string.IsNullOrWhiteSpace(searchSched) || u.Title.Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.StartDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.EndDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase)).ToList();
 
     public record MonthOption(int Value, string Name);
@@ -609,6 +936,7 @@
     private int seekers = 0;
     private DateOnly attDate = new DateOnly(2025,9,6);
 
+
     //Time
     private TimeOnly sTime = new TimeOnly(8,0);
     private TimeOnly eTime = new TimeOnly(17, 0);
@@ -619,7 +947,7 @@
     private bool isOptionVisible = false;
 
     //Toggle edit
-    private bool isEditMode = false;
+    private bool isAddSched = false;
 
     //Time
     private bool isAllday = false;
@@ -628,6 +956,8 @@
 
     //Group
     private List<Group> groupList = new();
+    private IEnumerable<Group> filteredGroupList => groupList.Where(u => string.IsNullOrWhiteSpace(at) || u.Name == at);
+    private string at = string.Empty;
     private Group group = new();
     private string groupMemberMessage { get; set; } = string.Empty;
     private string groupMemberId { get; set; } = string.Empty;
@@ -660,13 +990,141 @@
     private string visitorsSearch { get; set; } = string.Empty;
     private IEnumerable<VisitorSelection> filteredVisitor => visitorsList.Where(u => string.IsNullOrWhiteSpace(visitorsSearch) || u.Visitor.GetFullName().Contains(visitorsSearch, StringComparison.OrdinalIgnoreCase));
 
+    // Data
+    private List<MainCat> Categories = new();
+    private List<SubCat> SubCategories = new();
+
+    private string? selectedDepartment;
+    private string? selectedSub;
+    private bool isAttendee = true;
+    private string Attendee = "All";
+    private bool hasAttendee = true;
+    private string? groupId = "KijcjdUahaRhQtGCk9ds";
 
     protected override async Task OnInitializedAsync()
     {
         Init();
+        GetList();
+        var cat = Categories.FirstOrDefault(u => u.Id == "Senior");
+        if(cat != null)
+        {
+            SubCategories = cat.SubCategories;
+        }
         await getScheduleList();
         await GetAttendanceList();
         await GetSubCategoriesList();
+        at = "1234";
+    }
+
+    //Show Add Schedule Modal
+    private async Task ToggleAddSched()
+    {
+        await ToggleModal();
+        isAddSched = true;
+    }
+
+    //Onchange sa attendance all
+
+    private void OnChangeAttendee(ChangeEventArgs e)
+    {
+        Attendee = e.Value!.ToString()!;
+        hasAttendee = true;
+
+        if (Attendee == "All")
+        {
+            at = "1234";
+
+        }
+        else
+        {
+            at = string.Empty;
+        }
+    }
+
+    private void GetList()
+    {
+        Categories = new()
+        {
+            new MainCat
+            {
+                Id = "Senior", Name = "Senior", SubCategories = new()
+                {
+                    new SubCat { Id = "HolinessMeeting", Name = "Holiness Meeting" },
+                    new SubCat { Id = "PrayerMeeting", Name = "Prayer Meeting" },
+                    new SubCat { Id = "BibleStudy", Name = "Bible Study" },
+                    new SubCat { Id = "Music", Name = "Music" },
+                }
+            },
+
+            new MainCat
+            {
+                Id = "Womens", Name = "Womens", SubCategories = new()
+                {
+                    new SubCat { Id = "Homeleague", Name = "Homeleague" },
+                    new SubCat { Id = "Teenstuff", Name = "Teenstuff" },
+                }
+            },
+
+            new MainCat
+            {
+                Id = "Mens", Name = "Mens", SubCategories = new()
+            },
+
+            new MainCat
+            {
+                Id = "Youth", Name = "Youth", SubCategories = new()
+                {
+                    new SubCat { Id = "CorpCadet", Name = "Corp Cadet" },
+                    new SubCat { Id = "SundaySchool", Name = "Sunday School" },
+                    new SubCat { Id = "JuniorSoldier", Name = "Junior Soldier" },
+                    new SubCat { Id = "JuniorSoldierPrep", Name = "Junior Soldier Prep" },
+                    new SubCat { Id = "YoungPeopleBibleStudy", Name = "Young People Bible Study" },
+                }
+            },
+        };
+    }
+
+    private void OnDivisionChange(ChangeEventArgs e)
+    {
+        eventTitle = e.Value!.ToString()!;
+        selectedSub = e.Value!.ToString()!;
+    }
+
+    private void OnDepartmentChange(ChangeEventArgs e)
+    {
+        selectedDepartment = e.Value?.ToString();
+        if (selectedDepartment == "Mens")
+        {
+            eventTitle = "Mens";
+            selectedSub = string.Empty;
+            isDepartment = true;
+            SubCategories = new();
+            return;
+        }
+
+
+
+        var subs = Categories.FirstOrDefault(u => u.Id == selectedDepartment);
+        if (subs != null)
+        {
+
+            var subCat = subs.SubCategories;
+
+            if (subCat != null)
+            {
+                eventTitle = subCat.First().Name;
+
+                SubCategories = subCat;
+                // await _js.InvokeVoidAsync("alert", selectedDepartment);
+            }
+
+
+        }
+
+        // var category = Categories.FirstOrDefault(c => c.Id == selectedSub);
+        // SubCategories = category?.SubCategories;
+        // selectedSub = ""; 
+
     }
 
     //Save to local list
@@ -734,7 +1192,7 @@
     //Close update modal and show view modal
     private void ReturnView()
     {
-        isEditMode = !isEditMode;
+        isAddSched = !isAddSched;
         title = "Details";
     }
 
@@ -885,7 +1343,7 @@
 
     }
 
-    private async Task OnCheckChanges(ChangeEventArgs e)
+    private void OnCheckChanges(ChangeEventArgs e)
     {
         bool isChecked = (bool)e.Value!;
 
@@ -900,7 +1358,7 @@
         return name switch
         {
             "Event" => "pill",
-            "Meeting" => "pill2",
+            "Department" => "pill2",
             "Service" => "pill3",
             "Others" => "pill4",
             _ => "pill"
@@ -914,21 +1372,48 @@
         {
             case 1:
                 isSub = false;
+                selectedDepartment = string.Empty;
+                selectedSub = string.Empty;
                 eventCategory = "Event";
                 subCategory = string.Empty;
+                isDepartmentVisible = false;
+                isDepartment = false;
+                eventTitle = string.Empty;
                 break;
             case 2:
-                eventCategory = "Meeting";
+                eventCategory = "Department";
+                isDepartmentVisible = true;
+                eventTitle = "Holiness Meeting";
+                isDepartment = true;
+                GetList();
+                selectedDepartment = "Senior";
+                selectedSub = "Holiness Meeting";
+                var category = Categories.FirstOrDefault(u => u.Id == "Senior");
+
+                if (category != null)
+                {
+                    SubCategories = category.SubCategories;
+                }
                 break;
             case 3:
                 isSub = false;
                 eventCategory = "Service";
+                selectedDepartment = string.Empty;
+                selectedSub = string.Empty;
                 subCategory = string.Empty;
+                isDepartmentVisible = false;
+                isDepartment = false;
+                eventTitle = string.Empty;
                 break;
             case 4:
                 isSub = false;
                 eventCategory = "Others";
+                selectedDepartment = string.Empty;
+                selectedSub = string.Empty;
                 subCategory = string.Empty;
+                isDepartmentVisible = false;
+                isDepartment = false;
+                eventTitle = string.Empty;
                 break;
 
         }
@@ -946,14 +1431,17 @@
 
     private async Task ToggleModal()
     {
-        isAddModalVisible = !isAddModalVisible;
+        BackgroundModal = !BackgroundModal;
+
         isOptionVisible = false;
-        isEditMode = true;
+        isAddSched = false;
+        isView = false;
+        isUpdateView = false;
         isAttendanceVisible = false;
         title = "New Schedule";
         sched = new();
         eventTitle = sched.Title;
-        eventCategory = sched.Category;
+        eventCategory = sched.CategoryId;
         sDate = sched.StartDate;
         eDate = sched.EndDate;
         isSub = false;
@@ -964,7 +1452,7 @@
         setType(1);
         GetClass(1);
 
-        if (isAddModalVisible || isEditMode)
+        if (BackgroundModal || isAddSched)
         {
             await GetGroupName();
         }
@@ -973,11 +1461,8 @@
 
     private void ToggleView()
     {
-        isAddModalVisible = !isAddModalVisible;
-        isAttendanceVisible = false;
-        isOptionVisible = false;
-        isEditMode = false;
-        title = "New Schedule";
+        BackgroundModal = !BackgroundModal;
+        isView = true;
         sched = new();
     }
 
@@ -996,7 +1481,7 @@
     private async Task ToggleUpdateUI()
     {
         title = "Update Details";
-        isEditMode = true;
+        isAddSched = true;
         await GetGroupName();
     }
 
@@ -1080,19 +1565,39 @@
 
 
             sched.Title = eventTitle;
-            sched.Category = eventCategory;
-            sched.SubCategoryId = subCategory;
+            sched.CategoryId = eventCategory;
+            sched.DepartmentId = selectedDepartment;
+            sched.DivisionId = selectedSub;
+
+            if (isAttendee)
+            {
+                sched.HasAttendee = true;
+                sched.AttendeeType = Attendee;
+                sched.GroupId = groupId;
+            }
+            else
+            {
+                sched.HasAttendee = false;
+                sched.AttendeeType = string.Empty;
+                sched.GroupId = string.Empty;
+            }
+
             sched.StartDate = sDate;
             sched.EndDate = eDate;
             sched.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
             sched.EndTime = eTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
 
+
             var result = await _schedule.AddScheduleAsync(sched);
             if (result.Success)
             {
-                schedTitle = sched.Title;
-                schedLocation = sched.Location;
-                schedCategory = sched.Category;
+                schedTitle = string.Empty;
+                schedLocation = string.Empty;
+                schedCategory = string.Empty;
+                selectedDepartment = string.Empty;
+                selectedSub = string.Empty;
+                isAttendee = true;
+                isNotify = true;
                 await ToggleModal();
                 await _js.InvokeVoidAsync("alert", "Schedule successfully added");
 
@@ -1123,7 +1628,7 @@
         {
             sched = editEvent;
             eventTitle = sched.Title;
-            eventCategory = sched.Category;
+            eventCategory = sched.CategoryId;
             sDate = sched.StartDate;
             eDate = sched.EndDate;
         }
@@ -1142,7 +1647,7 @@
             if (attend != null)
             {
                 count = attend.Count;
-                seekers = attend.Seekers;
+                // seekers = attend.Seekers;
             }
             else
             {
@@ -1181,8 +1686,8 @@
             }
 
             sched.Title = eventTitle;
-            sched.Category = eventCategory;
-            sched.SubCategoryId = subCategory;
+            sched.CategoryId = eventCategory;
+            sched.DepartmentId = subCategory;
             sched.StartDate = sDate;
             sched.EndDate = eDate;
             sched.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
@@ -1351,9 +1856,9 @@
         {
             int visitorsCount = visitorsList.Count(u => u.isSelected);
             existing.Count = groupMemberList.Count(u => u.isSelected) + visitorsCount;
-            existing.Seekers = seekers;
-            existing.Tithes = tithes;
-            existing.Offering = offering;
+            // existing.Seekers = seekers;
+            // existing.Tithes = tithes;
+            // existing.Offering = offering;
 
             var result = await _attendance.UpdateAttendanceAsync(existing.Id, existing);
             if (result.Success)
@@ -1394,10 +1899,10 @@
 
             att.ScheduleId = sched.Id;
             att.Count = groupMemberList.Count(u => u.isSelected);
-            att.Seekers = seekers;
+            // att.Seekers = seekers;
             att.Date = attDate;
-            att.Tithes = tithes;
-            att.Offering = offering;
+            // att.Tithes = tithes;
+            // att.Offering = offering;
 
             var result = await _attendance.AddAttendanceAsync(att);
 
@@ -1422,7 +1927,7 @@
                 count = 0;
                 seekers = 0;
                 await GetAttendanceList();
-                isAddModalVisible = false;
+                BackgroundModal = false;
                 localvisitList.Clear();
                 await _js.InvokeVoidAsync("alert", "Attendance saved successfully");
 
@@ -1580,32 +2085,51 @@
         isNotify = (bool)e.Value!;
     }
 
+    //Toggle notification
+    private void ToggleAttendee(ChangeEventArgs e)
+    {
+        isAttendee = (bool)e.Value!;
+
+        if (isAttendee)
+        {
+            hasAttendee = true;
+        }
+        else
+        {
+            hasAttendee = false;
+            groupId = null;
+        }
+    }
+
+
     //Send Email Function
     private async Task SendEmail()
     {
-        if (!string.IsNullOrEmpty(groupMemberId))
+        if (!isNotify)
         {
-            await GetGroupmembers(groupMemberId);
-        }
-
-        var gm = groupMemberList.Where(u => u.isSelected && !string.IsNullOrEmpty(u.Member.Email)).Select(u => u.Member.Email).ToList();
-
-        if(gm != null)
-        {
-            foreach(var a in gm)
+            if (!string.IsNullOrEmpty(groupMemberId))
             {
-                if (!string.IsNullOrEmpty(a))
+                await GetGroupmembers(groupMemberId);
+            }
+
+            var gm = groupMemberList.Where(u => u.isSelected && !string.IsNullOrEmpty(u.Member.Email)).Select(u => u.Member.Email).ToList();
+
+            if (gm != null)
+            {
+                foreach (var a in gm)
                 {
-                    emailList.Add(a);
+                    if (!string.IsNullOrEmpty(a))
+                    {
+                        emailList.Add(a);
+                    }
                 }
             }
-        }
 
-        var distinct = emailList.Distinct().ToList();
-        emailList = distinct;
+            var distinct = emailList.Distinct().ToList();
+            emailList = distinct;
 
-        string subject = $"Schedule Reminder for {schedCategory}: {schedTitle}";
-        string body = $@"
+            string subject = $"Schedule Reminder for {schedCategory}: {schedTitle}";
+            string body = $@"
 Hello There,<br><br>
 This is a friendly reminder from <b>Gospel Reach Team</b>.<br><br>
 📌 <b>Scheduled Activity:</b> {schedTitle}<br>
@@ -1618,32 +2142,33 @@ Thank you,<br>
 Gospel Reach Team
 ";
 
-        var result = await _notificationService.SendEmailsAsync(emailList, subject, body);
+            var result = await _notificationService.SendEmailsAsync(emailList, subject, body);
 
-        if (result.Success)
-        {
-            await _js.InvokeVoidAsync("alert", "Email sent");
+            if (result.Success)
+            {
+                await _js.InvokeVoidAsync("alert", "Email sent");
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Failed to send email: " + result.Error);
+            }
+
+
+            // var email = new { To = emailList, Subject = subject, Body = body };
+
+            // try
+            // {
+            //     var response = await Http.PostAsJsonAsync("https:localhost:7114/api/email/send", email);
+            //     status = response.IsSuccessStatusCode ? "Emails sent!" : "Failed to send.";
+            //     await _js.InvokeVoidAsync("alert", "Emails sent successfully");
+            // }
+            // catch (Exception ex)
+            // {
+            //     await _js.InvokeVoidAsync("alert", "Failed to send email: " + ex.Message);
+            // }
+
+            emailList.Clear();
         }
-        else
-        {
-            await _js.InvokeVoidAsync("alert", "Failed to send email: " + result.Error);
-        }
-
-
-        // var email = new { To = emailList, Subject = subject, Body = body };
-
-        // try
-        // {
-        //     var response = await Http.PostAsJsonAsync("https:localhost:7114/api/email/send", email);
-        //     status = response.IsSuccessStatusCode ? "Emails sent!" : "Failed to send.";
-        //     await _js.InvokeVoidAsync("alert", "Emails sent successfully");
-        // }
-        // catch (Exception ex)
-        // {
-        //     await _js.InvokeVoidAsync("alert", "Failed to send email: " + ex.Message);
-        // }
-
-        emailList.Clear();
     }
 
     private class GroupMemberSelection
@@ -1656,5 +2181,20 @@ Gospel Reach Team
     {
         public bool isSelected { get; set; }
         public Visitor Visitor { get; set; }
+    }
+
+    private class MainCat
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }    
+
+        public List<SubCat> SubCategories { get; set; } = new();
+    }
+
+    private class SubCat
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+
     }
 }

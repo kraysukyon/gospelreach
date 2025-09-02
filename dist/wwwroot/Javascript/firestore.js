@@ -84,10 +84,7 @@
             const tb = await db.collection("Attendance").add({
                 scheduleId: attendance.scheduleId,
                 date: attendance.date,
-                tithes: attendance.tithes,
-                offering: attendance.offering,
                 count: attendance.count,
-                seekers: attendance.seekers
             });
             return { success: true, id: tb.id }
         } catch (error) {
@@ -101,10 +98,7 @@
             await db.collection("Attendance").doc(docId).update({
                 scheduleId: attendance.scheduleId,
                 date: attendance.date,
-                tithes: attendance.tithes,
-                offering: attendance.offering,
                 count: attendance.count,
-                seekers: attendance.seekers
             });
             return { success: true }
         } catch (error) {
@@ -390,9 +384,10 @@
     async addSchedule(schedule) {
         try {
             await db.collection("Schedules").add({
-                category: schedule.category,
-                subCategory: schedule.subCategoryId,
                 title: schedule.title,
+                categoryId: schedule.categoryId,
+                departmentId: schedule.departmentId,
+                divisionId: schedule.divisionId,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
                 startTime: schedule.startTime,
@@ -400,6 +395,9 @@
                 timeOption: schedule.timeOption,
                 location: schedule.location,
                 description: schedule.description,
+                hasAttendee: schedule.hasAttendee,
+                attendeeType: schedule.attendeeType,
+                groupId: schedule.groupId,
                 status: schedule.status
             });
 

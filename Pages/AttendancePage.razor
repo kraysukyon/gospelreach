@@ -923,7 +923,7 @@
         title = "New Schedule";
         sched = new();
         eventTitle = sched.Title;
-        eventCategory = sched.Category;
+        eventCategory = sched.CategoryId;
         sDate = sched.StartDate;
         eDate = sched.EndDate;
         isSub = false;
@@ -1012,12 +1012,13 @@
                     AttendanceId = a.Id,
                     Count = a.Count,
                     Date = a.Date,
-                    Offering = a.Offering,
+                    
                     ScheduleId = s.Id,
-                    Seekers = a.Seekers,
-                    Tithes = a.Tithes,
+                    // Offering = a.Offering,
+                    // Seekers = a.Seekers,
+                    // Tithes = a.Tithes,
                     Title = s.Title,
-                    Category = s.Category
+                    Category = s.CategoryId
                 }).ToList();
 
                 if (joinedList.Count == 0)
@@ -1087,8 +1088,8 @@
 
 
             sched.Title = eventTitle;
-            sched.Category = eventCategory;
-            sched.SubCategoryId = subCategory;
+            sched.CategoryId = eventCategory;
+            sched.DepartmentId = subCategory;
             sched.StartDate = sDate;
             sched.EndDate = eDate;
             sched.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
@@ -1099,7 +1100,7 @@
             {
                 schedTitle = sched.Title;
                 schedLocation = sched.Location;
-                schedCategory = sched.Category;
+                schedCategory = sched.CategoryId;
                 await ToggleModal();
                 await _js.InvokeVoidAsync("alert", "Schedule successfully added");
 
@@ -1158,8 +1159,8 @@
             }
 
             sched.Title = eventTitle;
-            sched.Category = eventCategory;
-            sched.SubCategoryId = subCategory;
+            sched.CategoryId = eventCategory;
+            sched.DepartmentId = subCategory;
             sched.StartDate = sDate;
             sched.EndDate = eDate;
             sched.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
@@ -1329,9 +1330,9 @@
         {
             int visitorsCount = visitorsList.Count(u => u.isSelected);
             existing.Count = groupMemberList.Count(u => u.isSelected) + visitorsCount;
-            existing.Seekers = seekers;
-            existing.Tithes = tithes;
-            existing.Offering = offering;
+            // existing.Seekers = seekers;
+            // existing.Tithes = tithes;
+            // existing.Offering = offering;
 
             var result = await _attendance.UpdateAttendanceAsync(existing.Id, existing);
             if (result.Success)
@@ -1372,10 +1373,11 @@
 
             att.ScheduleId = sched.Id;
             att.Count = groupMemberList.Count(u => u.isSelected);
-            att.Seekers = seekers;
+            
             att.Date = attDate;
-            att.Tithes = tithes;
-            att.Offering = offering;
+            // att.Seekers = seekers;
+            // att.Tithes = tithes;
+            // att.Offering = offering;
 
             var result = await _attendance.AddAttendanceAsync(att);
 
