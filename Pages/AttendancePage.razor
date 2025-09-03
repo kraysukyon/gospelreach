@@ -203,7 +203,29 @@
                     </div>
                 </div>
 
-                <div class="userFields mt-3">
+                <div class="table-container mt-2">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChange" /></th>
+                                <th class="thead" style="width: 100%;">Name</th>
+                                <th class="thead" style="width: 100%;">Present</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in attendanceMemberRecordsList)
+                            {
+                                <tr>
+                                    <td>@item.FullName</td>
+                                    <td>@(item.IsPresent ? "Present" : "Absent")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* <div class="userFields mt-3">
                     <div class="inputs">
                         <p>Tithes</p>
                         <input type="number" readonly @bind="@attVM.Tithes" min="0" class="form-control p-2 mt-2" />
@@ -225,7 +247,7 @@
                         <p>Seekers</p>
                         <input type="number" readonly @bind="@attVM.Seekers" min="0" class="form-control p-2 mt-2" />
                     </div>
-                </div>
+                </div> *@
             </div>
 
             
@@ -613,6 +635,8 @@
     private string schedTitle { get; set; } = string.Empty;
     private string schedCategory { get; set; } = string.Empty;
     private string schedLocation { get; set; } = string.Empty;
+    private List<AttendanceWithMember> attendanceMemberRecordsList = new();
+
 
 
 
@@ -799,7 +823,7 @@
     {
         messages = "Fetching files...Please wait";
 
-        var result = await _schedule.GetScheduleByStatusAsync("Upcoming");
+        var result = await _schedule.GetUpcomingSchedules();
 
         if (result.Success)
         {
@@ -1012,7 +1036,7 @@
                     AttendanceId = a.Id,
                     Count = a.Count,
                     Date = a.Date,
-                    
+
                     ScheduleId = s.Id,
                     // Offering = a.Offering,
                     // Seekers = a.Seekers,
@@ -1120,8 +1144,10 @@
         }
     }
 
+
+
     //View Schedule
-    private void OpenEdit(string Id)
+    private async Task OpenEdit(string Id)
     {
         ToggleView();
         title = "Details";
@@ -1131,6 +1157,26 @@
         if(m != null)
         {
             attVM = m;
+        }
+
+        var result = await _attenanceMemberRecordService.GetAttendanceRecordByAttendanceId(Id);
+
+        if(result.Success)
+        {
+            var attMemList = result.Data;
+
+            var membersResult = await _memberService.GetMembersAsync();
+            if (membersResult.Success)
+            {
+                var members = membersResult.Data;
+
+                attendanceMemberRecordsList = attMemList.Join(members, a => a.MemberId, m => m.Id, (a, m) => new AttendanceWithMember
+                {
+                    AttendanceId = a.AttendanceId,
+                    FullName = m.GetFullName(),
+                    IsPresent = a.IsPresent,
+                }).ToList();
+            }
         }
     }
 
@@ -1650,4 +1696,17 @@ Gospel Reach Team
         public string Category { get; set; }
         public string Title { get; set; }
     }
+
+    public class AttendanceWithMember
+    {
+        public string AttendanceId { get; set; }
+        public string MemberId { get; set; }
+        public bool IsPresent { get; set; }
+
+        public string FullName { get; set; }
+        public string Contact { get; set; }
+        public string Gender { get; set; }
+    }
+
+    
 }

@@ -146,6 +146,18 @@
         }
     },
 
+    async getAttendanceMemberByAttendanceId(attId) {
+        try {
+            const attMemberTable = await db.collection("AttendanceMemberRecord").where("attendanceId", "==", attId).get();
+            const attMember = attMemberTable.docs.map(items => ({ id: items.id, ...items.data() }));
+
+            return { success: true, data: attMember }
+        } catch (error) {
+            return { success: false, error: error.message}
+        }
+
+    },
+
 
     //============================================Member Management Section============================================//
     //fetch member list
@@ -442,23 +454,89 @@
         }
     },
 
-    async getScheduleByStatus(stats) {
+    //async getScheduleByStatus() {
+    //    try {
+    //        const schedTable = await db.collection("Schedules").get();
+    //        const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+    //        return {success: true, data: sched }
+    //    } catch (error) {
+    //        return { success: false, error: error.message }
+    //    }
+    //},
+    async getUpcomingSchedules() {
         try {
-            const schedTable = await db.collection("Schedules").where("status", "==", stats).get();
+            // Get today's date in local yyyy-MM-dd
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+            const todayStr = `${year}-${month}-${day}`;
+
+            // Query schedules where date >= today
+            const schedTable = await db.collection("Schedules")
+                .where("startDate", ">", todayStr)
+                .get();
+
             const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
 
-            return {success: true, data: sched }
+            return { success: true, data: sched };
         } catch (error) {
-            return { success: false, error: error.message }
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getOngoingSchedules() {
+        try {
+            // Get today's date in local yyyy-MM-dd
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+            const todayStr = `${year}-${month}-${day}`;
+
+            // Query schedules where date >= today
+            const schedTable = await db.collection("Schedules")
+                .where("startDate", "==", todayStr)
+                .get();
+
+            const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: sched };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getCompletedSchedules() {
+        try {
+            // Get today's date in local yyyy-MM-dd
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+            const todayStr = `${year}-${month}-${day}`;
+
+            // Query schedules where date >= today
+            const schedTable = await db.collection("Schedules")
+                .where("startDate", "<", todayStr)
+                .get();
+
+            const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: sched };
+        } catch (error) {
+            return { success: false, error: error.message };
         }
     },
 
     async updateSchedule(id, schedule) {
         try {
             await db.collection("Schedules").doc(id).update({
-                category: schedule.category,
-                subCategory: schedule.subCategoryId,
                 title: schedule.title,
+                categoryId: schedule.categoryId,
+                departmentId: schedule.departmentId,
+                divisionId: schedule.divisionId,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
                 startTime: schedule.startTime,
@@ -466,6 +544,9 @@
                 timeOption: schedule.timeOption,
                 location: schedule.location,
                 description: schedule.description,
+                hasAttendee: schedule.hasAttendee,
+                attendeeType: schedule.attendeeType,
+                groupId: schedule.groupId,
                 status: schedule.status
             });
             return { success: true }

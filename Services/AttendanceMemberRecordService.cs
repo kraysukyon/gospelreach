@@ -57,6 +57,32 @@ namespace GospelReachCapstone.Services
                 return new AttendanceMemberRecordResult { Success = false, Error = ex.Message };
             }
         }
+
+        //Add attendance member record by attendance Id
+        public async Task<AttendanceMemberRecordResult> GetAttendanceRecordByAttendanceId(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceMemberRecordResult>("firestoreFunctions.getAttendanceMemberByAttendanceId", Id);
+                return result;
+            }
+            catch (JSException jsEx)
+            {
+                return new AttendanceMemberRecordResult
+                {
+                    Success = false,
+                    Error = jsEx.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceMemberRecordResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
     }
 
     public class AttendanceMemberRecordResult

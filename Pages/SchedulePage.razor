@@ -31,18 +31,10 @@
                 </div>
             </div>
 
-            <!--Title-->
-            <div class="input mt-4">
-                <div class="title">
-                    <i class="bi bi-pencil-square"></i>
-                    <p>Title</p>
-                </div>
-
-                <input readonly="@(isDepartment)" @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
-            </div>
+            
 
             <!--Type-->
-            <div class="input mt-3">
+            <div class="input mt-4">
                 <div class="title">
                     <i class="bi bi-ui-radios-grid"></i>
                     <p>Type</p>
@@ -54,6 +46,16 @@
                     <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Service</button>
                     <button @onclick="(() => setType(4))" class="btn type @GetClass(4)"><i class="bi bi-houses"></i> Others</button>
                 </div>
+            </div>
+
+            <!--Title-->
+            <div class="input mt-3">
+                <div class="title">
+                    <i class="bi bi-pencil-square"></i>
+                    <p>Title</p>
+                </div>
+
+                <input readonly="@(isDepartment)" @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
             </div>
 
             <!--Departments-->
@@ -172,7 +174,7 @@
                         <option value="Group">Groups</option>
                     </select>
                     <i class="bi bi-arrow-right"></i>
-                    <select disabled="@(!isAttendee || Attendee == "All")" class="form-select text-center p-2">
+                    <select disabled="@(!isAttendee || Attendee == "All")" @onchange="OnChangeGroup" class="form-select text-center p-2">
                         @foreach (var item in filteredGroupList)
                         {
                             if (item.Name != "All Members")
@@ -237,30 +239,14 @@
                     </h4>
                 </div>
 
-                <div class="options">
-                    <i class="bi bi-three-dots-vertical optionIcon cursor fs-4" @onclick="ToggleOption" @onclick:stopPropagation></i>
-                    <div class="options-child">
-                        <div class="cursor fsx" @onclick="ToggleUpdateUI">Update</div>
-                        <div class="cursor fsx" @onclick="(() => removeSchedule(sched.Id))">Remove</div>
-                    </div>
-                </div>
-
-                <i hidden="@(title == "Details" || title == "New Schedule")" class="bi bi-arrow-return-left fs cursor hover" @onclick="ReturnView"></i>
+                <i class="bi bi-arrow-return-left fs cursor hover" @onclick="ReturnView"></i>
 
             </div>
 
-            <!--Title-->
-            <div class="input mt-4">
-                <div class="title">
-                    <i class="bi bi-pencil-square"></i>
-                    <p>Title</p>
-                </div>
-
-                <input readonly="@(isDepartment)" @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
-            </div>
+            
 
             <!--Type-->
-            <div class="input mt-3">
+            <div class="input mt-4">
                 <div class="title">
                     <i class="bi bi-ui-radios-grid"></i>
                     <p>Type</p>
@@ -272,6 +258,16 @@
                     <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Service</button>
                     <button @onclick="(() => setType(4))" class="btn type @GetClass(4)"><i class="bi bi-houses"></i> Others</button>
                 </div>
+            </div>
+
+            <!--Title-->
+            <div class="input mt-3">
+                <div class="title">
+                    <i class="bi bi-pencil-square"></i>
+                    <p>Title</p>
+                </div>
+
+                <input readonly="@(isDepartment)" @bind="eventTitle" type="text" class="form-control p-2" placeholder="Add Title" />
             </div>
 
             <!--Departments-->
@@ -287,10 +283,11 @@
                         @foreach (var category in Categories)
                         {
                             <option value="@category.Id">@category.Name</option>
+                            <option value="@category.Id">@category.Name</option>
                         }
                     </select>
                     <i class="bi bi-arrow-right"></i>
-                    <select @onchange="OnDivisionChange" disabled="@(selectedDepartment == "Mens")" class="form-select text-center p-2">
+                    <select @onchange="OnDivisionChange" value="@selectedSub" disabled="@(selectedDepartment == "Mens")" class="form-select text-center p-2">
                         @if (SubCategories.Any())
                         {
                             @foreach (var sub in SubCategories)
@@ -334,22 +331,22 @@
                     <!--Radio button for time option-->
                     <div class="time">
                         <div class="d-flex gap-1 align-items-center">
-                            <input checked type="radio" @onchange="(() => OnChangeRadio(0))" id="custom" name="time" />
+                            <input checked="@(_selectedRadio == 0)" type="radio" @onchange="(() => OnChangeRadio(0))" id="custom" name="time" />
                             <label for="custom">Custom</label>
                         </div>
 
                         <div class="d-flex gap-1 align-items-center">
-                            <input @onchange="(() => OnChangeRadio(1))" type="radio" id="allday" name="time" />
+                            <input checked="@(_selectedRadio == 1)" @onchange="(() => OnChangeRadio(1))" type="radio" id="allday" name="time" />
                             <label for="allday">All day</label>
                         </div>
 
                         <div class="d-flex gap-1 align-items-center">
-                            <input @onchange="(() => OnChangeRadio(2))" type="radio" id="morning" name="time" />
+                            <input checked="@(_selectedRadio == 2)" @onchange="(() => OnChangeRadio(2))" type="radio" id="morning" name="time" />
                             <label for="morning">Morning</label>
                         </div>
 
                         <div class="d-flex gap-1 align-items-center">
-                            <input @onchange="(() => OnChangeRadio(3))" type="radio" id="afternoon" name="time" />
+                            <input checked="@(_selectedRadio == 3)" @onchange="(() => OnChangeRadio(3))" type="radio" id="afternoon" name="time" />
                             <label for="afternoon">Afternoon</label>
                         </div>
                     </div>
@@ -379,18 +376,18 @@
             <!--Attendees-->
             <div class="input mt-3">
                 <div class="title mt-2">
-                    <input id="att" checked @onchange="ToggleAttendee" type="checkbox" />
+                    <input id="att" checked="@(hasAttendee)" @onchange="ToggleAttendee" type="checkbox" />
                     @* <i class="bi bi-bell"></i> *@
                     <label class="cursor" for="att">Attendee</label>
                 </div>
 
                 <div class="date">
-                    <select disabled="@(!isAttendee)" @onchange="OnChangeAttendee" class="form-select text-center p-2">
+                    <select disabled="@(!isAttendee)" value="@Attendee" @onchange="OnChangeAttendee" class="form-select text-center p-2">
                         <option value="All">All</option>
                         <option value="Group">Groups</option>
                     </select>
                     <i class="bi bi-arrow-right"></i>
-                    <select disabled="@(!isAttendee || Attendee == "All")" class="form-select text-center p-2">
+                    <select disabled="@(!isAttendee || Attendee == "All")" @onchange="OnChangeGroup" class="form-select text-center p-2">
                         @foreach (var item in filteredGroupList)
                         {
                             if (item.Name != "All Members")
@@ -441,8 +438,7 @@
 
             <div class="addOptions mt-4 d-block d-md-flex gap-2" style="justify-self: end;">
                 <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
-                <button hidden="@(title != "New Schedule")" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addEvent">Create</button>
-                <button hidden="@(title == "New Schedule")" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
+                <button @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
             </div>
         </div>
 
@@ -455,13 +451,13 @@
 
                 <div class="options">
                     <i class="bi bi-three-dots-vertical optionIcon cursor fs-4" @onclick="ToggleOption" @onclick:stopPropagation></i>
-                    <div hidden="@(isOptionVisible)" class="options-child">
+                    <div hidden="@(!isOptionVisible)" class="options-child">
                         <div class="cursor fsx" @onclick="ToggleUpdateUI">Update</div>
                         <div class="cursor fsx" @onclick="(() => removeSchedule(sched.Id))">Remove</div>
                     </div>
                 </div>
 
-                <i hidden="@(title == "Details" || title == "New Schedule")" class="bi bi-arrow-return-left fs cursor hover" @onclick="ReturnView"></i>
+                @* <i hidden="@(title == "Details" || title == "New Schedule")" class="bi bi-arrow-return-left fs cursor hover" @onclick="ReturnView"></i> *@
 
             </div>
             <div class="iconText">
@@ -494,12 +490,9 @@
                 <pre class="form-control border border-0" style="max-height: 200px; overflow-y: auto;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
             </div>
 
-            <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-md-between">
-                <button hidden="@(title == "New Schedule" || title == "Update Details")" @onclick="ToggleAttendance" class="btn attBtn">Attendance</button>
-                <div>
-                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
-                    <button hidden="@(!isAddSched)" @onclick="updateEvent" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
-                </div>
+            <div class="mt-5 d-flex gap-2 @(hasAttendee && attDate <= DateOnly.FromDateTime(DateTime.Now) ? "justify-content-between" : "justify-content-end")">
+                <button hidden="@(!hasAttendee || hasAttendee && attDate > DateOnly.FromDateTime(DateTime.Now))" @onclick="ToggleAttendance" class="btn attBtn">Attendance</button>
+                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
             </div>
         </div>
 
@@ -512,47 +505,6 @@
                         <p>@sched.Title - @attDate.ToString("MMM dd, yyyy")</p>
                     </div>
                     <i class="bi bi-arrow-return-left fs cursor hover fs-4" @onclick="HideAttendance"></i>
-                </div>
-
-
-                <div class="inputs mt-3">
-                    <p>Select Group</p>
-                    <div class="pword mt-2">
-                        <select class="form-control p-2" @onchange="GetGroupAndMembers">
-                            <option value="">--Select Group--</option>
-                            @foreach (var item in groupList)
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-
-                @* <div class="userFields mt-3">
-                    <div class="inputs">
-                        <p>Tithes</p>
-                        <input type="number" @bind="tithes" min="0" class="form-control p-2 mt-2" />
-                    </div>
-
-                    <div class="inputs">
-                        <p>Offering</p>
-                        <input type="number" @bind="offering" min="0" class="form-control p-2 mt-2" />
-                    </div>
-                </div> *@
-
-                @* <div class="userFields mt-3">
-                    <div class="inputs">
-                        <p>Count</p>
-                        <input type="number" @bind="count" readonly min="0" class="form-control p-2 mt-2" />
-                    </div>
-
-                    <div class="inputs">
-                        <p>Seekers</p>
-                        <input type="number" @bind="seekers" min="0" class="form-control p-2 mt-2" />
-                    </div>
-                </div> *@
-
-                <div>
                 </div>
             </div>
 
@@ -842,7 +794,7 @@
         <div class="d-flex justify-content-between align-items-start gap-2">
             <div class="position-relative mb-2 w-100">
                 <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                <input @bind="searchSched" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name..." />
+                <input @bind="searchSched" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search..." />
             </div>
             <i class="bi bi-calendar-event fs-4 cursor m-0 p-0" @onclick="ToggleList"></i>
             
@@ -850,14 +802,30 @@
         
         <div class="filterTime">
             <p>Filter by:</p>
-            <select class="form-select" @onchange="SelectStatus">
+            <select class="form-select py-2" @onchange="SelectStatus">
                 <option value="Upcoming">Upcoming</option>
-                <option value="Today">Today</option>
+                <option value="Ongoing">Ongoing</option>
                 <option value="Completed">Completed</option>
             </select>
+
+            <p>Category:</p>
+            <select class="form-select py-2" @onchange="FilterByCategory">
+                <option value="All">All</option>
+                <option value="Event">Event</option>
+                <option value="Department">Department</option>
+                <option value="Service">Service</option>
+                <option value="Others">Others</option>
+            </select>
+
+            @* <p>From</p>
+            <input type="date" @bind="filteredStartDate" class="form-control py-2 px-2" />
+
+            <p>To</p>
+            <input type="date" @bind="filteredEndDate" class="form-control py-2 px-2" /> *@
+            
             <p><em>@messages</em></p>
         </div>
-
+        
         
 
         <div class="table-container">
@@ -878,7 +846,7 @@
                             <td class="table-cell" style="font-weight:500;">@item.Title</td>
                             <td class="table-cell" style="font-weight:500;">@item.StartDate.ToString("MMMM dd, yyyy")</td>
                             <td class="table-cell" style="font-weight:500;">@item.EndDate.ToString("MMMM dd, yyyy")</td>
-                            <td @onclick:stopPropagation @onclick="(() => OpenEdit(item.Id, new DateOnly(SelectedYear, SelectedMonth, attDate.Day)))" class="table-cell d-flex gap-2 hover" style="padding: 24px 24px; border-bottom: none; width: auto;">View</td>
+                            <td @onclick:stopPropagation @onclick="(() => OpenEdit(item.Id, new DateOnly(item.StartDate.Year, item.StartDate.Month, item.StartDate.Day)))" class="table-cell d-flex gap-2 hover" style="padding: 24px 24px; border-bottom: none; width: auto;">View</td>
                         </tr>
                     }
                 </tbody>
@@ -910,7 +878,8 @@
     private bool isDepartment = false;
     private string selectedStatus = "Upcoming";
     private bool isUpdateView = false;
-    private IEnumerable<Schedule> filteredSched => schedulesListView.Where(u => string.IsNullOrWhiteSpace(searchSched) || u.Title.Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.StartDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.EndDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase)).ToList();
+    private string filterCategory = "All";
+    private IEnumerable<Schedule> filteredSched => schedulesListView.Where(u => filterCategory == "All" || u.CategoryId == filterCategory).Where(u => string.IsNullOrWhiteSpace(searchSched) || u.Title.Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.StartDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.EndDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase)).ToList();
 
     public record MonthOption(int Value, string Name);
     private List<MonthOption> Months { get; set; }
@@ -978,6 +947,7 @@
     private string schedTitle { get; set; } = string.Empty;
     private string schedCategory { get; set; } = string.Empty;
     private string schedLocation { get; set; } = string.Empty;
+    private int _selectedRadio = 0; // default is "Custom"
 
 
 
@@ -1001,8 +971,13 @@
     private bool hasAttendee = true;
     private string? groupId = "KijcjdUahaRhQtGCk9ds";
 
+    //ListView
+    private DateOnly filteredStartDate = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly filteredEndDate;
+
     protected override async Task OnInitializedAsync()
     {
+        filteredEndDate = filteredStartDate.AddMonths(2);
         Init();
         GetList();
         var cat = Categories.FirstOrDefault(u => u.Id == "Senior");
@@ -1014,6 +989,11 @@
         await GetAttendanceList();
         await GetSubCategoriesList();
         at = "1234";
+    }
+
+    private void FilterByCategory(ChangeEventArgs e)
+    {
+        filterCategory = e.Value!.ToString()!;
     }
 
     //Show Add Schedule Modal
@@ -1033,12 +1013,18 @@
         if (Attendee == "All")
         {
             at = "1234";
-
+            groupId = string.Empty;
         }
         else
         {
+            groupId = groupList.First().Id;
             at = string.Empty;
         }
+    }
+
+    private void OnChangeGroup(ChangeEventArgs e)
+    {
+        groupId = e.Value!.ToString()!;
     }
 
     private void GetList()
@@ -1113,7 +1099,7 @@
             if (subCat != null)
             {
                 eventTitle = subCat.First().Name;
-
+                selectedSub = subCat.First().Name;
                 SubCategories = subCat;
                 // await _js.InvokeVoidAsync("alert", selectedDepartment);
             }
@@ -1192,8 +1178,8 @@
     //Close update modal and show view modal
     private void ReturnView()
     {
-        isAddSched = !isAddSched;
-        title = "Details";
+        isUpdateView = false;
+        isView = true;
     }
 
     //Radio button changed
@@ -1236,9 +1222,48 @@
     //show counts and seekers
     private async Task ToggleAttendance()
     {
+        isView = false;
         isAttendanceVisible = true;
-        await GetGroupName();
+
         await GetVisitors();
+    }
+
+    private async Task GetGroupMembers(string Id)
+    {
+        var result = await _groupMemberService.GetGroupMembersByGroupIdAsync(Id);
+        if(result.Success)
+        {
+            var Ids = result.Data.Select(u => u.MemberId).ToHashSet();
+
+            if (Ids != null)
+            {
+                var results = await _memberService.GetMembersAsync();
+                if (results.Success)
+                {
+                    var members = results.Data.Where(u => Ids.Contains(u.Id)).ToList();
+
+                    groupMemberList = members.Select(u => new GroupMemberSelection
+                    {
+                        isSelected = true,
+                        Member = u
+                    }).ToList();
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Failed to get members: " + results.Error);
+                }
+            }
+            else
+            {
+                groupMemberList.Clear();
+            }
+
+            
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to get group: " + result.Error );
+        }
     }
 
     private async Task GetVisitors()
@@ -1268,12 +1293,50 @@
     {
         messages = "Fetching files...Please wait";
 
-        var result = await _schedule.GetScheduleByStatusAsync("Upcoming");
+        var result = await _schedule.GetUpcomingSchedules();
 
         if (result.Success)
         {
             schedulesListView = result.Data;
-            messages = $"{schedulesListView.Count} {selectedStatus} schedules found.";
+            messages = $"{schedulesListView.Count} {selectedStatus} records found.";
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
+            messages = "No schedules found.";
+        }
+    }
+
+    //Get Upcoming list of schedules
+    private async Task GetOngoingSchedules()
+    {
+        messages = "Fetching files...Please wait";
+
+        var result = await _schedule.GetOngoingSchedules();
+
+        if (result.Success)
+        {
+            schedulesListView = result.Data;
+            messages = $"{schedulesListView.Count} {selectedStatus} records found.";
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
+            messages = "No schedules found.";
+        }
+    }
+
+    //Get Upcoming list of schedules
+    private async Task GetCompletedSchedules()
+    {
+        messages = "Fetching files...Please wait";
+
+        var result = await _schedule.GetCompletedSchedules();
+
+        if (result.Success)
+        {
+            schedulesListView = result.Data;
+            messages = $"{schedulesListView.Count} {selectedStatus} records found.";
         }
         else
         {
@@ -1291,18 +1354,30 @@
 
         if (selectedStatus != null)
         {
-            var result = await _schedule.GetScheduleByStatusAsync(selectedStatus);
+            switch (selectedStatus)
+            {
+                case "Upcoming":
+                    await GetUpcomingSchedules();
+                    break;
+                case "Ongoing":
+                    await GetOngoingSchedules();
+                    break;
+                case "Completed":
+                    await GetCompletedSchedules();
+                    break;
+            }
+            // var result = await _schedule.GetScheduleByStatusAsync(selectedStatus);
 
-            if (result.Success)
-            {
-                schedulesListView = result.Data;
-                messages = $"{schedulesListView.Count} {selectedStatus} schedules found.";
-            }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
-                messages = "No schedules found.";
-            }
+            // if (result.Success)
+            // {
+            //     schedulesListView = result.Data;
+            //     messages = $"{schedulesListView.Count} {selectedStatus} schedules found.";
+            // }
+            // else
+            // {
+            //     await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
+            //     messages = "No schedules found.";
+            // }
         }
 
     }
@@ -1480,8 +1555,11 @@
 
     private async Task ToggleUpdateUI()
     {
-        title = "Update Details";
-        isAddSched = true;
+        isView = false;
+        isOptionVisible = false;
+        isUpdateView = true;
+
+
         await GetGroupName();
     }
 
@@ -1573,7 +1651,16 @@
             {
                 sched.HasAttendee = true;
                 sched.AttendeeType = Attendee;
-                sched.GroupId = groupId;
+
+                if (Attendee == "All")
+                {
+                    sched.GroupId = "KijcjdUahaRhQtGCk9ds";
+                }
+                else
+                {
+                    sched.GroupId = groupId;
+                }
+
             }
             else
             {
@@ -1627,10 +1714,107 @@
         if (editEvent != null)
         {
             sched = editEvent;
-            eventTitle = sched.Title;
+
             eventCategory = sched.CategoryId;
+
+            switch (eventCategory)
+            {
+                case "Event":
+                    setType(1);
+                    GetClass(1);
+                    break;
+                case "Department":
+                    setType(2);
+                    GetClass(2);
+                    break;
+                case "Service":
+                    setType(3);
+                    GetClass(3);
+                    break;
+                case "Others":
+                    setType(4);
+                    GetClass(4);
+                    break;
+            }
+            selectedDepartment = sched.DepartmentId;
+
+            if (!string.IsNullOrEmpty(selectedDepartment))
+            {
+                switch (selectedDepartment)
+                {
+                    case "Senior":
+
+                        break;
+                    case "Womens":
+                        break;
+                    case "Mens":
+                        selectedSub = string.Empty;
+                        isDepartment = true;
+                        SubCategories = new();
+                        break;
+                    case "Youth":
+                        break;
+                }
+
+                var cat = Categories.FirstOrDefault(u => u.Id == selectedDepartment);
+                if (cat != null)
+                {
+                    SubCategories = cat.SubCategories;
+                }
+            }
+
+            eventTitle = sched.Title;
+            selectedSub = sched.DivisionId;
             sDate = sched.StartDate;
             eDate = sched.EndDate;
+            sTime = TimeOnly.Parse(sched.StartTime);
+            eTime = TimeOnly.Parse(sched.EndTime);
+            timeOption = sched.TimeOption;
+
+            switch(timeOption)
+            {
+                case "Custom":
+                    OnChangeRadio(0);
+                    _selectedRadio = 0;
+                    break;
+                case "All Day":
+                    OnChangeRadio(1);
+                    _selectedRadio = 1;
+                    break;
+                case "Morning":
+                    OnChangeRadio(2);
+                    _selectedRadio = 2;
+                    break;
+                case "Afternoon":
+                    OnChangeRadio(3);
+                    _selectedRadio = 3;
+                    break;
+            }
+
+            if (sched.HasAttendee)
+            {
+                Attendee = sched.AttendeeType;
+                hasAttendee = true;
+                isAttendee = true;
+
+                if (Attendee == "All")
+                {
+                    at = "1234";
+                }
+                else
+                {
+                    at = string.Empty;
+                }
+
+                await GetGroupMembers(sched.GroupId);
+            }
+            else
+            {
+                Attendee = "All";
+                at = "1234";
+                hasAttendee = false;
+                isAttendee = false;
+            }
         }
         else
         {
@@ -1678,7 +1862,7 @@
             }
             else if (sDate == dateNow)
             {
-                sched.Status = "Today";
+                sched.Status = "Ongoing";
             }
             else
             {
@@ -1687,11 +1871,35 @@
 
             sched.Title = eventTitle;
             sched.CategoryId = eventCategory;
-            sched.DepartmentId = subCategory;
+            sched.DepartmentId = selectedDepartment;
+            sched.DivisionId = selectedSub;
             sched.StartDate = sDate;
             sched.EndDate = eDate;
             sched.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
             sched.EndTime = eTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+            sched.TimeOption = timeOption;
+
+            if (isAttendee)
+            {
+                sched.HasAttendee = true;
+                sched.AttendeeType = Attendee;
+
+                if (Attendee == "All")
+                {
+                    sched.GroupId = "KijcjdUahaRhQtGCk9ds";
+                }
+                else
+                {
+                    sched.GroupId = groupId;
+                }
+
+            }
+            else
+            {
+                sched.HasAttendee = false;
+                sched.AttendeeType = string.Empty;
+                sched.GroupId = string.Empty;
+            }
 
             var result = await _schedule.UpdateScheduleAsync(sched.Id, sched);
 
@@ -1899,23 +2107,22 @@
 
             att.ScheduleId = sched.Id;
             att.Count = groupMemberList.Count(u => u.isSelected);
-            // att.Seekers = seekers;
             att.Date = attDate;
-            // att.Tithes = tithes;
-            // att.Offering = offering;
+
+            
 
             var result = await _attendance.AddAttendanceAsync(att);
 
             if (result.Success)
             {
-                var memToAdd = groupMemberList.Where(u => u.isSelected).ToList();
+                var memToAdd = groupMemberList.ToList();
                 string attId = result.Id;
 
                 if (memToAdd != null)
                 {
                     @foreach (var item in memToAdd)
                     {
-                        var add = new AttendanceMemberRecord { AttendanceId = attId, MemberId = item.Member.Id, IsPresent = true };
+                        var add = new AttendanceMemberRecord { AttendanceId = attId, MemberId = item.Member.Id, IsPresent = item.isSelected };
                         var results = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(add);
                     }
 
@@ -1959,7 +2166,8 @@
 
         if (result.Success)
         {
-            groupList = result.Data;
+
+            groupList = result.Data.Where(u => u.Id != "KijcjdUahaRhQtGCk9ds").ToList();
         }
         else
         {
@@ -1967,95 +2175,95 @@
         }
     }
 
-    //Get Initial Group and Members
-    private async Task GetGroupmembers(string Id)
-    {
-        var result = await _group.GetGroupByIdAsync(Id);
+    // Get Initial Group and Members
+    // private async Task GetGroupmembers(string Id)
+    // {
+    //     var result = await _group.GetGroupByIdAsync(Id);
 
-        if (result.Success)
-        {
+    //     if (result.Success)
+    //     {
 
-            group = new Group { Id = result.Group.Id, Name = result.Group.Name };
+    //         group = new Group { Id = result.Group.Id, Name = result.Group.Name };
 
-            var res = await _groupMemberService.GetGroupMembersByGroupIdAsync(Id);
+    //         var res = await _groupMemberService.GetGroupMembersByGroupIdAsync(Id);
 
-            if (res.Success)
-            {
+    //         if (res.Success)
+    //         {
 
-                if (res.Data == null)
-                {
-                    groupMemberMessage = "No members found";
-                    groupMemberList.Clear();
-                    // var resMem = await _memberService.GetMembersAsync();
+    //             if (res.Data == null)
+    //             {
+    //                 groupMemberMessage = "No members found";
+    //                 groupMemberList.Clear();
+    //                 var resMem = await _memberService.GetMembersAsync();
 
-                    // if (resMem.Success)
-                    // {
-                    //     var member = resMem.Data;
+    //                 if (resMem.Success)
+    //                 {
+    //                     var member = resMem.Data;
 
-                    //     groupMemberList = member.Select(u => new GroupMemberSelection
-                    //     {
-                    //         Member = u,
-                    //         isSelected = true
-                    //     }).ToList();
+    //                     groupMemberList = member.Select(u => new GroupMemberSelection
+    //                     {
+    //                         Member = u,
+    //                         isSelected = true
+    //                     }).ToList();
 
-                    // }
-                }
-                else
-                {
-                    if (res.Data.Count > 1)
-                    {
-                        groupMemberMessage = $"{res.Data.Count} members found";
-                    }
-                    else
-                    {
-                        groupMemberMessage = $"{res.Data.Count} member found";
-                    }
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 if (res.Data.Count > 1)
+    //                 {
+    //                     groupMemberMessage = $"{res.Data.Count} members found";
+    //                 }
+    //                 else
+    //                 {
+    //                     groupMemberMessage = $"{res.Data.Count} member found";
+    //                 }
 
-                    var resMem = await _memberService.GetMembersAsync();
+    //                 var resMem = await _memberService.GetMembersAsync();
 
-                    if (resMem.Success)
-                    {
-                        //Get all members
-                        var allMembers = resMem.Data;
+    //                 if (resMem.Success)
+    //                 {
+    //                     Get all members
+    //                     var allMembers = resMem.Data;
 
-                        //Get members who belong to the group
-                        var groupMembers = res.Data;
-                        var groupMembersId = groupMembers.Select(u => u.MemberId).ToHashSet();
+    //                     Get members who belong to the group
+    //                     var groupMembers = res.Data;
+    //                     var groupMembersId = groupMembers.Select(u => u.MemberId).ToHashSet();
 
-                        //Build Selection list with condition
-                        var gm = allMembers.Select(m => new GroupMemberSelection
-                        {
-                            Member = m,
-                            isSelected = groupMembersId.Contains(m.Id)
-                        }).ToList();
+    //                     Build Selection list with condition
+    //                     var gm = allMembers.Select(m => new GroupMemberSelection
+    //                     {
+    //                         Member = m,
+    //                         isSelected = groupMembersId.Contains(m.Id)
+    //                     }).ToList();
 
-                        groupMemberList = gm.Where(u => u.isSelected).ToList();
-                        count = groupMemberList.Count;
+    //                     groupMemberList = gm.Where(u => u.isSelected).ToList();
+    //                     count = groupMemberList.Count;
 
-                    }
-                    else
-                    {
-                        await _js.InvokeVoidAsync("alert", "Members not found: " + resMem.Error);
-                    }
-                }
-            }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", "Group not found: " + result.Error);
-            }
-        }
-        else
-        {
-            await _js.InvokeVoidAsync("alert", "Group not found: " + result.Error);
-        }
-    }
+    //                 }
+    //                 else
+    //                 {
+    //                     await _js.InvokeVoidAsync("alert", "Members not found: " + resMem.Error);
+    //                 }
+    //             }
+    //         }
+    //         else
+    //         {
+    //             await _js.InvokeVoidAsync("alert", "Group not found: " + result.Error);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         await _js.InvokeVoidAsync("alert", "Group not found: " + result.Error);
+    //     }
+    // }
 
     //Get Group and its members
     private async Task GetGroupAndMembers(ChangeEventArgs e)
     {
         string Id = e.Value!.ToString()!;
         if (string.IsNullOrEmpty(Id)) return;
-        await GetGroupmembers(Id);
+        await GetGroupMembers(Id);
     }
 
     //Add to list of emails
@@ -2109,7 +2317,7 @@
         {
             if (!string.IsNullOrEmpty(groupMemberId))
             {
-                await GetGroupmembers(groupMemberId);
+                await GetGroupMembers(groupMemberId);
             }
 
             var gm = groupMemberList.Where(u => u.isSelected && !string.IsNullOrEmpty(u.Member.Email)).Select(u => u.Member.Email).ToList();

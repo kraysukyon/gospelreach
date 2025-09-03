@@ -68,11 +68,45 @@ namespace GospelReachCapstone.Services
         }
 
         //Fetch schedules by status
-        public async Task<ScheduleResult> GetScheduleByStatusAsync(string status)
+        public async Task<ScheduleResult> GetUpcomingSchedules ()
         {
             try
             {
-                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getScheduleByStatus", status);
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getUpcomingSchedules");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        public async Task<ScheduleResult> GetOngoingSchedules()
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getOngoingSchedules");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        public async Task<ScheduleResult> GetCompletedSchedules()
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getCompletedSchedules");
                 return result;
             }
             catch (JSException ex)
