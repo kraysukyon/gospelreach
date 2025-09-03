@@ -1283,6 +1283,11 @@ a[b-2q70jhrmqz] {
     transition: box-shadow 0.3s ease, filter 0.3s ease;
     border: solid .3px rgb(128, 128, 128, 0.08);
     padding: 24px;
+    max-height: calc(100vh - 10vh);
+    background-color: #FFF;
+    overflow-y: auto;
+    width: 600px;
+    min-height: 600px;
 }
 
     .cards:hover[b-2q70jhrmqz] {
@@ -1497,10 +1502,6 @@ button[b-2q70jhrmqz]{
     font-weight: 600;
 }
 
-.viewMod[b-2q70jhrmqz]{
-    max-height: calc(100vh - 40vh);
-}
-
 .filterTime[b-2q70jhrmqz]{
     display:flex;
     width: fit-content;
@@ -1583,6 +1584,10 @@ button[b-2q70jhrmqz]{
         margin: 0;
         padding: 0;
     }
+
+.t[b-2q70jhrmqz] {
+    color: #898989;
+}
 
 
 @media (max-width: 768px) {
@@ -3963,7 +3968,26 @@ a[b-7a688qs3l3] {
     top: 50%;
     left: 50%;
     transform: translate(-50%,-50%);
-    display: flex;
+/*    display: flex;
+    flex-direction: column;*/
+display: grid;
+grid-template-rows: auto 1fr auto;
+    width: 600px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+    max-height: calc(100vh - 10vh);
+    overflow-y: auto;
+    transition: all 0.5s ease;
+    min-height: 600px;
+}
+
+.addAttendances[b-hlwuhtkxei] {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+        display: flex;
     flex-direction: column;
     width: 600px;
     padding: 2rem 1.5rem;
@@ -4656,6 +4680,14 @@ button[b-hlwuhtkxei]{
         padding: 0;
     }
 
+
+.attendee[b-hlwuhtkxei] {
+    overflow-y: auto;
+}
+
+.t[b-hlwuhtkxei]{
+    color: #898989;
+}
 
 @media (max-width: 768px) {
     .pages[b-hlwuhtkxei]{

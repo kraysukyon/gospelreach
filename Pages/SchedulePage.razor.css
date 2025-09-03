@@ -27,7 +27,26 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%,-50%);
-    display: flex;
+/*    display: flex;
+    flex-direction: column;*/
+display: grid;
+grid-template-rows: auto 1fr auto;
+    width: 600px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+    max-height: calc(100vh - 10vh);
+    overflow-y: auto;
+    transition: all 0.5s ease;
+    min-height: 600px;
+}
+
+.addAttendances {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+        display: flex;
     flex-direction: column;
     width: 600px;
     padding: 2rem 1.5rem;
@@ -720,6 +739,14 @@ button{
         padding: 0;
     }
 
+
+.attendee {
+    overflow-y: auto;
+}
+
+.t{
+    color: #898989;
+}
 
 @media (max-width: 768px) {
     .pages{

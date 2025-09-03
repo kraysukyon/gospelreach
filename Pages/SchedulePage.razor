@@ -8,6 +8,7 @@
 @inject GospelReachCapstone.Services.SubCategoryService _subCategoryService
 @inject GospelReachCapstone.Services.NotificationService _notificationService
 @inject GospelReachCapstone.Services.AttendanceMemberRecordService _attenanceMemberRecordService
+@inject GospelReachCapstone.Services.AttendanceVisitorRecordService _attendanceVisitorRecordService
 @inject GospelReachCapstone.Services.VisitorService _visitorsService
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
@@ -508,58 +509,104 @@
                 </div>
             </div>
 
-            <div>
-                <!--Table Section-->
-                <h5 class="fw-bold mt-3">Members</h5>
-                <!--Members Search Section-->
-                <div class="position-relative mt-2">
-                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                    <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
-                </div>
-                @if (groupMemberList.Count != 0)
-                {
-                    <div class="table-container mt-2">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChange" /></th>
-                                    <th class="thead" style="width: 100%;">Name</th>
-                                    <th class="thead" style="width: 100%;">Action</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @foreach (var item in filteredMember)
-                                {
-                                    <tr>
-                                        <td class="table-cell" style="width: auto; white-space: nowrap;">
-                                            <input @bind="item.isSelected" type="checkbox" />
-                                        </td>
-                                        <td class="table-cell" style="width: 100%;">
-                                            @item.Member.GetFullName()
-                                            @foreach (var v in localvisitList)
-                                            {
-                                                @if (item.Member.Id == v.InvitedByMemberId)
-                                                {
-                                                    <div class="d-flex flex-column gap-1 mt-2">
-                                                        <div class="visitor">
-                                                            <p class="pill6">@v.GetFullName()</p>
-                                                            <i @onclick="() => RemoveFromVisitorsList(v)" class="bi bi-x-circle cursor removes bg-white text-danger"></i>
-                                                        </div>
-                                                    </div>
-                                                }
-                                            }
-                                        </td>
-                                        <td class="table-cell" style="width: 100%;">
-                                            <i @onclick="() => ToggleInviteModal(item.Member.Id, attDate)" @onclick:stopPropagation class="bi bi-plus-circle-fill text-primary fs-5 cursor"></i>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+            <div class="attendee">
+                <div>
+                    <!--Table Section-->
+                    <div class="d-flex gap-2">
+                        <h5 @onclick="ToggleMembers" class="fw-bold mt-3 cursor @(isVisitor ? "t" : "")">Members</h5>
+                        <h5 @onclick="ToggleMembers" class="fw-bold mt-3 cursor @(isVisitor ? "" : "t")">Visitors</h5>
                     </div>
-                }
+
+                    <!--Members Search Section-->
+                    <div hidden="@(isVisitor)">
+                        <div class="position-relative mt-2">
+                            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                            <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
+                        </div>
+                        @if (groupMemberList.Count != 0)
+                        {
+                            <div class="table-container mt-2">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChange" /></th>
+                                            <th class="thead" style="width: 100%;">Name</th>
+                                            <th class="thead" style="width: 100%;">Action</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        @foreach (var item in filteredMember)
+                                        {
+                                            <tr>
+                                                <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                                    <input @bind="item.isSelected" type="checkbox" />
+                                                </td>
+                                                <td class="table-cell" style="width: 100%;">
+                                                    @item.Member.GetFullName()
+                                                    @foreach (var v in localvisitList)
+                                                    {
+                                                        @if (item.Member.Id == v.InvitedByMemberId)
+                                                        {
+                                                            <div class="d-flex flex-column gap-1 mt-2">
+                                                                <div class="visitor">
+                                                                    <p class="pill6">@v.GetFullName()</p>
+                                                                    <i @onclick="() => RemoveFromVisitorsList(v)" class="bi bi-x-circle cursor removes bg-white text-danger"></i>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    }
+                                                </td>
+                                                <td class="table-cell" style="width: 100%;">
+                                                    <i @onclick="() => ToggleInviteModal(item.Member.Id, attDate)" @onclick:stopPropagation class="bi bi-plus-circle-fill text-primary fs-5 cursor"></i>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <!--Visitors Section-->
+                <div hidden="@(!isVisitor)">
+                    @if (visitorsList.Count != 0)
+                    {
+                        <div class="position-relative mt-2">
+                            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                            <input type="text" @bind="visitorsSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
+                        </div>
+
+                        <p class="m-2"><em>@visitorMessage</em></p>
+
+                        <div class="table-container mt-2">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChanges" /></th>
+                                        <th class="thead" style="width: 100%;">Name</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach (var item in filteredVisitor)
+                                    {
+                                        <tr>
+                                            <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                                <input @bind="item.isSelected" type="checkbox" />
+                                            </td>
+                                            <td class="table-cell">@item.Visitor.GetFullName()</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
             </div>
+
+            <button @onclick="AddOrUpdateAttendance" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
 
             @* <div class="tab">
                 <div>
@@ -657,11 +704,11 @@
 
             
 
-            <button @onclick="AddOrUpdateAttendance" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+            
         </div>
 
         <!--Invite Form Modal-->
-        <div hidden="@(!isInviteVisible)" class="addAttendance cards" style="width: 300px;" @onclick:stopPropagation>
+        <div hidden="@(!isInviteVisible)" class="addAttendances cards" style="width: 300px;" @onclick:stopPropagation>
             <div class="d-flex align-content-lg-start justify-content-between">
                 <div>
                     <h4 class="fw-bold">Add Visitor</h4>
@@ -952,6 +999,7 @@
 
 
     //Visitors
+    private bool isVisitor = false;
     private bool isInviteVisible { get; set; } = false;
     private Visitor visitor { get; set; } = new();
     private List<Visitor> localvisitList = new();
@@ -989,6 +1037,11 @@
         await GetAttendanceList();
         await GetSubCategoriesList();
         at = "1234";
+    }
+
+    private void ToggleMembers()
+    {
+        isVisitor = !isVisitor;
     }
 
     private void FilterByCategory(ChangeEventArgs e)
@@ -1258,7 +1311,7 @@
                 groupMemberList.Clear();
             }
 
-            
+
         }
         else
         {
@@ -1507,7 +1560,8 @@
     private async Task ToggleModal()
     {
         BackgroundModal = !BackgroundModal;
-
+        isInviteVisible = false;
+        isVisitor = false;
         isOptionVisible = false;
         isAddSched = false;
         isView = false;
@@ -1524,6 +1578,7 @@
         offering = 0;
         seekers = 0;
         count = 0;
+        localvisitList.Clear();
         setType(1);
         GetClass(1);
 
@@ -2064,9 +2119,6 @@
         {
             int visitorsCount = visitorsList.Count(u => u.isSelected);
             existing.Count = groupMemberList.Count(u => u.isSelected) + visitorsCount;
-            // existing.Seekers = seekers;
-            // existing.Tithes = tithes;
-            // existing.Offering = offering;
 
             var result = await _attendance.UpdateAttendanceAsync(existing.Id, existing);
             if (result.Success)
@@ -2074,20 +2126,40 @@
                 var removeResultAttenance = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(existing.Id);
                 if (removeResultAttenance.Success)
                 {
-                    var membersToAdd = groupMemberList.Where(u => u.isSelected).ToList();
+                    var membersToAdd = groupMemberList;
                     @foreach (var item in membersToAdd)
                     {
-                        var a = new AttendanceMemberRecord { AttendanceId = existing.Id, IsPresent = true, MemberId = item.Member.Id };
+                        var a = new AttendanceMemberRecord { AttendanceId = existing.Id, IsPresent = item.isSelected, MemberId = item.Member.Id };
                         var addAttendanceMemberResult = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(a);
                     }
 
-                    var visitorsToAdd = visitorsList.Where(u => u.isSelected).ToList();
-                    @foreach (var item in visitorsToAdd)
+                    var removeAttendance = await _attendanceVisitorRecordService.RemoveAttendanceVisitorAsync(existing.Id);
+
+                    if (removeAttendance.Success)
                     {
-                        var b = new AttendanceMemberRecord { AttendanceId = existing.Id, IsPresent = true, MemberId = item.Visitor.Id};
-                        var addAttendanceMemberResult = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(b);
+                        var visitorsToAdd = visitorsList.Where(u => u.isSelected).ToList();
+                        @foreach (var item in visitorsToAdd)
+                        {
+                            var b = new AttendanceVisitor { AttendanceId = existing.Id, IsPresent = true, InvitedByMemberId = string.Empty, VisitorId = item.Visitor.Id };
+                            var addAttendanceMemberResult = await _attendanceVisitorRecordService.AddAttendanceVisitorRecordAsync(b);
+                        }
+
+
+                        @foreach (var item in localvisitList)
+                        {
+                            var addNewVisitor = await _visitorsService.AddVisitorAsync(item);
+
+                            var b = new AttendanceVisitor { AttendanceId = existing.Id, IsPresent = true, InvitedByMemberId = item.InvitedByMemberId, VisitorId = item.Id };
+                            var addAttendanceMemberResult = await _attendanceVisitorRecordService.AddAttendanceVisitorRecordAsync(b);
+                        }
+                    }
+                    else
+                    {
+                        await _js.InvokeVoidAsync("alert", "Failed to update visitors record: " + removeAttendance.Error);
                     }
 
+
+                    localvisitList.Clear();
                     await GetAttendanceList();
                     await _js.InvokeVoidAsync("alert", "Attendance saved successfully");
                 }
@@ -2126,9 +2198,22 @@
                         var results = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(add);
                     }
 
+                    string visitId = string.Empty;
+
                     @foreach (var item in localvisitList)
                     {
                         var results = await _visitorsService.AddVisitorAsync(item);
+                        visitId = results.Id;
+
+                        var a = new AttendanceVisitor { AttendanceId = attId, InvitedByMemberId = item.InvitedByMemberId, IsPresent = true, VisitorId = visitId};
+                        var addAttVisit = await _attendanceVisitorRecordService.AddAttendanceVisitorRecordAsync(a);
+                    }
+
+                    var visitorsToAdd = visitorsList.Where(u => u.isSelected).ToList();
+                    @foreach (var item in visitorsToAdd)
+                    {
+                        var b = new AttendanceVisitor { AttendanceId = attId, IsPresent = true, InvitedByMemberId = string.Empty, VisitorId = item.Visitor.Id };
+                        var addAttendanceMemberResult = await _attendanceVisitorRecordService.AddAttendanceVisitorRecordAsync(b);
                     }
                 }
                 count = 0;

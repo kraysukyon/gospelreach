@@ -51,6 +51,7 @@ namespace GospelReachCapstone.Services
     public class VisitorResult()
     {
         public bool Success { get; set; }
+        public string Id { get; set; }
         public List<Visitor> Data { get; set; }
         public string Error { get; set; }
     }

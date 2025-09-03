@@ -7,8 +7,7 @@
         public string MiddleName { get; set; }
         public string LastName { get; set; }
         public string InvitedByMemberId { get; set; }
-        public DateOnly FirstVisitDate { get; set; }
-
+        public DateOnly FirstVisitDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
         //Construct Full Name
         public string GetFullName()

@@ -159,6 +159,50 @@
     },
 
 
+    //============================================Attendance Visitor=============================================
+    async addAttendanceVisitorRecord(att) {
+        try {
+            await db.collection("AttendanceVisitorRecord").add({
+                attendanceId: att.attendanceId,
+                visitorId: att.visitorId,
+                invitedByMemberId: att.invitedByMemberId,
+                isPresent: att.isPresent
+            });
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async removeAttendanceVisitor(id) {
+        try {
+            const snapshot = await db.collection("AttendanceVisitorRecord").where("attendanceId", "==", id).get();
+            const batch = db.batch();
+
+            snapshot.forEach(doc => { batch.delete(doc.ref) });
+
+            await batch.commit();
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async getAttendanceVisitorByAttendanceId(attId) {
+        try {
+            const attMemberTable = await db.collection("AttendanceVisitorRecord").where("attendanceId", "==", attId).get();
+            const attMember = attMemberTable.docs.map(items => ({ id: items.id, ...items.data() }));
+
+            return { success: true, data: attMember }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+
+    },
+
+
     //============================================Member Management Section============================================//
     //fetch member list
     async getMembers() {
@@ -749,7 +793,7 @@
 
     async addVisitor(visitor) {
         try {
-            await db.collection("Visitors").add({
+            const vis = await db.collection("Visitors").add({
                 firstName: visitor.firstName,
                 middleName: visitor.middleName,
                 lastName: visitor.lastName,
@@ -757,7 +801,7 @@
                 firstVisitDate: visitor.firstVisitDate,
             });
 
-            return { success: true }
+            return { success: true, id: vis.id }
         } catch (error) {
             return { success: false, error: error.message }
         }

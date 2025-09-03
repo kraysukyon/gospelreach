@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "GospelReachCapstone",
   "resources": {
-    "hash": "sha256-aYls5pbDNxGs1rxqLOdWEHogauMEFgl4gDib4VHscU4=",
+    "hash": "sha256-V2wEAC7fEtUsS1bwuAB6GzpHopMlNLw8D64EvdBzqWo=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-7j8Y9I6JgJ/4/1qxU6eOJPc3NpvZVd7ILs8OdPuQuTI="
     },
@@ -18,7 +18,7 @@
     },
     "coreAssembly": {},
     "assembly": {
-      "Microsoft.AspNetCore.Components.wasm": "sha256-FECMUTgwHlDLW6BDfU48ejmeStv/6EyE7mZQ1lInEhY=",
+      "Microsoft.AspNetCore.Components.wasm": "sha256-GV8TmTG1f/ulS5hu955kyW6jkuQMv3F5lnmbsTDcjBk=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-ryUiakznN8ldMgC+9SoBeYa6m41ZTg5sjn3HolGJsbA=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-Yw7lDGgoja1rSApqAtRPTcP1u0VaVc0TOXJLJ7GpzKE=",
       "Microsoft.Extensions.Configuration.wasm": "sha256-P+fSx2J5oXT22amIrphIKk4t7m5U80KpC2bz+QNRPlg=",
@@ -37,7 +37,7 @@
       "System.Collections.wasm": "sha256-DUbI2SSmD8pD11LGEKBo3HHwDFSY2kyUz5EKBB47Jfk=",
       "System.ComponentModel.wasm": "sha256-TyezHEThutqGuIZuOo3sM6MoYCMsOGpN4I7UnjaWnpc=",
       "System.Console.wasm": "sha256-wknkLrrXVMsIXAhjeJVkDlRXKP9NFkmJ+OHYsKBQWV8=",
-      "System.Linq.wasm": "sha256-5Zxzgr4RLEw3n4gqQG1d4I7CEBkwVxLoPI/Pdr4tnl0=",
+      "System.Linq.wasm": "sha256-KLVPFHrfox7iK5Fu7D/Oo5lD3iRH80D8CDekGcib9mg=",
       "System.Memory.wasm": "sha256-LsC/U/26RIsOOkeGwA0y/KANnsKSwXONLsyIheekM6w=",
       "System.Net.Http.Json.wasm": "sha256-c8KWCaHB2YvT3EL0HSvBIMwunIfxDA/zd3OzH2jrTa0=",
       "System.Net.Http.wasm": "sha256-OwUxsQ4V9kVFyd1WbousW9eiG9Vk+InwGDZaYWR+cxQ=",
@@ -49,7 +49,7 @@
       "System.Text.Json.wasm": "sha256-MhPsK7a0kKmkzTWCS7GDFBlN/72bNVqMC9Mt+6R3lk0=",
       "System.Text.RegularExpressions.wasm": "sha256-KIFkQNM9DAdZ+bcfnfBzZZ1XCKki0+dF/0o4P6B/auo=",
       "System.Private.CoreLib.wasm": "sha256-Zj0f82FabxE3VydQJyDnOT4S7zTfiYNPUtHOGWz7KgA=",
-      "GospelReachCapstone.wasm": "sha256-wxs2vXjpn8OwDWKiP5bhd6uGjYa2Y47FxNIAyWQEmBU="
+      "GospelReachCapstone.wasm": "sha256-fWd2UDcgLNYkMRgBurEXiK0kT0tGkPZV8oO0kU2IVOI="
     }
   },
   "cacheBootResources": true,

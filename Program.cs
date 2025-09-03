@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using GospelReachCapstone.Models;
+using GospelReachCapstone.Pages;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -37,5 +38,6 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<AttendanceMemberRecordService>();
 builder.Services.AddScoped<SubDepartmentService>();
 builder.Services.AddScoped<VisitorService>();
+builder.Services.AddScoped<AttendanceVisitorRecordService>();
 
 await builder.Build().RunAsync();
