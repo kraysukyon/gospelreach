@@ -1,10 +1,15 @@
 ﻿@page "/finance"
 @layout LandingLayout
+@inject NavigationManager _nav
 
 <PageTitle>Finance</PageTitle>
 
 
 <div class="page">
+    <div @onclick="ToggleModal" class="BackgroundModal @(isBackgroundVisible ? "show" : "")">
+
+
+    </div>
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
         <div>
@@ -13,7 +18,7 @@
         </div>
 
         <div>
-            <a href="" class="btn btn-primary p-2 text-white link">Add Entry</a>
+            <button @onclick="GoToMens" class="btn btn-primary p-2 text-white">Add Entry</button>
         </div>
     </div>
 
@@ -84,3 +89,19 @@
         </div>
     </div>
 </div>
+
+
+@code{
+    private bool isBackgroundVisible = false;
+
+    //Hides and Shows Background modal
+    private void ToggleModal()
+    {
+        isBackgroundVisible = !isBackgroundVisible;
+    }
+
+    private void GoToMens()
+    {
+        _nav.NavigateTo("finance/mens");
+    }
+}

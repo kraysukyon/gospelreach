@@ -454,7 +454,9 @@
                 hasAttendee: schedule.hasAttendee,
                 attendeeType: schedule.attendeeType,
                 groupId: schedule.groupId,
-                status: schedule.status
+                status: schedule.status,
+                hasAttendance: schedule.hasAttendance,
+                hasFinance: schedule.hasFinance,
             });
 
             return { success: true }
@@ -571,6 +573,41 @@
             return { success: true, data: sched };
         } catch (error) {
             return { success: false, error: error.message };
+        }
+    },
+
+    async getSchedulesWithMissingFinancialRecords(department) {
+        try {
+            // Get today's date in local yyyy-MM-dd
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+            const todayStr = `${year}-${month}-${day}`;
+
+            // Query schedules where date >= today
+            const schedTable = await db.collection("Schedules").where("departmentId", "==", department).where("hasFinance", "==", "false").get();
+            //const schedTable = await db.collection("Schedules").where("departmentId", "==", department)
+            //    .where("startDate", "<=", todayStr).where("hasFinance", "==", false)
+            //    .get();
+
+            const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: sched };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async updateScheduleAttendance(Id, att) {
+        try {
+            await db.collection("Schedules").doc(Id).update({
+                hasAttendee: att
+            });
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
         }
     },
 

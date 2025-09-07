@@ -133,6 +133,7 @@
             </div>
         </div>
     </div>
+
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-3">
         <div>
@@ -323,6 +324,7 @@
     //Open Rename Modal
     private void RenameGroupModal(string Id, string Name)
     {
+        isRenameVisible = true;
         groupId = Id;
         groupName = Name;
         ToggleBackModal();

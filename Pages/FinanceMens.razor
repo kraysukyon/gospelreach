@@ -1,0 +1,330 @@
+﻿@page "/finance/mens"
+@layout LandingLayout
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.ScheduleService _scheduleService
+@using GospelReachCapstone.Models
+
+<PageTitle>Finance Mens</PageTitle>
+
+
+<div class="page">
+    <div @onclick="ToggleModal" class="BackgroundModal @(isBackgroundVisible ? "show" : "")">
+
+        <!--Add Entry-->
+        <div @onclick:stopPropagation class="cards">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <h4 class="fw-bold">
+                        Record a Financial Entry
+                    </h4>
+                    <p class="m-0 c2" style="font-size: 14px">Create an entry</p>
+                </div>
+            </div>
+
+            <!--Type-->
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-2">
+                    <p>Type</p>
+                    @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                </div>
+
+                <select value="@type" class="form-select p-2 mt-2" @onchange="OnTypeChange">
+                    <option value="Income">Income</option>
+                    <option value="Expense">Expense</option>
+                </select>
+            </div>
+
+            <!--Income Type-->
+            <div hidden="@(!isIncome)">
+                <!--Category-->
+                <div class="col2">
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Category</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <select value="@incomeCategory" @onchange="OnIncomeCategoryChanged" class="form-select p-2 mt-2">
+                            <option value="Offering">Offering</option>
+                            <option value="Donation">Donation</option>
+                        </select>
+                    </div>
+
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Amount</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" />
+                    </div>
+                </div>
+
+                <!--Schedule-->
+                <div class="inputs mt-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <p>Event</p>
+                        @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                    </div>
+
+                    <select class="form-select p-2 mt-2">
+                        @foreach (var item in scheduleList)
+                        {
+                            <option value="@item.Id">@item.Title - @item.StartDate</option>
+                        }
+                    </select>
+                </div>
+
+                <!--Donated By-->
+                <div hidden="@(!isDonation)" class="inputs mt-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <p>(Optional) Donated By</p>
+                        @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                    </div>
+
+                    <input class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Name" type="text" />
+                </div>
+
+                <!--Voucher-->
+                <div class="col2">
+
+                    <!--Voucher-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Invoice No.</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Voucher Number" type="text" />
+                    </div>
+
+                    <!--Date-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Date</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" @bind="dateNow" spellcheck="false" type="date" />
+                    </div>
+                </div>
+            </div>
+
+            <!--Expense Type-->
+            <div hidden="@(isIncome)">
+                <!--Category-->
+                <div class="col2">
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Category</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <select class="form-select p-2 mt-2">
+                            <option value="Tithes">Tithes</option>
+                            <option value="PropertyMaintenance">Property Maintenance</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Incendental">Incendental</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Amount</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" />
+                    </div>
+                </div>
+
+                <!--Voucher-->
+                <div class="col2">
+
+                    <!--Voucher-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Voucher No.</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Voucher Number" type="text" />
+                    </div>
+
+                    <!--Date-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Date</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" @bind="dateNow" spellcheck="false" type="date" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2 mt-4" style="justify-self: end;">
+                <button class="btn btn-outline-light px-4 py-1 border border-2" @onclick="ToggleModal">Close</button>
+                <button class="btn btn-primary px-4 py-1 text-white">Create</button>
+            </div>
+            
+
+        </div>
+
+    </div>
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Mens Financial Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Track church finances, donations, and expenses.</p>
+        </div>
+
+        <div>
+            <button @onclick="ToggleModal" class="btn btn-primary p-2 text-white">Add Entry</button>
+        </div>
+    </div>
+
+    <!--Quick Stats Section-->
+    <div class="d-flex flex-column mt-4 mb-2">
+        <div class="d-md-flex d-block justify-content-evenly gap-4">
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Total Income</p>
+                <h3 class="m-0 c2 text-success fw-bold">$8120.50</h3>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Total Expenses</p>
+                <h3 class="m-0 c2 text-danger fw-bold">$5521.00</h3>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
+                <h3 class="m-0 c2 text-success fw-bold">$2599.50</h3>
+            </div>
+        </div>
+    </div>
+
+    <!--Table Section-->
+    <div class="card w-100 mb-3 cards">
+
+        <!--Search Section-->
+        <div class="position-relative mb-4">
+            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+            <input type="text" class="form-control border search" placeholder="Search members..." />
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="thead">Date</th>
+                        <th class="thead">Category</th>
+                        <th class="thead">Description</th>
+                        <th class="thead">Amount</th>
+                        <th class="thead">Type</th>
+                        <th class="thead">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <tr class="table-row">
+                            <td class="table-cell" style="font-weight:500;">2025-04-20</td>
+                            <td class="table-cell c2">Tithes</td>
+                            <td class="table-cell c2">Sunday Collection</td>
+                            <td class="table-cell c2">$3520.50</td>
+                            <td class="table-cell c2">Income</td>
+                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                <!--Edit-->
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
+                                    <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</a>
+                                </div>
+
+                                <!--Delete-->
+                                <button class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+@code{
+    private bool isBackgroundVisible = false;
+    private bool isIncome = true;
+    private DateOnly dateNow = DateOnly.FromDateTime(DateTime.Now);
+    private string type = "Income";
+    private bool isDonation = false;
+    private string incomeCategory = "Offering";
+    private List<Schedule> scheduleList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetSchedules();
+
+    }
+
+    //Hides and Shows Background modal
+    private void ToggleModal()
+    {
+        isBackgroundVisible = !isBackgroundVisible;
+    }
+
+    //Handle Type Change
+    private void OnTypeChange(ChangeEventArgs e)
+    {
+        type = e.Value!.ToString()!;
+
+        if (type == "Income")
+        {
+            isIncome = true;
+        }
+        else
+        {
+            isIncome = false;
+        }
+    }
+
+    //handle Income category change
+    private void OnIncomeCategoryChanged(ChangeEventArgs e)
+    {
+        incomeCategory = e.Value!.ToString()!;
+
+        if (incomeCategory == "Offering")
+        {
+            isDonation = false;
+        }
+        else
+        {
+            isDonation = true;
+        }
+    }
+
+    //Gets Schedules that has missing financial record
+    private async Task GetSchedules()
+    {
+        var result = await _scheduleService.GetScheduleAsync();
+
+        if (result.Success)
+        {
+            if (result.Data != null)
+            {
+                scheduleList = result.Data;
+                await _js.InvokeVoidAsync("alert", "Loaded");
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "not loaded");
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed");
+        }
+    }
+}

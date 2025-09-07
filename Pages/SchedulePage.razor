@@ -32,8 +32,6 @@
                 </div>
             </div>
 
-            
-
             <!--Type-->
             <div class="input mt-4">
                 <div class="title">
@@ -47,6 +45,22 @@
                     <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Service</button>
                     <button @onclick="(() => setType(4))" class="btn type @GetClass(4)"><i class="bi bi-houses"></i> Others</button>
                 </div>
+            </div>
+
+            <!--Host-->
+            <div hidden="@(isDepartmentVisible)" class="input mt-3">
+                <div class="title">
+                    <i class="bi bi-mic"></i>
+                    <p>Host</p>
+                </div>
+
+                <select value="@Department" @onchange="OnHostChange" class="form-select p-2 text-center">
+                    <option value="Senior">Senior</option>
+                    <option value="Womens">Womens</option>
+                    <option value="Mens">Mens</option>
+                    <option value="Youth">Youth</option>
+                </select>
+                
             </div>
 
             <!--Title-->
@@ -261,6 +275,22 @@
                 </div>
             </div>
 
+            <!--Host-->
+            <div hidden="@(isDepartmentVisible)" class="input mt-3">
+                <div class="title">
+                    <i class="bi bi-mic"></i>
+                    <p>Host</p>
+                </div>
+
+                <select value="@Department" @onchange="OnHostChange" class="form-select p-2 text-center">
+                    <option value="Senior">Senior</option>
+                    <option value="Womens">Womens</option>
+                    <option value="Mens">Mens</option>
+                    <option value="Youth">Youth</option>
+                </select>
+
+            </div>
+
             <!--Title-->
             <div class="input mt-3">
                 <div class="title">
@@ -283,7 +313,6 @@
                     <select value="@selectedDepartment" @onchange="OnDepartmentChange" class="form-select text-center p-2">
                         @foreach (var category in Categories)
                         {
-                            <option value="@category.Id">@category.Name</option>
                             <option value="@category.Id">@category.Name</option>
                         }
                     </select>
@@ -486,7 +515,8 @@
                 <p class="fs">@sched.Location</p>
             </div>
 
-            <div class="iconText">
+
+            <div hidden="@(string.IsNullOrEmpty(sched.Description))" class="iconText">
                 <i class="bi bi-list-columns fs"></i>
                 <pre class="form-control border border-0" style="max-height: 200px; overflow-y: auto;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
             </div>
@@ -952,7 +982,6 @@
     private int seekers = 0;
     private DateOnly attDate = new DateOnly(2025,9,6);
 
-
     //Time
     private TimeOnly sTime = new TimeOnly(8,0);
     private TimeOnly eTime = new TimeOnly(17, 0);
@@ -1016,6 +1045,7 @@
     private string? selectedSub;
     private bool isAttendee = true;
     private string Attendee = "All";
+    private string Department = "Senior";
     private bool hasAttendee = true;
     private string? groupId = "KijcjdUahaRhQtGCk9ds";
 
@@ -1039,6 +1069,13 @@
         at = "1234";
     }
 
+    private void OnHostChange(ChangeEventArgs e)
+    {
+        Department = e.Value!.ToString()!;
+        selectedDepartment = Department;
+        selectedSub = string.Empty;
+    }
+
     private void ToggleMembers()
     {
         isVisitor = !isVisitor;
@@ -1053,6 +1090,8 @@
     private async Task ToggleAddSched()
     {
         await ToggleModal();
+        selectedDepartment = "Senior";
+        selectedSub = "HolinessMeeting";
         isAddSched = true;
     }
 
@@ -1113,6 +1152,7 @@
             {
                 Id = "Youth", Name = "Youth", SubCategories = new()
                 {
+                    new SubCat { Id = "Torchbearer", Name = "Torchbearer" },
                     new SubCat { Id = "CorpCadet", Name = "Corp Cadet" },
                     new SubCat { Id = "SundaySchool", Name = "Sunday School" },
                     new SubCat { Id = "JuniorSoldier", Name = "Junior Soldier" },
@@ -1160,10 +1200,7 @@
 
         }
 
-        // var category = Categories.FirstOrDefault(c => c.Id == selectedSub);
-        // SubCategories = category?.SubCategories;
-        // selectedSub = ""; 
-
+        
     }
 
     //Save to local list
@@ -1283,40 +1320,48 @@
 
     private async Task GetGroupMembers(string Id)
     {
-        var result = await _groupMemberService.GetGroupMembersByGroupIdAsync(Id);
-        if(result.Success)
+        if (!string.IsNullOrEmpty(Id))
         {
-            var Ids = result.Data.Select(u => u.MemberId).ToHashSet();
-
-            if (Ids != null)
+            var result = await _groupMemberService.GetGroupMembersByGroupIdAsync(Id);
+            if (result.Success)
             {
-                var results = await _memberService.GetMembersAsync();
-                if (results.Success)
-                {
-                    var members = results.Data.Where(u => Ids.Contains(u.Id)).ToList();
+                var Ids = result.Data.Select(u => u.MemberId).ToHashSet();
 
-                    groupMemberList = members.Select(u => new GroupMemberSelection
+                if (Ids != null)
+                {
+                    var results = await _memberService.GetMembersAsync();
+                    if (results.Success)
                     {
-                        isSelected = true,
-                        Member = u
-                    }).ToList();
+                        var members = results.Data.Where(u => Ids.Contains(u.Id)).ToList();
+
+                        groupMemberList = members.Select(u => new GroupMemberSelection
+                        {
+                            isSelected = true,
+                            Member = u
+                        }).ToList();
+                    }
+                    else
+                    {
+                        await _js.InvokeVoidAsync("alert", "Failed to get members: " + results.Error);
+                    }
                 }
                 else
                 {
-                    await _js.InvokeVoidAsync("alert", "Failed to get members: " + results.Error);
+                    groupMemberList.Clear();
                 }
+
+
             }
             else
             {
-                groupMemberList.Clear();
+                await _js.InvokeVoidAsync("alert", "Failed to get group: " + result.Error);
             }
-
-
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to get group: " + result.Error );
+            await _js.InvokeVoidAsync("alert", "Group id is null or empty");
         }
+
     }
 
     private async Task GetVisitors()
@@ -1500,7 +1545,6 @@
         {
             case 1:
                 isSub = false;
-                selectedDepartment = string.Empty;
                 selectedSub = string.Empty;
                 eventCategory = "Event";
                 subCategory = string.Empty;
@@ -1511,11 +1555,11 @@
             case 2:
                 eventCategory = "Department";
                 isDepartmentVisible = true;
+                selectedDepartment = "Senior";
                 eventTitle = "Holiness Meeting";
                 isDepartment = true;
                 GetList();
-                selectedDepartment = "Senior";
-                selectedSub = "Holiness Meeting";
+                selectedSub = "HolinessMeeting";
                 var category = Categories.FirstOrDefault(u => u.Id == "Senior");
 
                 if (category != null)
@@ -1526,7 +1570,6 @@
             case 3:
                 isSub = false;
                 eventCategory = "Service";
-                selectedDepartment = string.Empty;
                 selectedSub = string.Empty;
                 subCategory = string.Empty;
                 isDepartmentVisible = false;
@@ -1536,7 +1579,6 @@
             case 4:
                 isSub = false;
                 eventCategory = "Others";
-                selectedDepartment = string.Empty;
                 selectedSub = string.Empty;
                 subCategory = string.Empty;
                 isDepartmentVisible = false;
@@ -1545,6 +1587,8 @@
                 break;
 
         }
+
+        
     }
 
     private string GetClass(int indexs)
@@ -1613,9 +1657,9 @@
         isView = false;
         isOptionVisible = false;
         isUpdateView = true;
-
-
         await GetGroupName();
+
+        
     }
 
     private void Init()
@@ -1737,6 +1781,7 @@
                 schedLocation = string.Empty;
                 schedCategory = string.Empty;
                 selectedDepartment = string.Empty;
+                Department = "Senior";
                 selectedSub = string.Empty;
                 isAttendee = true;
                 isNotify = true;
@@ -1791,32 +1836,48 @@
                     GetClass(4);
                     break;
             }
+            Department = sched.DepartmentId;
             selectedDepartment = sched.DepartmentId;
 
-            if (!string.IsNullOrEmpty(selectedDepartment))
+            if (sched.DepartmentId == "Mens" && sched.CategoryId == "Department")
             {
-                switch (selectedDepartment)
-                {
-                    case "Senior":
-
-                        break;
-                    case "Womens":
-                        break;
-                    case "Mens":
-                        selectedSub = string.Empty;
-                        isDepartment = true;
-                        SubCategories = new();
-                        break;
-                    case "Youth":
-                        break;
-                }
-
-                var cat = Categories.FirstOrDefault(u => u.Id == selectedDepartment);
-                if (cat != null)
-                {
-                    SubCategories = cat.SubCategories;
-                }
+                selectedSub = string.Empty;
+                isDepartment = true;
+                SubCategories = new();
             }
+
+            var cat = Categories.FirstOrDefault(u => u.Id == selectedDepartment);
+            if (cat != null)
+            {
+                SubCategories = cat.SubCategories;
+            }
+
+            // if (!string.IsNullOrEmpty(selectedDepartment))
+            // {
+            //     switch (selectedDepartment)
+            //     {
+            //         case "Senior":
+            //             Department = selectedDepartment;
+            //             break;
+            //         case "Womens":
+            //             Department = selectedDepartment;
+            //             break;
+            //         case "Mens":
+            //             selectedSub = string.Empty;
+            //             isDepartment = true;
+            //             SubCategories = new();
+            //             break;
+            //         case "Youth":
+            //             Department = selectedDepartment;
+            //             break;
+            //     }
+
+            //     var cat = Categories.FirstOrDefault(u => u.Id == selectedDepartment);
+            //     if (cat != null)
+            //     {
+            //         SubCategories = cat.SubCategories;
+            //     }
+            // }
 
             eventTitle = sched.Title;
             selectedSub = sched.DivisionId;
@@ -1870,6 +1931,8 @@
                 hasAttendee = false;
                 isAttendee = false;
             }
+
+            
         }
         else
         {
@@ -2158,6 +2221,12 @@
                         await _js.InvokeVoidAsync("alert", "Failed to update visitors record: " + removeAttendance.Error);
                     }
 
+                    var schedResult = await _schedule.UpdateScheduleAttendance(sched.Id, true);
+                    if (!schedResult.Success)
+                    {
+                        await _js.InvokeVoidAsync("alert", "Failed to update schedule attendee: " + schedResult.Error);
+                    }   
+
 
                     localvisitList.Clear();
                     await GetAttendanceList();
@@ -2248,6 +2317,7 @@
     private async Task GetGroupName()
     {
         var result = await _group.GetGroupsAsync();
+
 
         if (result.Success)
         {

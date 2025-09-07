@@ -119,6 +119,31 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        public async Task<ScheduleResult> GetSchedulesWithMissingFinanceByDepartment(string DepartmentName)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getSchedulesWithMissingFinancialRecords", DepartmentName);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
         //Update Schedule
         public async Task<ScheduleResult> UpdateScheduleAsync(string Id, Schedule sched)
         {
@@ -128,6 +153,41 @@ namespace GospelReachCapstone.Services
                 return result;
             }
             catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch(Exception ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Update Schedule
+        public async Task<ScheduleResult> UpdateScheduleAttendance(string Id, bool hasAttendance)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.updateScheduleAttendance", Id, hasAttendance);
+                return result;
+            }
+            
+            catch (JSException jsEx)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = jsEx.Message
+                };
+            }
+            catch (Exception ex)
             {
                 return new ScheduleResult
                 {

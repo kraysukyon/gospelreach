@@ -106,7 +106,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadFiles();
+        try
+        {
+            await LoadFiles();
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", $"Error loading files: {ex.Message}");
+        }
+
     }
 
     async Task HandleFile(InputFileChangeEventArgs e)

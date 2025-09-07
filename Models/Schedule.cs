@@ -14,10 +14,12 @@
         public string TimeOption { get; set; } = "Custom";
         public string Location { get; set; }
         public string Description { get; set; }
-        public bool HasAttendee { get; set; }
+        public bool HasAttendee { get; set; } = false;
         public string AttendeeType { get; set; }
         public string GroupId { get; set; }
         public string Status { get; set; }
         public bool isPublic { get; set; }
+        public bool hasAttendance { get; set; } = false;
+        public bool hasFinance { get; set; } = false;
     }
 }
