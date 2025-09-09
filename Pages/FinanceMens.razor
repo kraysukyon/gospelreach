@@ -556,7 +556,7 @@
 
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
-                <h3 class="m-0 c2 text-success fw-bold">₱@currentBalance.ToString("N2")</h3>
+                <h3 class="m-0 c2 text-primary fw-bold">₱@currentBalance.ToString("N2")</h3>
             </div>
         </div>
     </div>
@@ -700,7 +700,7 @@
                 await _js.InvokeVoidAsync("alert", "data is null");
             }
 
-            
+
         }
         else
         {
@@ -1019,6 +1019,11 @@
                 }
             }
 
+            if (mensRecord.Category == "Donation" && mensRecord.Amount == 0)
+            {
+                validationResults.Add("-Donation amount must be greater than 0");
+            }
+
 
         }
         else
@@ -1042,6 +1047,11 @@
                 {
                     await _js.InvokeVoidAsync("alert", check.Error);
                 }
+            }
+
+            if (mensRecord.Amount == 0)
+            {
+                validationResults.Add("-Expense amount must be greater than 0");
             }
 
             if (mensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
