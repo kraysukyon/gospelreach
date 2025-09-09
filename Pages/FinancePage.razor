@@ -1,6 +1,7 @@
 ﻿@page "/finance"
 @layout LandingLayout
 @inject NavigationManager _nav
+@inject ToastService ToastService
 
 <PageTitle>Finance</PageTitle>
 
@@ -93,6 +94,7 @@
     <button class="btn btn-primary p-2 text-white">Womens</button>
     <button @onclick="GoToMens" class="btn btn-primary p-2 text-white">Mens</button>
     <button class="btn btn-primary p-2 text-white">Youth</button>
+
 </div>
 
 

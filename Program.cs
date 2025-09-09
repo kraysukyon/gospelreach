@@ -40,5 +40,6 @@ builder.Services.AddScoped<SubDepartmentService>();
 builder.Services.AddScoped<VisitorService>();
 builder.Services.AddScoped<AttendanceVisitorRecordService>();
 builder.Services.AddScoped<FinancialMensService>();
+builder.Services.AddScoped<ToastService>();
 
 await builder.Build().RunAsync();

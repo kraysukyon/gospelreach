@@ -25,7 +25,7 @@
 
             @if (validationResults.Any())
             {
-                <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex flex-column justify-content-between mb-3">
                     @foreach (string a in validationResults)
                     {
                         <p class="text-danger">@a</p>
@@ -683,14 +683,14 @@
     //Get Sum
     private async Task GetAllFinancialData()
     {
+        //query to firebase
         var result = await _financialMensService.GetAllFinancialRecordAsync();
 
         if (result.Success)
         {
-
-
             if (result.Data != null)
             {
+                //assign to local variables
                 totalIncome = result.Data.Where(u => u.Type == "Income").Sum(u => u.Amount);
                 totalExpense = result.Data.Where(u => u.Type == "Expense").Sum(u => u.Amount);
                 currentBalance = totalIncome - totalExpense;
@@ -699,11 +699,10 @@
             {
                 await _js.InvokeVoidAsync("alert", "data is null");
             }
-
-
         }
         else
         {
+            //shows error
             await _js.InvokeVoidAsync("alert", result.Error);
         }
     }
@@ -737,12 +736,25 @@
                     }
                 }
             }
+
+            if (updateMensRecord.Category == "Donation")
+            {
+                if (updateMensRecord.Amount == 0)
+                {
+                    updateValidationResults.Add("-Donation amount must be greater than 0");
+                }
+            }
         }
         else
         {
             if (updateMensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
             {
                 updateValidationResults.Add("-Voucher Date cannot be greater than date today");
+            }
+
+            if (updateMensRecord.Amount == 0)
+            {
+                updateValidationResults.Add("-Expense amount must be greater than 0");
             }
         }
 
@@ -879,13 +891,15 @@
     //Get details
     private async Task GetDetails(string Id)
     {
-        ToggleModal();
+        ToggleModal(); //Opens background modal
         isLoadingModal = true;
         mensRecord = new();
 
+        //check financial using Id
         var result = await _financialMensService.GetFinancialRecordByIdAsync(Id);
         if (result.Success)
         {
+            //checks if query failed
             if (!string.IsNullOrEmpty(result.Error))
             {
                 isLoadingModal = false;
@@ -895,6 +909,7 @@
                 return;
             }
 
+            //pass attributes to local
             mensRecord = result.FinanceMens;
             if (!string.IsNullOrEmpty(result.FinanceMens.ScheduleId))
             {
@@ -912,31 +927,9 @@
         else
         {
             ToggleModal();
+            //shows error
             await _js.InvokeVoidAsync("alert", result.Error);
         }
-        // var entry = financeMensList.FirstOrDefault(u => u.Id == Id);
-
-        // if (entry != null)
-        // {
-        //     mensRecord = entry;
-
-        //     if (!string.IsNullOrEmpty(entry.ScheduleId))
-        //     {
-        //         var sched = await _scheduleService.GetScheduleByIdAsync(entry.ScheduleId);
-
-        //         if (sched.Success)
-        //         {
-        //             scheduleDisplay = $"{sched.Schedule.Title} - {sched.Schedule.StartDate.ToString("MMM dd, yyyy")}";
-
-        //         }
-        //         else
-        //         {
-        //             await _js.InvokeVoidAsync("alert", sched.Success);
-        //         }
-        //     }
-        // }
-        // isLoadingModal = false;
-        // isViewModal = true;
     }
 
     //Get Financial Records
@@ -1114,8 +1107,11 @@
     //Open Add Entry
     private async Task ToggleAddEntry()
     {
+        //shows modals
         ToggleModal();
         isLoadingModal = true;
+
+        //query schedules to populate for offering
         await GetSchedules();
         isLoadingModal = false;
         isAddModal = true;
