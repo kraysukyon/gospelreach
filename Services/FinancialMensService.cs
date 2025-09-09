@@ -38,6 +38,32 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        //get all financial record
+        public async Task<FinancialMensResult> GetAllFinancialRecordAsync()
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<FinancialMensResult>("firestoreFunctions.getAllFinance");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new FinancialMensResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new FinancialMensResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
         //get financial datas by date range
         public async Task<FinancialMensResult> GetFinancialDataByDateRange(DateOnly date1, DateOnly date2)
         {

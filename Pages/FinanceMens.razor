@@ -136,7 +136,7 @@
                             <option value="Tithes">Tithes</option>
                             <option value="PropertyMaintenance">Property Maintenance</option>
                             <option value="Transportation">Transportation</option>
-                            <option value="Incendental">Incendental</option>
+                            <option value="Incidental">Incidental</option>
                             <option value="Others">Others</option>
                         </select>
                     </div>
@@ -546,17 +546,17 @@
         <div class="d-md-flex d-block justify-content-evenly gap-4">
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">Total Income</p>
-                <h3 class="m-0 c2 text-success fw-bold">$8120.50</h3>
+                <h3 class="m-0 c2 text-success fw-bold">₱@totalIncome.ToString("N2")</h3>
             </div>
 
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">Total Expenses</p>
-                <h3 class="m-0 c2 text-danger fw-bold">$5521.00</h3>
+                <h3 class="m-0 c2 text-danger fw-bold">₱@totalExpense.ToString("N2")</h3>
             </div>
 
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
-                <h3 class="m-0 c2 text-success fw-bold">$2599.50</h3>
+                <h3 class="m-0 c2 text-success fw-bold">₱@currentBalance.ToString("N2")</h3>
             </div>
         </div>
     </div>
@@ -652,6 +652,9 @@
     private bool isUpdating = false;
     private string searchString { get; set; } = string.Empty;
     private string updateScheduleName = string.Empty;
+    private decimal totalIncome = 0m;
+    private decimal totalExpense = 0m;
+    private decimal currentBalance = 0m;
 
 
     //modals
@@ -674,6 +677,35 @@
         message = "Fetching data...";
         await GetSchedules();
         await GetDataByDateRange(dateTo, dateFrom);
+        await GetAllFinancialData();
+    }
+
+    //Get Sum
+    private async Task GetAllFinancialData()
+    {
+        var result = await _financialMensService.GetAllFinancialRecordAsync();
+
+        if (result.Success)
+        {
+
+
+            if (result.Data != null)
+            {
+                totalIncome = result.Data.Where(u => u.Type == "Income").Sum(u => u.Amount);
+                totalExpense = result.Data.Where(u => u.Type == "Expense").Sum(u => u.Amount);
+                currentBalance = totalIncome - totalExpense;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "data is null");
+            }
+
+            
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
     }
 
     //Update Financial Record
@@ -733,6 +765,7 @@
                 isUpdating = false;
                 isUpdateModal = false;
                 isFailedToUpdateModal = true;
+                await GetAllFinancialData();
                 await GetDataByDateRange(dateTo, dateFrom);
                 updateMensRecord = new();
                 return;
@@ -740,6 +773,7 @@
             isUpdating = false;
             isUpdateModal = false;
             isUpdateSuccessModal = true;
+            await GetAllFinancialData();
             await GetDataByDateRange(dateTo, dateFrom);
             updateMensRecord = new();
         }
@@ -822,12 +856,14 @@
         if (result.Success)
         {
             ToggleModal();
+            await GetAllFinancialData();
             await GetDataByDateRange(dateTo, dateFrom);
         }
         else
         {
             isRemoveModal = false;
             isFailedToRemoveModal = true;
+            await GetAllFinancialData();
             await GetDataByDateRange(dateTo, dateFrom);
         }
     }
@@ -854,6 +890,7 @@
             {
                 isLoadingModal = false;
                 isFailedToFetchModal = true;
+                await GetAllFinancialData();
                 await GetDataByDateRange(dateTo, dateFrom);
                 return;
             }
@@ -1034,6 +1071,7 @@
 
             isAddModal = false;
             isAddedSuccessModal = true;
+            await GetAllFinancialData();
             await GetDataByDateRange(dateTo, dateFrom);
             mensRecord = new();
         }

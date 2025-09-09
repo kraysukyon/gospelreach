@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "GospelReachCapstone",
   "resources": {
-    "hash": "sha256-MHV3rLUDWW6DcZ4Vo/3nJ1M8H9Z48k9QakoONfToT4g=",
+    "hash": "sha256-TjvbnEbgUH4YZFsx2CxwQiL/gB/wR8twzAb7jSnv2FQ=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-7j8Y9I6JgJ/4/1qxU6eOJPc3NpvZVd7ILs8OdPuQuTI="
     },
@@ -9,7 +9,7 @@
       "dotnet.runtime.js": "sha256-91CDXCvYTrWqTidtPWAY6j9w/EQtJKjSj9VneQwl020="
     },
     "wasmNative": {
-      "dotnet.native.wasm": "sha256-nX3Um6nseVaNPoDi1vF3InH8owTkkb7fVh0NOmDFqh0="
+      "dotnet.native.wasm": "sha256-if9IoK0A3tB4RmEQR2XbajCPolegO/LDhEUy6STL2Mk="
     },
     "icu": {
       "icudt_CJK.dat": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
@@ -37,7 +37,7 @@
       "System.Collections.wasm": "sha256-DUbI2SSmD8pD11LGEKBo3HHwDFSY2kyUz5EKBB47Jfk=",
       "System.ComponentModel.wasm": "sha256-TyezHEThutqGuIZuOo3sM6MoYCMsOGpN4I7UnjaWnpc=",
       "System.Console.wasm": "sha256-wknkLrrXVMsIXAhjeJVkDlRXKP9NFkmJ+OHYsKBQWV8=",
-      "System.Linq.wasm": "sha256-KLVPFHrfox7iK5Fu7D/Oo5lD3iRH80D8CDekGcib9mg=",
+      "System.Linq.wasm": "sha256-2lEEOg0qpLy8IvaXZddJFz5agFruiZVGuQtpjp42Aec=",
       "System.Memory.wasm": "sha256-LsC/U/26RIsOOkeGwA0y/KANnsKSwXONLsyIheekM6w=",
       "System.Net.Http.Json.wasm": "sha256-c8KWCaHB2YvT3EL0HSvBIMwunIfxDA/zd3OzH2jrTa0=",
       "System.Net.Http.wasm": "sha256-OwUxsQ4V9kVFyd1WbousW9eiG9Vk+InwGDZaYWR+cxQ=",
@@ -48,8 +48,8 @@
       "System.Text.Encodings.Web.wasm": "sha256-N0UwwllgaRlnfzSpihCAslL0wwcJXBKkIjcCZEHNXv8=",
       "System.Text.Json.wasm": "sha256-MhPsK7a0kKmkzTWCS7GDFBlN/72bNVqMC9Mt+6R3lk0=",
       "System.Text.RegularExpressions.wasm": "sha256-KIFkQNM9DAdZ+bcfnfBzZZ1XCKki0+dF/0o4P6B/auo=",
-      "System.Private.CoreLib.wasm": "sha256-hRi9qiI01BLH2igSqNQP/oNlXszium5C5hWai4djjcs=",
-      "GospelReachCapstone.wasm": "sha256-+OMPERQtNnY44iIWsaSdcPGkFapW6og36EIJ+CgBGjI="
+      "System.Private.CoreLib.wasm": "sha256-11FJlz/a7J87sXq7T6GIieFKcx6i+5q4hjYHGBC5EWk=",
+      "GospelReachCapstone.wasm": "sha256-tfkIoeJrwkqMuTTeVmKQX5ENBQXjzAIdfPdVZ2HG93g="
     }
   },
   "cacheBootResources": true,

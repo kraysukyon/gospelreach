@@ -891,6 +891,17 @@
         }
     },
 
+    async getAllFinance() {
+        try {
+            const docRef = await db.collection("FinanceMens").get();
+            const doc = docRef.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: doc };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
     async getFinanceMensById(Id) {
         try {
             const docRef = db.collection("FinanceMens").doc(Id);
