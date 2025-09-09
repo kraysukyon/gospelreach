@@ -153,7 +153,7 @@
 
             return { success: true, data: attMember }
         } catch (error) {
-            return { success: false, error: error.message}
+            return { success: false, error: error.message }
         }
 
     },
@@ -492,24 +492,35 @@
     async getSchedule() {
         try {
             const schedTable = await db.collection("Schedules").get();
-            const sched = schedTable.docs.map(u => ({id: u.id, ... u.data()}));
+            const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
 
             return { success: true, data: sched }
         } catch (error) {
-            return { success: false, error: error.message}
+            return { success: false, error: error.message }
         }
     },
 
-    //async getScheduleByStatus() {
-    //    try {
-    //        const schedTable = await db.collection("Schedules").get();
-    //        const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+    async getScheduleById(schedId) {
+        try {
+            const docRef = db.collection("Schedules").doc(schedId);
+            const doc = await docRef.get();
 
-    //        return {success: true, data: sched }
-    //    } catch (error) {
-    //        return { success: false, error: error.message }
-    //    }
-    //},
+            if (!doc.exists) {
+                //console.log("No document found for ID:", schedId); // 👈 log missing doc
+                return { success: false, error: "Event does not exist!" }
+            }
+            else {
+                const scheduleData = { id: doc.id, ...doc.data() };
+                //console.log("Document found:", scheduleData); // 👈 log doc data
+                return { success: true, Schedule: scheduleData };
+            }
+            
+        } catch (error) {
+            console.error("Error fetching schedule:", error); // 👈 log error
+            return { success: false, error: error.message }
+        }
+    },
+
     async getUpcomingSchedules() {
         try {
             // Get today's date in local yyyy-MM-dd
@@ -586,10 +597,12 @@
             const todayStr = `${year}-${month}-${day}`;
 
             // Query schedules where date >= today
-            const schedTable = await db.collection("Schedules").where("departmentId", "==", department).where("hasFinance", "==", "false").get();
-            //const schedTable = await db.collection("Schedules").where("departmentId", "==", department)
-            //    .where("startDate", "<=", todayStr).where("hasFinance", "==", false)
-            //    .get();
+
+            const schedTable = await db.collection("Schedules")
+                .where("departmentId", "==", department)
+                .where("startDate", "<=", todayStr)
+                .where("hasFinance", "==", false)
+                .get();
 
             const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
 
@@ -641,7 +654,19 @@
             await db.collection("Schedules").doc(Id).delete();
             return { success: true }
         } catch (error) {
-            return { success: false, error: error.message}
+            return { success: false, error: error.message }
+        }
+    },
+
+    async updateScheduleFinance(Id, finance) {
+        try {
+            await db.collection("Schedules").doc(Id).update({
+                hasFinance: finance,
+            });
+
+            return {success: true }
+        } catch (error) {
+            return {success: false, error: error.message}
         }
     },
 
@@ -688,7 +713,7 @@
                 name: group.name,
             });
 
-            return {success: true, Id: docref.id}
+            return { success: true, Id: docref.id }
         } catch (error) {
             return { success: false, error: error.message }
         }
@@ -705,7 +730,7 @@
 
             return { success: true, group: { id: doc.id, ...doc.data() } }
         } catch (error) {
-            return {success: false, error: error.message}
+            return { success: false, error: error.message }
         }
     },
 
@@ -717,7 +742,7 @@
 
             return { success: true }
         } catch (error) {
-            return { success: false, error: error.message}
+            return { success: false, error: error.message }
         }
     },
 
@@ -735,14 +760,14 @@
                 await batch.commit();
 
                 await db.collection("Groups").doc(id).delete();
-                
+
 
                 return { success: true }
             }
 
             return { success: false, error: "Group not found" };
         } catch (error) {
-            return {success: false, error: error.message}
+            return { success: false, error: error.message }
         }
     },
 
@@ -756,10 +781,10 @@
                     name: groupName
                 });
 
-                return {success: true}
+                return { success: true }
             }
 
-            return {success: false, error: "Group does not exist"}
+            return { success: false, error: "Group does not exist" }
         } catch (error) {
             return { success: false, error: error.message }
         }
@@ -771,12 +796,12 @@
             const groupMembertable = await db.collection("GroupMembers").where("groupId", "==", id).get();
 
             if (groupMembertable.empty) {
-                return { success: true, error: "No members found for this group"}
+                return { success: true, error: "No members found for this group" }
             }
 
             const groupMember = groupMembertable.docs.map(u => ({ id: u.id, ...u.data() }));
 
-            return {success: true, data: groupMember}
+            return { success: true, data: groupMember }
         } catch (error) {
             return { success: false, error: error.message }
         }
@@ -792,7 +817,7 @@
 
             return { success: true }
         } catch (error) {
-            return {success: false, error:error.message}
+            return { success: false, error: error.message }
         }
     },
 
@@ -811,7 +836,7 @@
         }
     },
 
-    //==========================================Finance Section=================================================
+
 
 
     //==========================================Visitor Management Section=================================================
@@ -841,6 +866,143 @@
             return { success: true, id: vis.id }
         } catch (error) {
             return { success: false, error: error.message }
+        }
+    },
+
+
+    //==========================================Finance Section=================================================
+    async addFinanceMens(mens) {
+        try {
+            await db.collection("FinanceMens").add({
+                type: mens.type,
+                category: mens.category,
+                amount: mens.amount,
+                scheduleId: mens.scheduleId,
+                donator: mens.donatorName,
+                invoiceNumber: mens.invoiceNumber,
+                voucherNumber: mens.voucherNumber,
+                date: mens.date,
+                createdAt: mens.createdAt
+            });
+
+            return { success: true }
+        } catch (error) {
+            return { success: true, error: error.message }
+        }
+    },
+
+    async getFinanceMensById(Id) {
+        try {
+            const docRef = db.collection("FinanceMens").doc(Id);
+            const doc = await docRef.get();
+
+            if (!doc.exists) {
+                return { success: true, error: "Record does not exist" };
+            }
+            else {
+                const data = {id: doc.id, ...doc.data()}
+                return { success: true, FinanceMens: data };
+            }
+
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async removeFinanceMens(Id) {
+        try {
+            const docRef = db.collection("FinanceMens").doc(Id);
+            const doc = await docRef.get();
+
+            if (!doc.exists) {
+                return { success: false, error: "Record not found" }
+            }
+
+            await docRef.delete();
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getFinancialRecordByDateRange(date1, date2) {
+        try {
+            // Expecting date1 and date2 as "yyyy-MM-dd" strings
+            const financeMensTable = await db.collection("FinanceMens")
+                .where("date", ">=", date2)
+                .where("date", "<=", date1)
+                .get();
+
+            const finance = financeMensTable.docs.map(items => ({
+                id: items.id,
+                ...items.data()
+            }));
+
+            return { success: true, data: finance };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async checkReceiptNumber(invoice) {
+        try {
+            // 1. Check invoice numbers
+            const invoiceSnap = await db
+                .collection("FinanceMens")
+                .where("invoiceNumber", "==", invoice)
+                .get();
+
+            if (!invoiceSnap.empty) {
+                return { success: true, error: "-Invoice number already exists." };
+            }
+
+            // 2. Check voucher numbers
+            const voucherSnap = await db
+                .collection("FinanceMens")
+                .where("voucherNumber", "==", invoice)
+                .get();
+
+            if (!voucherSnap.empty) {
+                return { success: true, error: "-Voucher number already exists." };
+            }
+
+            // If neither exists
+            return { success: true };
+
+        } catch (error) {
+            return { success: false, error: "Error checking number: " + error.message };
+        }
+    },
+
+
+    async updateFinanceMensRecord(Id, mens) {
+        try {
+            const docRef = db.collection("FinanceMens").doc(Id);
+            const doc = await docRef.get();
+
+            if (!doc.exists) {
+                return { success: true, error: "Record does not exist" };
+            }
+            else {
+                await docRef.update({
+                    type: mens.type,
+                    category: mens.category,
+                    amount: mens.amount,
+                    scheduleId: mens.scheduleId,
+                    donator: mens.donatorName,
+                    invoiceNumber: mens.invoiceNumber,
+                    voucherNumber: mens.voucherNumber,
+                    date: mens.date,
+                    lastModifiedDate: mens.lastModifiedDate,
+                    lastModifiedBy: mens.lastModifiedBy
+                });
+
+                return { success: true };
+            }
+
+            
+        } catch (error) {
+            return { success: false, error: error.message };
         }
     },
 }

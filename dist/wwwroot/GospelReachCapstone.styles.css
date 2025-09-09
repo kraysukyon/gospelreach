@@ -2615,7 +2615,7 @@ a[b-jlltcoygih] {
     gap: 1.5rem;
 }
 
-.link[b-jlltcoygih] {
+.cursor[b-jlltcoygih] {
     cursor: pointer;
 }
 
@@ -2629,6 +2629,18 @@ a[b-jlltcoygih] {
     background-color: #FFF;
     overflow-y: auto;
     width: 500px;
+}
+
+.helperModal[b-jlltcoygih] {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 24px;
+    max-height: calc(100vh - 20vh);
+    background-color: #FFF;
+    overflow-y: auto;
+    width: 400px;
 }
 
     .cards:hover[b-jlltcoygih] {
@@ -2671,6 +2683,13 @@ a[b-jlltcoygih] {
     padding: 30px 24px 20px 24px;
     font-size: .875rem;
     line-height: 1.25rem;
+}
+
+.details[b-jlltcoygih]{
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+    margin-bottom:.5rem;
 }
 
 @media (max-width: 768px) {

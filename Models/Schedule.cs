@@ -1,7 +1,7 @@
 ﻿namespace GospelReachCapstone.Models
 {
     public class Schedule
-    {
+    { 
         public string Id { get; set; }
         public string Title { get; set; }
         public string CategoryId { get; set; }

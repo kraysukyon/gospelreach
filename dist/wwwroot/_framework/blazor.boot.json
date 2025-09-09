@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "GospelReachCapstone",
   "resources": {
-    "hash": "sha256-cJBzWOn2M4uROeL3PUZFzMq0PiA3M8gqEkX7wWsKTvs=",
+    "hash": "sha256-MHV3rLUDWW6DcZ4Vo/3nJ1M8H9Z48k9QakoONfToT4g=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-7j8Y9I6JgJ/4/1qxU6eOJPc3NpvZVd7ILs8OdPuQuTI="
     },
@@ -9,7 +9,7 @@
       "dotnet.runtime.js": "sha256-91CDXCvYTrWqTidtPWAY6j9w/EQtJKjSj9VneQwl020="
     },
     "wasmNative": {
-      "dotnet.native.wasm": "sha256-jE5toMabYYodBDHnsfvjNfHmvYAC0AUZwqSlVq9GKOc="
+      "dotnet.native.wasm": "sha256-nX3Um6nseVaNPoDi1vF3InH8owTkkb7fVh0NOmDFqh0="
     },
     "icu": {
       "icudt_CJK.dat": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
@@ -18,7 +18,7 @@
     },
     "coreAssembly": {},
     "assembly": {
-      "Microsoft.AspNetCore.Components.wasm": "sha256-GV8TmTG1f/ulS5hu955kyW6jkuQMv3F5lnmbsTDcjBk=",
+      "Microsoft.AspNetCore.Components.wasm": "sha256-zLCudj10g01+W7HSmjAPoHPQrjb67G7H+Vvne75CVy4=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-ryUiakznN8ldMgC+9SoBeYa6m41ZTg5sjn3HolGJsbA=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-Yw7lDGgoja1rSApqAtRPTcP1u0VaVc0TOXJLJ7GpzKE=",
       "Microsoft.Extensions.Configuration.wasm": "sha256-P+fSx2J5oXT22amIrphIKk4t7m5U80KpC2bz+QNRPlg=",
@@ -48,8 +48,8 @@
       "System.Text.Encodings.Web.wasm": "sha256-N0UwwllgaRlnfzSpihCAslL0wwcJXBKkIjcCZEHNXv8=",
       "System.Text.Json.wasm": "sha256-MhPsK7a0kKmkzTWCS7GDFBlN/72bNVqMC9Mt+6R3lk0=",
       "System.Text.RegularExpressions.wasm": "sha256-KIFkQNM9DAdZ+bcfnfBzZZ1XCKki0+dF/0o4P6B/auo=",
-      "System.Private.CoreLib.wasm": "sha256-Zj0f82FabxE3VydQJyDnOT4S7zTfiYNPUtHOGWz7KgA=",
-      "GospelReachCapstone.wasm": "sha256-h56RzoahQEsgUUcWyEFbzYI2gWMbsbSzuJrQ48w5RAU="
+      "System.Private.CoreLib.wasm": "sha256-hRi9qiI01BLH2igSqNQP/oNlXszium5C5hWai4djjcs=",
+      "GospelReachCapstone.wasm": "sha256-+OMPERQtNnY44iIWsaSdcPGkFapW6og36EIJ+CgBGjI="
     }
   },
   "cacheBootResources": true,

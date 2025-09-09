@@ -197,6 +197,32 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        public async Task<ScheduleResult> UpdateScheduleFinanceById(string Id, bool hasFinance)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.updateScheduleFinance", Id, hasFinance);
+                return result;
+            }
+
+            catch (JSException jsEx)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = jsEx.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
         //Remove Schedule
         public async Task<ScheduleResult> RemoveScheduleAsync(string Id)
         {
@@ -206,6 +232,32 @@ namespace GospelReachCapstone.Services
                 return result;
             }
             catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Get Schedule By Id
+        public async Task<ScheduleResult> GetScheduleByIdAsync(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getScheduleById", Id);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
             {
                 return new ScheduleResult
                 {
@@ -234,5 +286,6 @@ namespace GospelReachCapstone.Services
         public bool Success { get; set; }
         public List<Schedule> Data { get; set; }
         public string Error { get; set; }
+        public Schedule Schedule { get; set; }
     }
 }
