@@ -2715,6 +2715,62 @@ a[b-jlltcoygih] {
         flex-direction: column;
     }
 }
+/* /Pages/FinanceMensReport.razor.rz.scp.css */
+*[b-p96vmlhkvq] {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: black;
+    font-family: "Inter", sans-serif;
+}
+
+.BackgroundModal[b-p96vmlhkvq] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2001;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0,0,0,.5);
+    display: none;
+}
+
+.show[b-p96vmlhkvq] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart[b-p96vmlhkvq]{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2rem;
+    margin-top:2rem;
+}
+
+@media (max-width: 768px) {
+    .page[b-p96vmlhkvq] {
+        display: block;
+    }
+
+    .header a[b-p96vmlhkvq] {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .cards[b-p96vmlhkvq]{
+        padding: 0;
+    }
+
+    .planning[b-p96vmlhkvq] {
+        display: block;
+    }
+
+    .stats[b-p96vmlhkvq] {
+        display: flex;
+        flex-direction: column;
+    }
+}
 /* /Pages/FinancePage.razor.rz.scp.css */
 *[b-wf2niajy5v] {
     padding: 0;

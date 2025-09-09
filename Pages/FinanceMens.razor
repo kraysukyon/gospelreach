@@ -5,6 +5,7 @@
 @inject GospelReachCapstone.Services.FinancialMensService _financialMensService
 @using GospelReachCapstone.Models
 @using System.ComponentModel.DataAnnotations
+@inject NavigationManager _nav
 
 <PageTitle>Finance Mens</PageTitle>
 
@@ -94,7 +95,7 @@
                         @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                     </div>
 
-                    <input class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Name" type="text" />
+                    <input @bind="mensRecord.DonatorName" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Name" type="text" />
                 </div>
 
                 <!--Invoice-->
@@ -265,7 +266,7 @@
                         @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                     </div>
 
-                    <input class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Name" type="text" />
+                    <input @bind="updateMensRecord.DonatorName" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Name" type="text" />
                 </div>
 
                 <!--Invoice-->
@@ -358,7 +359,6 @@
 
 
         </div>
-
 
         <!--View Modal-->
         <div @onclick:stopPropagation hidden="@(!isViewModal)" class="cards">
@@ -583,6 +583,8 @@
                 </div>
 
                 <button @onclick="GetDataByDateRange" class="btn btn-primary text-white px-4 py-1">Filter</button>
+
+                <button @onclick="GoToReportPage" class="btn btn-primary text-white px-4 py-1">Generate Report</button>
             </div>
         </div>
         
@@ -678,6 +680,14 @@
         await GetSchedules();
         await GetDataByDateRange(dateTo, dateFrom);
         await GetAllFinancialData();
+    }
+
+    //Go To Report Page
+    private void GoToReportPage()
+    {
+        string from = dateFrom.ToString("yyyy-MM-dd");
+        string to = dateTo.ToString("yyyy-MM-dd");
+        _nav.NavigateTo($"/finance/mens/report/{from}/{to}");
     }
 
     //Get Sum

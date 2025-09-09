@@ -1,0 +1,283 @@
+﻿@page "/finance/mens/report/{dateFrom}/{dateTo}"
+@layout LandingLayout
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.ScheduleService _scheduleService
+@inject GospelReachCapstone.Services.FinancialMensService _financialMensService
+@using GospelReachCapstone.Models
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Finance Mens</PageTitle>
+
+
+<div class="page">
+    <div @onclick="ToggleModal" class="BackgroundModal @(isBackgroundVisible ? "show" : "")">
+
+    </div>
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Generate Financial Report</h4>
+            <p class="m-0 c2" style="font-size: 14px">Generate an updated report</p>
+        </div>
+
+        <div>
+            <button class="btn btn-primary py-1 px-4 text-white"><i class="bi bi-printer text-white fs-5 me-1"></i> Print Report</button>
+        </div>
+    </div>
+
+    <!--Sub Header-->
+    <div class="mb-4">
+        <div class="mb-4">
+            <h5 class="m-0 fw-bold">The Salvation Army Mandaue Outpost</h5>
+            <p>Financial Report — Men Department</p>
+            <p>@fromDate.ToString("MMMM dd, yyyy") - @toDate.ToString("MMMM dd, yyyy")</p>
+        </div>
+
+        <p>Date Generated: @dateNow.ToString("MMMM dd, yyyy")</p>
+    </div>
+    
+    <!--Table Section-->
+    <div class="mb-4">
+        <!--Summary-->
+        <div class="mb-2">
+            <table class="table table-bordered">
+                <thead>
+                    <tr class="text-center" style="background-color: #385494;">
+                        <th colspan="2" class="text-white fs-5">Summary Section</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="text-center">
+                        <td>Total Income</td>
+                        <td>Php @totalIncome.ToString("N2")</td>
+                    </tr>
+
+                    <tr class="text-center">
+                        <td>Total Expense</td>
+                        <td>Php @totalExpense.ToString("N2")</td>
+                    </tr>
+
+                    <tr class="text-center" style="background-color: #bfbfbf;">
+                        <td class="fw-bold">Net Balance</td>
+                        <td class="fw-bold">Php @currentBalance.ToString("N2")</td>
+                    </tr>
+                </tbody>
+               
+            </table>
+        </div>
+
+        <!--Income Breakdown-->
+        <div class="mb-2">
+            <table class="table table-bordered">
+                <thead>
+                    <tr class="text-center" style="background-color: #385494;">
+                        <th colspan="5" class="text-white fs-6">Income Breakdown</th>
+                    </tr>
+                    <tr class="fw-bold text-center">
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Donator Name</th>
+                        <th>Invoice #</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in filteredIncomeList)
+                    {
+                        <tr class="text-center">
+                            <td>@item.Date.ToString("MMMM dd, yyyy")</td>
+                            <td>@item.Category</td>
+                            <td>@item.DonatorName</td>
+                            <td>@item.InvoiceNumber</td>
+                            <td>Php @item.Amount.ToString("N2")</td>
+                        </tr>
+                    }
+                    <tr class="text-center">
+                        <td class="fw-bold">Total</td>
+                        <td class="fw-bold"></td>
+                        <td class="fw-bold"></td>
+                        <td class="fw-bold"></td>
+                        <td class="fw-bold">Php @totalIncome.ToString("N2")</td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+
+        <!--Expense Breakdown-->
+        <div class="mb-2">
+            <table class="table table-bordered">
+                <thead>
+                    <tr class="text-center" style="background-color: #385494;">
+                        <th colspan="4" class="text-white fs-6">Expense Breakdown</th>
+                    </tr>
+                    <tr class="fw-bold text-center">
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Voucher #</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in filteredExpenseList)
+                    {
+                        <tr class="text-center">
+                            <td>@item.Date.ToString("MMMM dd, yyyy")</td>
+                            <td>@item.Category</td>
+                            <td>@item.VoucherNumber</td>
+                            <td>Php @item.Amount.ToString("N2")</td>
+                        </tr>
+                    }
+                    <tr class="text-center">
+                        <td class="fw-bold">Total</td>
+                        <td class="fw-bold"></td>
+                        <td class="fw-bold"></td>
+                        <td class="fw-bold">Php @totalExpense.ToString("N2")</td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+    <!--Graphs and Visualization-->
+    <div>
+        <h5 class="m-0 fw-bold">Graphs and Visualizations</h5>
+
+        <div class="chart">
+            <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                <h5 class="fw-bold mb-4">Income Sources</h5>
+                <div class="p-4">
+                    <canvas id="incomeBreakdown" width="300" height="300"></canvas>
+                </div>
+                
+            </div>
+
+            <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                <h5 class="fw-bold mb-4">Expense Sources</h5>
+                <div class="p-4">
+                    <canvas id="expenseBreakdown" width="300" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                <h5 class="fw-bold mb-4">Income vs Expense</h5>
+                <canvas id="financeChart" width="300" height="300"></canvas>
+            </div>
+
+        </div>
+
+        
+    </div>
+</div>
+
+
+@code{
+    //Get Values from URL
+    [Parameter] public string dateFrom { get; set; }
+    [Parameter] public string dateTo { get; set; }
+
+    //Dates
+    private DateOnly fromDate;
+    private DateOnly toDate;
+    private DateOnly dateNow = DateOnly.FromDateTime(DateTime.Now);
+
+    //Modals
+    private bool isBackgroundVisible = false;
+
+    //Amounts
+    private decimal totalIncome = 0m;
+    private decimal totalExpense = 0m;
+    private decimal currentBalance = 0m;
+
+    //List
+    private List<FinancialMensRecord> financeMensList = new();
+    private IEnumerable<FinancialMensRecord> filteredIncomeList => financeMensList.Where(u => u.Type == "Income").ToList();
+    private IEnumerable<FinancialMensRecord> filteredExpenseList => financeMensList.Where(u => u.Type == "Expense").ToList();
+
+    //First Initialization
+    protected override async Task OnInitializedAsync()
+    {
+        if (DateOnly.TryParse(dateFrom, out var parsedFrom))
+            fromDate = parsedFrom;
+
+        if (DateOnly.TryParse(dateTo, out var parsedTo))
+            toDate = parsedTo;
+        await GetDataByDateRange(toDate,fromDate);
+    }
+
+    //Get Financial Records
+    private async Task GetDataByDateRange(DateOnly date1, DateOnly date2)
+    {
+        var result = await _financialMensService.GetFinancialDataByDateRange(date1, date2);
+        if (result.Success)
+        {
+            if (result.Data != null)
+            {
+                financeMensList = result.Data;
+
+                //assign to local variables
+                totalIncome = result.Data.Where(u => u.Type == "Income").Sum(u => u.Amount);
+                totalExpense = result.Data.Where(u => u.Type == "Expense").Sum(u => u.Amount);
+                currentBalance = totalIncome - totalExpense;
+
+                decimal offering = result.Data.Where(u => u.Category == "Offering").Sum(u => u.Amount);
+                decimal donation = result.Data.Where(u => u.Category == "Donation").Sum(u => u.Amount);
+
+                decimal tithes = result.Data.Where(u => u.Category == "Tithes").Sum(u => u.Amount);
+                decimal property = result.Data.Where(u => u.Category == "PropertyMaintenance").Sum(u => u.Amount);
+                decimal transportation = result.Data.Where(u => u.Category == "Transportation").Sum(u => u.Amount);
+                decimal incidental = result.Data.Where(u => u.Category == "Incidental").Sum(u => u.Amount);
+                decimal others = result.Data.Where(u => u.Category == "Others").Sum(u => u.Amount);
+                await _js.InvokeVoidAsync("firestoreFunctions.renderIncomeBreakdown", offering, donation);
+                await _js.InvokeVoidAsync("firestoreFunctions.renderExpenseBreakdown", tithes, property, transportation, incidental, others);
+
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Data is null");
+            }
+
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    //Get Sum
+    private async Task GetAllFinancialData()
+    {
+        //query to firebase
+        var result = await _financialMensService.GetAllFinancialRecordAsync();
+
+        if (result.Success)
+        {
+            if (result.Data != null)
+            {
+                //assign to local variables
+                totalIncome = result.Data.Where(u => u.Type == "Income").Sum(u => u.Amount);
+                totalExpense = result.Data.Where(u => u.Type == "Expense").Sum(u => u.Amount);
+                currentBalance = totalIncome - totalExpense;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "data is null");
+            }
+        }
+        else
+        {
+            //shows error
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    //Modals for Background
+
+    private void ToggleModal()
+    {
+        isBackgroundVisible = !isBackgroundVisible;
+    }
+
+    
+}
