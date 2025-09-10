@@ -201,6 +201,7 @@
         if (DateOnly.TryParse(dateTo, out var parsedTo))
             toDate = parsedTo;
         await GetDataByDateRange(toDate,fromDate);
+        await GetDataByYear();
     }
 
     //Get Financial Records

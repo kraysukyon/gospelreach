@@ -20,39 +20,60 @@ namespace GospelReachCapstone.Services
             return result.Success ? (true, "Account Added Successful") : (false, result.Error);
         }
 
-        public async Task<(bool Success, string Message)> LoginAsync(string email, string password)
+        public async Task<LoginResult> LoginAsync(string email, string password)
         {
-            var result = await _jsRuntime.InvokeAsync<LoginResult>("firebaseAuth.login", email, password);
-            if (result.Success)
+            try
             {
-                //List<Accounts> acc = await _firestore.GetAccountAsync();
-                //List<Member> mem = await _firestore.GetMembersAsync();
-
-                //var joinedList = acc.Join(mem, a => a.memberId, b => b.Id, (a,b) => new AccountsDTO
-                //{
-                //    Id = a.id,
-                //    MemberId = a.memberId,
-                //    FirstName = b.FirstName,
-                //    Role = a.role,
-                //    Status = a.status,
-                //    Email = b.Email,
-                //}).ToList();
-
-                //var user = joinedList.FirstOrDefault(a => a.Email == email);
-
-                //if (user.Status != "Active")
-                //{
-                //    return (false,"Login failed: Your account is disabled, Please contact administrator.");
-                //}
-
-                //_authState.IsLoggedIn = true;
-                //_authState.UserId = result.Uid;
-                //_authState.Email = email;
-                //_authState.DisplayName = user?.FirstName ?? "User";
-                //_authState.Role = user?.Role ?? "User";
-                return (true, $"Login successful");
+                var result = await _jsRuntime.InvokeAsync<LoginResult>("firebaseAuth.login", email, password);
+                return result;
             }
-            return (false, result.Error ?? "Login failed");
+            catch (JSException ex)
+            {
+                return new LoginResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new LoginResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+
+            //if (result.Success)
+            //{
+            //    //List<Accounts> acc = await _firestore.GetAccountAsync();
+            //    //List<Member> mem = await _firestore.GetMembersAsync();
+
+            //    //var joinedList = acc.Join(mem, a => a.memberId, b => b.Id, (a,b) => new AccountsDTO
+            //    //{
+            //    //    Id = a.id,
+            //    //    MemberId = a.memberId,
+            //    //    FirstName = b.FirstName,
+            //    //    Role = a.role,
+            //    //    Status = a.status,
+            //    //    Email = b.Email,
+            //    //}).ToList();
+
+            //    //var user = joinedList.FirstOrDefault(a => a.Email == email);
+
+            //    //if (user.Status != "Active")
+            //    //{
+            //    //    return (false,"Login failed: Your account is disabled, Please contact administrator.");
+            //    //}
+
+            //    //_authState.IsLoggedIn = true;
+            //    //_authState.UserId = result.Uid;
+            //    //_authState.Email = email;
+            //    //_authState.DisplayName = user?.FirstName ?? "User";
+            //    //_authState.Role = user?.Role ?? "User";
+            //    return (true, $"Login successful");
+            //}
+            //return (false, result.Error ?? "Login failed");
         }
 
         public async Task LogoutAsync()
@@ -125,14 +146,14 @@ namespace GospelReachCapstone.Services
             public string Error { get; set; }
         }
 
-        private class RegisterResult
+        public class RegisterResult
         {
             public bool Success { get; set; }
             public string Uid { get; set; }
             public string Error { get; set; }
         }
 
-        private class LoginResult
+        public class LoginResult
         {
             public bool Success { get; set; }
             public string Uid { get; set; }

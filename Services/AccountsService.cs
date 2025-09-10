@@ -13,6 +13,32 @@ namespace GospelReachCapstone.Services
 
         //====================Functions======================
 
+        public async Task<AccountResults> GetUserAccountsAsync()
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AccountResults>("firestoreFunctions.getAccounts");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AccountResults
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AccountResults
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            
+        }
+
         //Getting the Accounts List
         public async Task<List<User>> GetAccountAsync()
         {
@@ -48,5 +74,12 @@ namespace GospelReachCapstone.Services
             await _js.InvokeVoidAsync("firestoreFunctions.enableAccount", docId);
         }
 
+    }
+
+    public class AccountResults
+    {
+        public bool Success { get; set; }
+        public List<User> Data { get; set; }
+        public string Error { get; set; }
     }
 }

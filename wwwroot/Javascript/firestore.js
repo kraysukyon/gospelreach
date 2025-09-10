@@ -5,10 +5,12 @@
     //Get Accounts
     async getAccounts() {
         try {
-            const snapshot = await db.collection("Users").get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const docRef = await db.collection("Users").get();
+            const doc = docRef.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: doc };
         } catch (error) {
-            alert(error)
+            return { success: false, error: error.message }
         }
     },
     //Update Account

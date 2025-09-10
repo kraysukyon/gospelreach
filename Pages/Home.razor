@@ -4,6 +4,7 @@
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService FirebaseAuthService
 @inject GospelReachCapstone.Services.DepartmentMemberService Firestore
 @inject GospelReachCapstone.Services.AuthState Auth
+@inject GospelReachCapstone.Services.AccountsService _accountService
 @using GospelReachCapstone.Models;
 
 <PageTitle>Home</PageTitle>
@@ -284,23 +285,74 @@
     {
         isLogginIn = !isLogginIn;
 
-        try
+        var results = await FirebaseAuthService.LoginAsync(email, password);
+        if (results.Success)
         {
-            var result = await FirebaseAuthService.LoginAsync(email, password);
+            var result = await _accountService.GetUserAccountsAsync();
             if (result.Success)
             {
-                await JSRuntime.InvokeVoidAsync("alert", result.Message);
-                NavigationManager.NavigateTo("dashboard"); // Redirect to dashboard after login
+                if (result.Data != null)
+                {
+                    var data = result.Data;
+
+                    var user = result.Data.FirstOrDefault(u => u.Email == email);
+
+                    if (user != null)
+                    {
+                        if (user.Status != "Disabled")
+                        {
+                            await JSRuntime.InvokeVoidAsync("alert", "Login Success");
+                            NavigationManager.NavigateTo("dashboard");
+                        }
+                        else
+                        {
+                            await JSRuntime.InvokeVoidAsync("alert", "The account is disabled. Please contact administrator");
+                        }
+                    }
+                    else
+                    {
+                        await JSRuntime.InvokeVoidAsync("alert", "Invalid email or password");
+                    }
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "No data found");
+                }
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", result.Message); // Show error message
+                await JSRuntime.InvokeVoidAsync("alert", result.Error);
             }
         }
-        catch (Exception ex)
+        else
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"An error occurred: {ex.Message}"); // Handle any exceptions
+            await JSRuntime.InvokeVoidAsync("alert", results.Error);
         }
+
+        
+
+        
+
+        // try
+        // {
+        //     var res
+
+
+        //     var result = await FirebaseAuthService.LoginAsync(email, password);
+        //     if (result.Success)
+        //     {
+        //         await JSRuntime.InvokeVoidAsync("alert", result.Message);
+        //         NavigationManager.NavigateTo("dashboard"); 
+        //     }
+        //     else
+        //     {
+        //         await JSRuntime.InvokeVoidAsync("alert", result.Message); 
+        //     }
+        // }
+        // catch (Exception ex)
+        // {
+        //     await JSRuntime.InvokeVoidAsync("alert", $"An error occurred: {ex.Message}"); 
+        // }
         isLogginIn = !isLogginIn;
 
     }

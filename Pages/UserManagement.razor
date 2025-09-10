@@ -194,13 +194,14 @@
     //Get users List
     private async Task GetUsers()
     {
-        try
+        var result = await _accountsServices.GetUserAccountsAsync();
+        if (result.Success)
         {
-            accounts = await _accountsServices.GetAccountAsync();
+            accounts = result.Data;
         }
-        catch(Exception ex)
+        else
         {
-            await _js.InvokeVoidAsync("alert", $"Error fetching users: {ex.Message}");
+            await _js.InvokeVoidAsync("alert", result.Error);
         }
     }
 
