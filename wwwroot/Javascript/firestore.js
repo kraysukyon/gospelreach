@@ -1089,4 +1089,70 @@
             plugins: [ChartDataLabels] // ✅ enable the datalabels plugin
         });
     },
+
+    async renderIncomeExpenseLineChart(months, incomeData, expenseData) {
+        const ctx = document.getElementById('incomeExpenseChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months, // e.g., ["Jan", "Feb", "Mar", ...]
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: incomeData, // e.g., [5000, 7000, 8000, ...]
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40,167,69,0.2)',
+                        fill: true,
+                        tension: 0.3, // smooth curve
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#28a745'
+                    },
+                    {
+                        label: 'Expense',
+                        data: expenseData, // e.g., [3000, 4000, 6000, ...]
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220,53,69,0.2)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#dc3545'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount (₱)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month (2025)'
+                        }
+                    }
+                }
+            }
+        });
+    },
 }

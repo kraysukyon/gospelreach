@@ -159,14 +159,11 @@
                     <canvas id="expenseBreakdown" width="300" height="300"></canvas>
                 </div>
             </div>
-
-            <div class="d-flex flex-column align-items-center justify-content-center mb-4">
-                <h5 class="fw-bold mb-4">Income vs Expense</h5>
-                <canvas id="financeChart" width="300" height="300"></canvas>
-            </div>
-
         </div>
 
+        <div>
+            <canvas id="incomeExpenseChart" width="400" height="200"></canvas>
+        </div>
         
     </div>
 </div>
@@ -229,6 +226,7 @@
                 decimal transportation = result.Data.Where(u => u.Category == "Transportation").Sum(u => u.Amount);
                 decimal incidental = result.Data.Where(u => u.Category == "Incidental").Sum(u => u.Amount);
                 decimal others = result.Data.Where(u => u.Category == "Others").Sum(u => u.Amount);
+
                 await _js.InvokeVoidAsync("firestoreFunctions.renderIncomeBreakdown", offering, donation);
                 await _js.InvokeVoidAsync("firestoreFunctions.renderExpenseBreakdown", tithes, property, transportation, incidental, others);
 
@@ -238,6 +236,57 @@
                 await _js.InvokeVoidAsync("alert", "Data is null");
             }
 
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    //get the data for the year
+    private async Task GetDataByYear()
+    {
+        DateOnly startOfYear = new(DateTime.Now.Year, 1, 1);
+        DateOnly endOfYear = new(DateTime.Now.Year, 12, 31);
+        var result = await _financialMensService.GetFinancialDataByDateRange(endOfYear,startOfYear);
+
+        if (result.Success)
+        {
+            if (result.Data != null)
+            {
+                var data = result.Data;
+
+                var monthlySummary = data
+                    .GroupBy(f => new { f.Date.Year, f.Date.Month })
+                    .Select(g => new
+                    {
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        TotalIncome = g.Where(x => x.Type == "Income").Sum(x => x.Amount),
+                        TotalExpense = g.Where(x => x.Type == "Expense").Sum(x => x.Amount)
+                    })
+                    .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                    .ToList();
+
+                var months = Enumerable.Range(1, 12).ToArray();
+                var incomeData = months
+                    .Select(m => monthlySummary.FirstOrDefault(x => x.Month == m && x.Year == 2025)?.TotalIncome ?? 0)
+                    .ToArray();
+
+                var expenseData = months
+                    .Select(m => monthlySummary.FirstOrDefault(x => x.Month == m && x.Year == 2025)?.TotalExpense ?? 0)
+                    .ToArray();
+
+                var monthLabels = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+                await _js.InvokeVoidAsync("firestoreFunctions.renderIncomeExpenseLineChart", monthLabels, incomeData, expenseData);
+
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Data is null");
+            }
         }
         else
         {
