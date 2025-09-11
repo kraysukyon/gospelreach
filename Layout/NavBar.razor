@@ -26,8 +26,18 @@
                 <a href="user-management" class="text-decoration-none c2">User</a>
             </div>
 
+            
+
+            <!--Member Management-->
+            <div class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-people"></i>
+                </div>
+                <a href="membermanagement" class="text-decoration-none c2">Member</a>
+            </div>
+
             <!--Departments-->
-            <div hidden class="@GetClass(2, "links")" @onclick="() => SetActive(2)">
+            <div class="@GetClass(2, "links")" @onclick="() => SetActive(2)">
                 <div class="dep">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-building"></i>
@@ -35,9 +45,13 @@
                     @* <a href="departments" class="text-decoration-none c2">Departments</a> *@
                     <p class="m-0 p-0 c2 dp">Departments</p>
                 </div>
-                
+
                 <div @onclick:stopPropagation class="subDepartment @(isSubDepartmentVisible ? "" : "hide")">
-                    <div>
+                    <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Senior"))">Senior</p>
+                    <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Womens"))">Womens</p>
+                    <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Mens"))">Mens</p>
+                    <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Youth"))">Youth</p>
+                    @* <div>
                         <p class="ds">Senior</p>
                         <div>
                             <p @onclick="@(() => GoToDepartmentPage("Senior General"))" class="ms-3 ds hov">Senior General</p>
@@ -58,25 +72,10 @@
                             <p class="ms-3 ds hov">YP General</p>
                             <p @onclick="@(() => GoToDepartmentPage("Torchbearer"))" class="ms-3 ds hov">Torchbearer</p>
                         </div>
-                    </div>
+                    </div> *@
                 </div>
             </div>
-
-            <!--Member Management-->
-            <div class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-people"></i>
-                </div>
-                <a href="membermanagement" class="text-decoration-none c2">Member</a>
-            </div>
-
-            <!--Group Management-->
-            <div class="@GetClass(4, "link")" @onclick="() => SetActive(4)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-collection"></i>
-                </div>
-                <a href="notification" class="text-decoration-none c2">Group</a>
-            </div>
+            
 
             <!--Tracking-->
             <h3 class="sidebar-heading">TRACKING</h3>
@@ -126,6 +125,14 @@
                 </div>
                 <a href="events" class="text-decoration-none c2">Events</a>
             </div> *@
+
+            <!--Group Management-->
+            <div class="@GetClass(4, "link")" @onclick="() => SetActive(4)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-collection"></i>
+                </div>
+                <a href="notification" class="text-decoration-none c2">Group</a>
+            </div>
 
             <!--Schedules-->
             <div class="@GetClass(9, "link")" @onclick="() => SetActive(9)">

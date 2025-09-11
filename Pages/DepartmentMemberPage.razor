@@ -15,16 +15,15 @@
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
         <div>
             <div class="d-flex flex-row gap-2">
-                <h4 class="m-0">Department ></h4>
-                <h4 class="m-0 fw-bold">@DepName</h4>
+                <h4 class="m-0 fw-bold">@DepName Department</h4>
             </div>
             
             <p class="m-0 c2" style="font-size: 14px">Manage department leaders and their responsibilities.</p>
         </div>
 
-        <div>
+      @*   <div>
             <button class="btn btn-primary p-2 text-white">Add Member</button>
-        </div>
+        </div> *@
     </div>
 
     <!--Table Section-->
@@ -107,30 +106,30 @@
             switch (DepName)
             {
                 //Senior
-                case "Senior General":
+                case "Senior":
                     members = mem.Where(u => u.Age > 11).ToList();
                     message = string.Empty;
                     break;
 
                 //Womens
-                case "Homeleague":
+                case "Womens":
                     members = mem.Where(u => u.Age >= 20 && u.Gender == "Female").ToList();
                     message = string.Empty;
                     break;
 
 
-                case "Teenstuff":
-                    members = mem.Where(u => u.Age < 20 && u.Age >= 12 && u.Gender == "Female").ToList();
-                    if (members.Count == 0)
-                    {
-                        message = "No members found";
-                    }
-                    else
-                    {
-                        message = string.Empty;
-                    }
+                // case "Teenstuff":
+                //     members = mem.Where(u => u.Age < 20 && u.Age >= 12 && u.Gender == "Female").ToList();
+                //     if (members.Count == 0)
+                //     {
+                //         message = "No members found";
+                //     }
+                //     else
+                //     {
+                //         message = string.Empty;
+                //     }
                     
-                    break;
+                //     break;
 
                 //Mens
                 case "Mens":
@@ -139,8 +138,8 @@
                     break;
 
                 //Youth
-                case "Torchbearer":
-                    members = mem.Where(u => u.Age >= 12 && u.Gender == "Male").ToList();
+                case "Youth":
+                    members = mem.Where(u => u.Age >= 12 && u.Age <= 35).ToList();
                     message = string.Empty;
                     break;
             }

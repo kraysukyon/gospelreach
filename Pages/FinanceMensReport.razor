@@ -5,6 +5,7 @@
 @inject GospelReachCapstone.Services.FinancialMensService _financialMensService
 @using GospelReachCapstone.Models
 @using System.ComponentModel.DataAnnotations
+@inject NavigationManager _nav
 
 <PageTitle>Finance Mens</PageTitle>
 
@@ -21,7 +22,9 @@
         </div>
 
         <div>
-            <button class="btn btn-primary py-1 px-4 text-white"><i class="bi bi-printer text-white fs-5 me-1"></i> Print Report</button>
+            @* <button class="btn btn-primary py-1 px-4 text-white"><i class="bi bi-printer text-white fs-5 me-1"></i> Print Report</button> *@
+            <button @onclick="ReturnToMensPage" class="btn btn-danger py-1 px-4 text-white">Return</button>
+
         </div>
     </div>
 
@@ -202,6 +205,11 @@
             toDate = parsedTo;
         await GetDataByDateRange(toDate,fromDate);
         await GetDataByYear();
+    }
+
+    private void ReturnToMensPage()
+    {
+        _nav.NavigateTo("/finance/mens");
     }
 
     //Get Financial Records
