@@ -1,4 +1,4 @@
-﻿@page "/finance/mens"
+﻿@page "/finance/mens-legacy"
 @layout LandingLayout
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.ScheduleService _scheduleService
@@ -41,9 +41,8 @@
                     @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                 </div>
 
-                <select value="@type" class="form-select p-2 mt-2" @onchange="OnTypeChange">
-                    <option value="Offering">Offering</option>
-                    <option value="Donation">Donation</option>
+                <select value="@mensRecord.Type" class="form-select p-2 mt-2" @onchange="OnTypeChange">
+                    <option value="Income">Income</option>
                     <option value="Expense">Expense</option>
                 </select>
             </div>
@@ -52,27 +51,26 @@
             <div hidden="@(!isIncome)">
                 <!--Category-->
                 <div class="col2">
-                    @* <div class="inputs mt-3">
+                    <div class="inputs mt-3">
                         <div class="d-flex align-items-center gap-2">
                             <p>Category</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                         </div>
 
                         <select value="@mensRecord.Category" @onchange="OnIncomeCategoryChanged" class="form-select p-2 mt-2">
                             <option value="Offering" disabled="@(scheduleList.Count == 0)">Offering @(scheduleList.Count == 0 ? "(No Schedules)" : "")</option>
                             <option value="Donation">Donation</option>
                         </select>
-                    </div> *@
-
-                    
-                </div>
-
-                <div class="inputs mt-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <p>Amount</p>
-                        @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                     </div>
 
-                    <input @bind="mensRecord.Amount" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" min="0" onkeydown="if(event.key === '-' || event.key === '+') event.preventDefault();" />
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Amount</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input @bind="mensRecord.Amount" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" min="0" onkeydown="if(event.key === '-' || event.key === '+') event.preventDefault();" />
+                    </div>
                 </div>
 
                 <!--Schedule-->
@@ -532,41 +530,36 @@
 
     </div>
     <!--Header Section-->
-    <div class="header d-block d-md-flex flex-md-column mb-2">
-        <div class="d-flex justify-content-between">
-            <div>
-                <h4 class="m-0 fw-bold">Mens Financial Management</h4>
-                <p class="m-0 c2" style="font-size: 14px">Track church finances, donations, and expenses.</p>
-            </div>
-
-            <div>
-                <button @onclick="ToggleAddEntry" class="btn btn-primary p-2 text-white">Add Entry</button>
-            </div>
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+        <div>
+            <h4 class="m-0 fw-bold">Mens Financial Management</h4>
+            <p class="m-0 c2" style="font-size: 14px">Track church finances, donations, and expenses.</p>
         </div>
-        
 
-        <!--Quick Stats Section-->
-        <div class="d-flex flex-column mt-4">
-            <div class="d-md-flex d-block justify-content-evenly gap-4">
-                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                    <p class="c2 mb-2" style="font-size:14px;">Total Income</p>
-                    <h3 class="m-0 c2 text-success fw-bold">₱@totalIncome.ToString("N2")</h3>
-                </div>
-
-                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                    <p class="c2 mb-2" style="font-size:14px;">Total Expenses</p>
-                    <h3 class="m-0 c2 text-danger fw-bold">₱@totalExpense.ToString("N2")</h3>
-                </div>
-
-                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                    <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
-                    <h3 class="m-0 c2 text-primary fw-bold">₱@currentBalance.ToString("N2")</h3>
-                </div>
-            </div>
+        <div>
+            <button @onclick="ToggleAddEntry" class="btn btn-primary p-2 text-white">Add Entry</button>
         </div>
     </div>
 
-    
+    <!--Quick Stats Section-->
+    <div class="d-flex flex-column mt-4 mb-2">
+        <div class="d-md-flex d-block justify-content-evenly gap-4">
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Total Income</p>
+                <h3 class="m-0 c2 text-success fw-bold">₱@totalIncome.ToString("N2")</h3>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Total Expenses</p>
+                <h3 class="m-0 c2 text-danger fw-bold">₱@totalExpense.ToString("N2")</h3>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
+                <h3 class="m-0 c2 text-primary fw-bold">₱@currentBalance.ToString("N2")</h3>
+            </div>
+        </div>
+    </div>
 
     <!--Table Section-->
     <div class="card w-100 mb-3 cards">
@@ -622,7 +615,7 @@
                                     <!--Edit-->
                                     <button @onclick:stopPropagation @onclick="() => OpenUpdateModal(item.Id)" class="btn btn-outline-light px-2 py-1 border border-1" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Update</button>
                                     <!--Delete-->
-                                    @* <button @onclick:stopPropagation @onclick="() => OpenRemoveModal(item.Id)" class="btn btn-danger px-2 py-1 text-white" style="font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button> *@
+                                    <button @onclick:stopPropagation @onclick="() => OpenRemoveModal(item.Id)" class="btn btn-danger px-2 py-1 text-white" style="font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
                                 </td>
                             </tr>
                         }
@@ -664,7 +657,6 @@
     private decimal totalIncome = 0m;
     private decimal totalExpense = 0m;
     private decimal currentBalance = 0m;
-    private string type = "Offering";
 
 
     //modals
@@ -709,8 +701,8 @@
             if (result.Data != null)
             {
                 //assign to local variables
-                totalIncome = financeMensList.Where(u => u.Type == "Income").Sum(u => u.Amount);
-                totalExpense = financeMensList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
+                totalIncome = result.Data.Where(u => u.Type == "Income").Sum(u => u.Amount);
+                totalExpense = result.Data.Where(u => u.Type == "Expense").Sum(u => u.Amount);
                 currentBalance = totalIncome - totalExpense;
             }
             else
@@ -958,10 +950,6 @@
         if (result.Success)
         {
             financeMensList = result.Data;
-            //assign to local variables
-            totalIncome = financeMensList.Where(u => u.Type == "Income").Sum(u => u.Amount);
-            totalExpense = financeMensList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
-            currentBalance = totalIncome - totalExpense;
 
             if (financeMensList.Count != 0)
             {
@@ -1159,55 +1147,27 @@
     //Handle Type Change
     private void OnTypeChange(ChangeEventArgs e)
     {
-        type = e.Value!.ToString()!;
-
-        if (type != "Expense")
-        {
-            mensRecord.Type = "Income";
-        }
-        else
-        {
-            mensRecord.Type = "Expense";
-        }
-
+        mensRecord.Type = e.Value!.ToString()!;
 
         if (mensRecord.Type == "Income")
         {
             isIncome = true;
-            if (type == "Offering")
+            mensRecord.Category = "Offering";
+            if (scheduleList != null)
             {
-                mensRecord.Category = "Offering";
-                isDonation = false;
-                mensRecord.ScheduleId = scheduleList.First().Id;
-                mensRecord.DonatorName = null;
-
-            
-
-
-                // mensRecord.Category = "Offering";
-                // if (scheduleList != null)
-                // {
-                //     if (scheduleList.Count != 0)
-                //     {
-                //         mensRecord.ScheduleId = scheduleList.First().Id;
-                //         scheduleDate = scheduleList.First().StartDate;
-                //     }
-                //     else
-                //     {
-                //         mensRecord.Category = "Donation";
-                //         isDonation = true;
-                //     }
-                // }
-                // mensRecord.DonatorName = null;
-                // mensRecord.VoucherNumber = null;
+                if (scheduleList.Count != 0)
+                {
+                    mensRecord.ScheduleId = scheduleList.First().Id;
+                    scheduleDate = scheduleList.First().StartDate;
+                }
+                else
+                {
+                    mensRecord.Category = "Donation";
+                    isDonation = true;
+                }
             }
-            else
-            {
-                mensRecord.Category = "Donation";
-                isDonation = true;
-                mensRecord.ScheduleId = null;
-            }
-
+            mensRecord.DonatorName = null;
+            mensRecord.VoucherNumber = null;
         }
         else
         {

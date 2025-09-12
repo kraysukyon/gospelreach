@@ -174,20 +174,43 @@
     </div>
 
     <!--Header Section-->
-    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
-        <div>
-            <h4 class="m-0 fw-bold">Member Management</h4>
-            <p class="m-0 c2" style="font-size: 14px">Add, update, and manage church members.</p>
-        </div>
+    <div class="header d-block d-md-flex flex-md-column mb-4">
+        <div class="d-flex justify-content-between">
+            <div>
+                <h4 class="m-0 fw-bold">Member Management</h4>
+                <p class="m-0 c2" style="font-size: 14px">Add, update, and manage church members.</p>
+            </div>
 
-        <div>
-            <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleModal">Add Member</button>
+            <div>
+                <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleModal">Add Member</button>
+            </div>
+        </div>
+        
+
+        <!--Quick Stats Section-->
+        <div class="d-flex flex-column mt-4">
+            <div class="d-md-flex d-block justify-content-evenly gap-4">
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">Total Members</p>
+                    <h3 class="m-0 c2 text-primary fw-bold">@totalMembers</h3>
+                </div>
+
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">Active Members</p>
+                    <h3 class="m-0 c2 text-success fw-bold">@activeMembers</h3>
+                </div>
+
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">New This Month</p>
+                    <h3 class="m-0 c2 text-danger fw-bold">@newMembers</h3>
+                </div>
+            </div>
         </div>
         
     </div>
 
     <!--Table Section-->
-    <div class="card w-100 mb-3 cards">
+    <div class="cards">
 
         <!--Search Section-->
         <div class="position-relative">
@@ -226,32 +249,12 @@
                                 </div>
 
                                 <!--Delete-->
-                                <button @onclick="(() => DeleteMember(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                @* <button @onclick="(() => DeleteMember(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button> *@
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
-        </div>
-    </div>
-
-    <!--Quick Stats Section-->
-    <div class="d-flex flex-column mt-4">
-        <div class="d-md-flex d-block justify-content-evenly gap-4">
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">Total Members</p>
-                <h3 class="m-0 c2 text-primary fw-bold">@totalMembers</h3>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">Active Members</p>
-                <h3 class="m-0 c2 text-success fw-bold">@activeMembers</h3>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">New This Month</p>
-                <h3 class="m-0 c2 text-danger fw-bold">@newMembers</h3>
-            </div>
         </div>
     </div>
 </div>

@@ -8,7 +8,7 @@
 @inject GospelReachCapstone.Services.MemberService _memberService
 @inject GospelReachCapstone.Services.AttendanceVisitorRecordService _attendanceVisitorRecordService
 @inject GospelReachCapstone.Services.VisitorService _visitorsService
-@using System.Globalization
+@inject NavigationManager _nav
 
 <PageTitle>Attendance Tracker</PageTitle>
 
@@ -251,7 +251,7 @@
     </div>
 
     <!--Header Section-->
-    <div class="header">
+    <div class="header mb-4">
         <div>
             <h4 class="m-0 fw-bold">Attendance Tracking</h4>
             <p class="m-0 c2" style="font-size: 14px">Tracks and manage attendance</p>
@@ -259,7 +259,7 @@
     </div>
 
     <!--Table Section-->
-    <div class="card w-100 mb-3 cards">
+    <div class="mt-4 mb-3 cards">
 
         <div class="d-flex gap-2 mb-2 w-100 align-items-center">
             <!--Search Section-->
@@ -271,14 +271,14 @@
             <div class="d-flex gap-2 align-items-center ms-2">
                 <p class="me-2 text-nowrap">Filter by:</p>
                 <select @onchange="OnFilterChange" class="form-select p-2 px-4">
-                    <option value="Upcoming">Upcoming</option>
+                    @* <option value="Upcoming">Upcoming</option> *@
                     <option value="Ongoing">Ongoing</option>
                     <option value="Complete">Complete</option>
                 </select>
 
                 @* <button class="btn btn-primary text-white px-4 py-2">Filter</button> *@
 
-                <button class="btn btn-primary text-white px-4 py-2 text-nowrap">Generate Report</button>
+                <button @onclick="GoToAttendanceReportPage" class="btn btn-primary text-white px-4 py-2 text-nowrap">Generate Report</button>
             </div>
         </div>
 
@@ -294,6 +294,7 @@
                             <th class="thead">Date</th>
                             <th class="thead">Type</th>
                             <th class="thead">Title</th>
+                            <th class="thead">Status</th>
                             <th class="thead">Actions</th>
                         </tr>
                     </thead>
@@ -305,7 +306,8 @@
                             <tr class="table-row cursor">
                                 <td class="table-cell" style="font-weight:500;">@item.StartDate.ToString("MMM dd, yyyy")</td>
                                 <td class="table-cell c2">@item.CategoryId</td>
-                                <td class="table-cell c2"><p class="pill7 @(item.hasAttendance ? "com" : "inCom")">@item.Title</p></td>
+                                <td class="table-cell c2">@item.Title</td>
+                                <td class="table-cell c2"><p class="fw-bold @(item.hasAttendance ? "text-success" : "text-danger")">@(item.hasAttendance ? "Complete" : "Missing")</p></td>
                                 <td @onclick="() => OpenAttendance(item.Id)" @onclick:stopPropagation class="table-cell d-flex gap-2 hover" style="padding: 24px 24px; border-bottom: none; width: auto;">View</td>
                             </tr>
                         }
@@ -364,7 +366,13 @@
     //On initialized
     protected override async Task OnInitializedAsync()
     {
-        await GetUpcomingSchedules();
+        await GetOngoingSchedules();
+    }
+
+    //Navigate to Attendance Report Page
+    private void GoToAttendanceReportPage()
+    {
+        _nav.NavigateTo($"/attendance/report/{dateFrom}/{dateTo}");
     }
 
     //GetVisitors List
@@ -627,8 +635,6 @@
 
     }
 
-
-
     //Toggle Member
     private void ToggleMembers()
     {
@@ -727,7 +733,6 @@
         }
     }
 
-    
     private class GroupMemberSelection
     {
         public bool isSelected { get; set; }

@@ -1,4 +1,4 @@
-﻿@page "/finance/mens/report/{dateFrom}/{dateTo}"
+﻿@page "/attendance/report/{dateFrom}/{dateTo}"
 @layout LandingLayout
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.ScheduleService _scheduleService
@@ -7,8 +7,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager _nav
 
-<PageTitle>Finance Mens</PageTitle>
-
+<PageTitle>Attendance Report</PageTitle>
 
 <div class="page">
     <div @onclick="ToggleModal" class="BackgroundModal @(isBackgroundVisible ? "show" : "")">

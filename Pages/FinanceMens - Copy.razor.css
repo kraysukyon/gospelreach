@@ -6,89 +6,27 @@
     font-family: "Inter", sans-serif;
 }
 
-.addUserModal {
+.BackgroundModal {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1;
+    z-index: 2001;
     width: 100%;
     height: 100vh;
     background-color: rgba(0,0,0,.5);
     display: none;
 }
 
-.addUser {
-    display: flex;
-    flex-direction: column;
-    width: 550px;
-    padding: 2rem 1.5rem;
-    background-color: #FFFFFF;
-    border-radius: 25px;
-}
-
-.editUser {
-    display: flex;
-    flex-direction: column;
-    width: 550px;
-    padding: 2rem 1.5rem;
-    background-color: #FFFFFF;
-    border-radius: 25px;
-}
-
-.pword {
-    display: flex;
-    width: 100%;
-    padding: .5rem .75rem;
-    border: 1px solid #ced4da;
-    border-radius: .25rem;
-    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-}
-
-.valid {
-    background-color: #e9ecef;
-    border-color: #e9ecef;
-}
-
 .show {
     display: flex;
     align-items: center;
     justify-content: center;
-    align-items: center;
-    justify-content: center;
 }
 
-    .show input {
-        border: none;
-        width: 100%;
-        margin-right: .75rem;
-    }
-
-        .show input:focus {
-            border: none;
-            outline: none;
-        }
-
-            .show input:focus .show {
-                color: #212529;
-                background-color: #fff;
-                border-color: #86b7fe;
-                outline: 0;
-                box-shadow: 0 0 0 .25rem rgba(13,110,253,.25)
-            }
-
-.hide {
-    display: none;
-}
-
-.userFields {
-    display: grid;
+.col2{
+    display:grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-.input p {
-    font-size: 14px;
 }
 
 .c2 {
@@ -106,16 +44,9 @@ a {
     gap: 1.5rem;
 }
 
-.link {
+.cursor {
     cursor: pointer;
-    text-decoration: none;
 }
-
-    .link:hover {
-        color: rgb(26,86,219);
-        font-weight:600;
-        text-decoration: underline;
-    }
 
 .cards {
     border-radius: .75rem;
@@ -123,6 +54,22 @@ a {
     transition: box-shadow 0.3s ease, filter 0.3s ease;
     border: solid .3px rgb(128, 128, 128, 0.08);
     padding: 24px;
+    max-height: calc(100vh - 20vh);
+    background-color: #FFF;
+    overflow-y: auto;
+    width: 500px;
+}
+
+.helperModal {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 24px;
+    max-height: calc(100vh - 20vh);
+    background-color: #FFF;
+    overflow-y: auto;
+    width: 400px;
 }
 
     .cards:hover {
@@ -167,6 +114,13 @@ a {
     line-height: 1.25rem;
 }
 
+.details{
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+    margin-bottom:.5rem;
+}
+
 @media (max-width: 768px) {
     .page {
         display: block;
@@ -176,6 +130,7 @@ a {
         width: 100%;
         margin-top: 1rem;
     }
+
     .cards{
         padding: 0;
     }

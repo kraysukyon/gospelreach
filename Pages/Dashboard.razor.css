@@ -6,7 +6,9 @@
     font-family: "Inter", sans-serif;
 }
 
-
+.groupPanel:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
 
 .c2 {
     color: #4b5563;

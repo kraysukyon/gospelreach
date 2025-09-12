@@ -6,6 +6,12 @@
     font-family: "Inter", sans-serif;
 }
 
+.pages{
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+}
+
 .addUserModal {
     position: fixed;
     top: 0;
@@ -24,7 +30,23 @@
     padding: 2rem 1.5rem;
     background-color: #FFFFFF;
     border-radius: 25px;
+    max-height: calc(100vh - 10vh);
+    height: 90vh;
+    overflow-y: auto;
 }
+
+.addMember {
+    display: flex;
+    flex-direction: column;
+    width: 550px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+    max-height: calc(100vh - 10vh);
+    height: 90vh;
+    overflow-y: auto;
+}
+
 
 .editUser {
     display: flex;
@@ -111,22 +133,91 @@ a {
     text-decoration: none;
 }
 
+
+.boot {
+    margin-top: -4px;
+    opacity: .50;
+}
+
+.cursor {
+    cursor: pointer;
+}
+
+.hover:hover {
+    opacity: 1;
+    color: #2768ee;
+}
+
     .link:hover {
         color: rgb(26,86,219);
         font-weight: 600;
+        text-decoration: underline;
     }
+
+.renameModal {
+    width: 400px;
+    background-color: white;
+}
 
 .cards {
     border-radius: .75rem;
     box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
     transition: box-shadow 0.3s ease, filter 0.3s ease;
     border: solid .3px rgb(128, 128, 128, 0.08);
+    max-height: calc(100vh - 40vh);
+}
+
+.cardss {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
     padding: 24px;
+    height:100%;
+    overflow-y: auto;
+}
+.cardss:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
     .cards:hover {
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
+
+.groupAndMembers{
+    display: flex;
+    gap:1rem;
+    overflow: hidden;
+}
+
+.groupPanel {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    height: 100%;
+    width: 0;
+    opacity: 0;
+}
+
+    .groupPanel:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+.groupPanel .table-containers{
+    overflow-y: auto;
+    margin-bottom: 1rem;
+
+}
+
+.grows {
+    opacity: 1;
+    transition: display .3s ease-in, width .3s ease, opacity 0.3s ease-in;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 500px;
+    padding: 24px;
+}
 
 .search {
     padding: .5rem .75rem;
@@ -138,6 +229,11 @@ a {
     }
 
 .table-container {
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+.table-containers {
     overflow-x: auto;
 }
 
@@ -166,8 +262,41 @@ a {
     line-height: 1.25rem;
 }
 
+.optionDot {
+    position: relative;
+    width: 110px;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    height:100%;
+}
+
+.optionDotChild {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: white;
+    border: solid 1px #000000bf;
+    border-radius: 12px;
+}
+
+.optionDotChild p{
+    padding: 5px 15px;
+}
+
+    .optionDotChild p:hover {
+        color: rgb(26,86,219);
+        cursor: pointer;
+    }
+
+.groupButton{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap:1rem;
+    margin-top:1.5rem;
+}
 @media (max-width: 768px) {
-    .page {
+    .pages {
         display: block;
     }
 
@@ -175,7 +304,8 @@ a {
         width: 100%;
         margin-top: 1rem;
     }
-    .cards{
+
+    .cards {
         padding: 0;
     }
 
@@ -188,3 +318,4 @@ a {
         flex-direction: column;
     }
 }
+

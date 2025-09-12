@@ -6,6 +6,12 @@
     font-family: "Inter", sans-serif;
 }
 
+.page {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+}
+
 .addUserModal {
     position: fixed;
     top: 0;

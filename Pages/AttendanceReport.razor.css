@@ -1,0 +1,55 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: black;
+    font-family: "Inter", sans-serif;
+}
+
+.BackgroundModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2001;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0,0,0,.5);
+    display: none;
+}
+
+.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top:2rem;
+}
+
+@media (max-width: 768px) {
+    .page {
+        display: block;
+    }
+
+    .header a {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .cards{
+        padding: 0;
+    }
+
+    .planning {
+        display: block;
+    }
+
+    .stats {
+        display: flex;
+        flex-direction: column;
+    }
+}

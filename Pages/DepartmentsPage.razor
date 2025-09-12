@@ -1,0 +1,150 @@
+﻿@page "/departments"
+@layout LandingLayout
+@using GospelReachCapstone.Models
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.MemberService _memberService
+
+<PageTitle>Notification Management</PageTitle>
+
+
+<div class="pages">
+    
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-3">
+        <div>
+            <h4 class="m-0 fw-bold">Departments</h4>
+            <p class="m-0 c2" style="font-size: 14px">View departments and its members</p>
+        </div>
+    </div>
+
+    <div class="groupAndMembers">
+        <div class="d-flex flex-grow-1 ">
+            <!--Group Section=========================-->
+            <div class="cardss w-100 mb-3 cardss">
+                <p class="mb-2 mt-2 ms-2"><em>@message</em></p>
+
+                <div class="table-containers">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="thead">Department</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr class="table-row">
+                                <td @onclick='() => GetAllMembers("Senior")' class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">Senior</p></td>
+                            </tr>
+                            <tr class="table-row">
+                                <td @onclick='() => GetAllMembers("Womens")' class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">Womens</p></td>
+                            </tr>
+                            <tr class="table-row">
+                                <td @onclick='() => GetAllMembers("Mens")' class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">Mens</p></td>
+                            </tr>
+                            <tr class="table-row">
+                                <td @onclick='() => GetAllMembers("Youth")' class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">Youth</p></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!--View Members Panel-->
+        <div class="groupPanel grows">
+            <div>
+                <div class="d-flex gap-3 w-auto align-items-start">
+                    <h4 class="m-0 fw-bold mb-3">Members</h4>
+                </div>
+                
+                <!--Search Section-->
+                <div class="d-flex gap-2">
+                    <div class="position-relative w-100">
+                        <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                        <input @bind="memberSearch" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search group..." />
+                    </div>
+                </div>
+
+                <p class="mb-2 mt-2 ms-2"><em>@memberMessage</em></p>
+            </div>
+            
+
+            <div class="table-containers">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="thead">Name</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in filteredMemberList)
+                        {
+                            <tr class="table-row">
+                                <td class="table-cell" style="font-weight:500;"><p class="link">@item.GetFullName()</p></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+@code {
+    //Variable Declaration
+    private string message = string.Empty;
+    private List<Member> memberList = new();
+    private IEnumerable<Member> filteredMemberList => memberList.Where(u => string.IsNullOrWhiteSpace(memberSearch) || u.GetFullName().Contains(memberSearch, StringComparison.OrdinalIgnoreCase));
+    private string memberSearch = string.Empty;
+    private string memberMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllMembers("Senior");
+    }
+
+    //Get Members
+    private async Task GetAllMembers(string department)
+    {
+        memberList.Clear();
+        message = "Fetching data. Please wait...";
+        var result = await _memberService.GetMembersAsync();
+        if (result.Success)
+        {
+            if (result.Data.Any())
+            {
+                switch (department)
+                {
+                    case "Senior":
+                        memberList = result.Data.Where(u => u.Age > 11).ToList();
+                        message = string.Empty;
+                        break;
+                    case "Womens":
+                        memberList = result.Data.Where(u => u.Age >= 20 && u.Gender == "Female").ToList();
+                        message = string.Empty;
+                        break;
+                    case "Mens":
+                        memberList = result.Data.Where(u => u.Age >= 12 && u.Gender == "Male").ToList();
+                        message = string.Empty;
+                        break;
+                    case "Youth":
+                        memberList = result.Data.Where(u => u.Age >= 12 && u.Age <= 35).ToList();
+                        message = string.Empty;
+                        break;
+                }
+            }
+            else
+            {
+                message = "No Data Found";
+            }
+
+        }
+        else
+        {
+            message = "No Data Found";
+        }
+    }
+}
+

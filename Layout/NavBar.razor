@@ -37,43 +37,18 @@
             </div>
 
             <!--Departments-->
-            <div class="@GetClass(2, "links")" @onclick="() => SetActive(2)">
-                <div class="dep">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-building"></i>
-                    </div>
-                    @* <a href="departments" class="text-decoration-none c2">Departments</a> *@
-                    <p class="m-0 p-0 c2 dp">Departments</p>
+            <div class="@GetClass(2, "link")" @onclick="() => SetActive(2)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-building"></i>
                 </div>
+                <a href="departments" class="text-decoration-none c2">Departments</a>
 
-                <div @onclick:stopPropagation class="subDepartment @(isSubDepartmentVisible ? "" : "hide")">
+                @* <div @onclick:stopPropagation class="subDepartment @(isSubDepartmentVisible ? "" : "hide")">
                     <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Senior"))">Senior</p>
                     <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Womens"))">Womens</p>
                     <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Mens"))">Mens</p>
                     <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Youth"))">Youth</p>
-                    @* <div>
-                        <p class="ds">Senior</p>
-                        <div>
-                            <p @onclick="@(() => GoToDepartmentPage("Senior General"))" class="ms-3 ds hov">Senior General</p>
-                            <p class="ms-3 ds hov">Music</p>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="ds">Womens</p>
-                        <div>
-                            <p @onclick="@(() => GoToDepartmentPage("Homeleague"))" class="ms-3 ds hov">Homeleague</p>
-                            <p @onclick="@(() => GoToDepartmentPage("Teenstuff"))" class="ms-3 ds hov">Teenstuff</p>
-                        </div>
-                    </div>
-                    <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Mens"))">Mens</p>
-                    <div>
-                        <p class="ds">Youth</p>
-                        <div>
-                            <p class="ms-3 ds hov">YP General</p>
-                            <p @onclick="@(() => GoToDepartmentPage("Torchbearer"))" class="ms-3 ds hov">Torchbearer</p>
-                        </div>
-                    </div> *@
-                </div>
+                </div> *@
             </div>
             
 
@@ -195,7 +170,7 @@
                 isSubDepartmentVisible = false;
                 break;
             case 2:
-                // Navs.NavigateTo("departments");
+                Navs.NavigateTo("departments");
                 isSubDepartmentVisible = !isSubDepartmentVisible;
                 break;
             case 3:

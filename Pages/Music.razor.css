@@ -6,6 +6,11 @@
     font-family: "Inter", sans-serif;
 }
 
+.page {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+}
 
 .c2 {
     color: #4b5563;
