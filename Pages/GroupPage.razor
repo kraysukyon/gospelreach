@@ -68,9 +68,6 @@
                 <button @onclick="AddGroupAndMembers" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
             </div>
 
-
-            
-            
         </div>
 
         <!--Add Members to Group-->
@@ -170,6 +167,9 @@
                         </thead>
 
                         <tbody>
+                            <tr class="table-row">
+                                <td @onclick="ShowAllmembers" class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">All Members</p></td>
+                            </tr>
                             @foreach (var item in filteredGroupList)
                             {
                                 <tr class="table-row">
@@ -217,7 +217,7 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th class="thead" style="width: auto; white-space: nowrap;"><input @onchange="ToggleMembersCheckbox" type="checkbox" /></th>
+                            <th hidden="@(isAllMember)" class="thead" style="width: auto; white-space: nowrap;"><input @onchange="ToggleMembersCheckbox" type="checkbox" /></th>
                             <th class="thead">Name</th>
                         </tr>
                     </thead>
@@ -226,7 +226,7 @@
                         @foreach (var item in filteredExistingMemberList)
                         {
                             <tr class="table-row">
-                                <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                <td hidden="@(isAllMember)" class="table-cell" style="width: auto; white-space: nowrap;">
                                     <input @bind="item.isSelected" type="checkbox" />
                                 </td>
                                 <td class="table-cell" style="font-weight:500;"><p class="link">@item.Member.GetFullName()</p></td>
@@ -236,7 +236,7 @@
                 </table>
             </div>
 
-            <div class="d-flex gap-2 justify-content-end">
+            <div class="@(isAllMember ? "d-none" : "d-flex") gap-2 justify-content-end">
                 <button class="btn btn-danger px-4 py-2 text-white m-0" @onclick="RemoveMembers" style="width: 100px;">Delete</button>
                 <button class="btn btn-primary px-4 py-2 text-white m-0" @onclick="() => ToggleShowMember(groupId)" style="width: 100px;">Add</button>
             </div>
@@ -290,11 +290,39 @@
     private string? SelectedRow = null;
 
     private bool isWorking = false;
+    private bool isAllMember = false;
 
     //Load List during page initialization
     protected override async Task OnInitializedAsync()
     {
         await GetAllGroups();
+    }
+
+    //show all members
+    private async Task ShowAllmembers()
+    {
+        existingMemberList.Clear();
+        isAllMember = true;
+        isViewPanel = true;
+        viewMembersMessage = "Fetching data, please wait...";
+        var result = await _memberService.GetMembersAsync();
+
+        if (result.Success)
+        {
+            viewMembersMessage = string.Empty;
+            var members = result.Data;
+
+            existingMemberList = members.Select(u => new GroupMemberSelection
+            {
+                isSelected = true,
+                Member = u
+            }).ToList();
+
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to get members: " + result.Error);
+        }
     }
 
     //Update Group Name
@@ -445,10 +473,25 @@
         }
     }
 
+    //Get All Members
+    // private async Task GetAllMembers()
+    // {
+    //     var result = await _memberService.GetMembersAsync();
+    //     if (result.Success)
+    //     {
+
+    //     }
+    //     else
+    //     {
+    //         await _js.InvokeVoidAsync("alert", result.Error);
+    //     }
+    // }
+
     //Get Group and its members
     private async Task GetGroupAndMembers(string Id, string Name)
     {
         existingMemberList.Clear();
+        isAllMember = false;
         viewMembersMessage = "Fetching data, please wait...";
         isViewPanel = true;
         groupName = Name;

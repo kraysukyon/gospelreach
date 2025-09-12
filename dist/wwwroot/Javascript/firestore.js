@@ -94,6 +94,24 @@
         }
     },
 
+    //GetAttendance By scheduleId
+    async getAttendanceByScheduleId(Id) {
+        try {
+            const docRef = await db.collection("Attendance").where("scheduleId", "==", Id).get();
+
+            if (docRef.empty) {
+                return { success: false, error: "Attendance not exist" };
+            }
+            else {
+                const firstDoc = docRef.docs[0];
+                const data = { id: firstDoc.id, ...firstDoc.data() };
+                return { success: true, Attendance: data };
+            }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
     //update attendance
     async editAttendance(docId, attendance) {
         try {
@@ -115,6 +133,28 @@
             return { success: true }
         } catch (error) {
             return { success: false, error: error.message }
+        }
+    },
+
+    // delete attendance by scheduleId (unique)
+    async removeAttendanceByScheduleId(docId) {
+        try {
+            const snapshot = await db.collection("Attendance")
+                .where("scheduleId", "==", docId)
+                .get();
+
+            if (snapshot.empty) {
+                return { success: false, error: "No attendance record found" };
+            }
+
+            // get the first (and only) document
+            const docRef = snapshot.docs[0].ref;
+
+            // delete it
+            await docRef.delete();
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
         }
     },
 
@@ -154,6 +194,29 @@
             const attMember = attMemberTable.docs.map(items => ({ id: items.id, ...items.data() }));
 
             return { success: true, data: attMember }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+
+    },
+
+    async updateMemberAttendance(Id, memberId, attend) {
+        try {
+            const docRef = await db.collection("AttendanceMemberRecord").where("attendanceId", "==", Id).where("memberId", "==", memberId).get();
+
+            if (docRef.empty) {
+                return { success: false, error: "Data not exist" }
+            }
+            else {
+                const query = docRef.docs[0].ref;
+                await query.update({
+                    isPresent: attend
+                });
+
+                return { success: true }
+            }
+            
+            
         } catch (error) {
             return { success: false, error: error.message }
         }
@@ -441,7 +504,7 @@
 
     async addSchedule(schedule) {
         try {
-            await db.collection("Schedules").add({
+            const docRef = await db.collection("Schedules").add({
                 title: schedule.title,
                 categoryId: schedule.categoryId,
                 departmentId: schedule.departmentId,
@@ -460,8 +523,8 @@
                 hasAttendance: schedule.hasAttendance,
                 hasFinance: schedule.hasFinance,
             });
-
-            return { success: true }
+           
+            return { success: true, id: docRef.id}
         } catch (error) {
             return { success: false, error: error.message }
         }
@@ -486,6 +549,25 @@
             }));
 
             return { success: true, data: sched };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getScheduleByDateRange(date1, date2) {
+        try {
+            // Expecting date1 and date2 as "yyyy-MM-dd" strings
+            const financeMensTable = await db.collection("FinanceMens")
+                .where("date", ">=", date2)
+                .where("date", "<=", date1)
+                .get();
+
+            const finance = financeMensTable.docs.map(items => ({
+                id: items.id,
+                ...items.data()
+            }));
+
+            return { success: true, data: finance };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -617,7 +699,7 @@
     async updateScheduleAttendance(Id, att) {
         try {
             await db.collection("Schedules").doc(Id).update({
-                hasAttendee: att
+                hasAttendance: att
             });
 
             return { success: true }

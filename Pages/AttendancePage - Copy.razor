@@ -1,0 +1,604 @@
+﻿@page "/attendance-legacy"
+@layout LandingLayout
+@inject GospelReachCapstone.Services.ScheduleService _schedule
+@inject GospelReachCapstone.Services.AttendanceService _attendance
+@inject GospelReachCapstone.Services.GroupService _group
+@inject GospelReachCapstone.Services.GroupMemberService _groupMemberService
+@inject GospelReachCapstone.Services.MemberService _memberService
+@inject GospelReachCapstone.Services.SubCategoryService _subCategoryService
+@inject GospelReachCapstone.Services.NotificationService _notificationService
+@inject GospelReachCapstone.Services.AttendanceMemberRecordService _attenanceMemberRecordService
+@inject GospelReachCapstone.Services.VisitorService _visitorsService
+@inject GospelReachCapstone.Services.AttendanceVisitorRecordService _attendanceVisitorRecordService
+@using GospelReachCapstone.Models
+@inject IJSRuntime _js
+@using System.Globalization
+@inject HttpClient Http
+
+
+<PageTitle>Attendance Tracker</PageTitle>
+
+
+<div class="pages">
+    <div @onclick="ToggleModal" class="addEventModal @(isAddModalVisible ? "show" : "")">
+        <!--View Modal-->
+        <div hidden="@(isEditMode)" class="cards" @onclick:stopPropagation>
+            <div class="d-flex align-content-lg-start justify-content-between">
+                <div>
+                    <h4 class="fw-bold">@attVM.Category</h4>
+                    <p>@attVM.Title - @attVM.Date.ToString("MMM dd, yyyy")</p>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-2">
+                <div class="d-flex gap-4 mt-3">
+                    <div class="d-flex gap-1">
+                        <h5 @onclick="ToggleMembers" class="fw-bold cursor @(isVisitor ? "t" : "")">Members</h5>
+                        <p class="@(isVisitor ? "t" : "")">(@attendanceMemberRecordsList.Count)</p>
+                    </div>
+                    
+                    <div class="d-flex gap-1">
+                        <h5 @onclick="ToggleMembers" class="fw-bold cursor @(isVisitor ? "" : "t")">Visitors</h5>
+                        <p class="@(isVisitor ? "" : "t")">(@attendanceVisitorList.Count)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!--Members List-->
+            <div hidden="@(isVisitor)" class="table-container mt-2">
+                <p><em>@memberMessage</em></p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="thead" style="width: 100%;">Name</th>
+                            <th class="thead" style="width: 100%;">Present</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in attendanceMemberRecordsList)
+                        {
+                            <tr>
+                                <td class="table-cell">@item.FullName</td>
+                                <td class="table-cell">@(item.IsPresent ? "Present" : "Absent")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!--Visitors List-->
+            <div hidden="@(!isVisitor)" class="table-container mt-2">
+                <p><em>@visitorsMessage</em></p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="thead" style="width: 100%;">Name</th>
+                            <th class="thead" style="width: 100%;">Invited By</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in attendanceVisitorList)
+                        {
+                            <tr>
+                                <td class="table-cell">@item.FullName</td>
+                                <td class="table-cell">@item.InvitedByFullName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!--Header Section-->
+    <div class="header">
+        <div>
+            <h4 class="m-0 fw-bold">Attendance Tracking</h4>
+            <p class="m-0 c2" style="font-size: 14px">Tracks and manage attendance</p>
+        </div>
+    </div>
+
+    <!--Calendar View Section-->
+    <div class="calendar-container mt-5" hidden="@(isListVisible)">
+        <div class="calendar-header">
+            <div class="d-flex gap-2 align-items-center">
+                <button class="btn today" @onclick="setDateToday">Date Today</button>
+                <div class="me-2 d-flex gap-2">
+                    <i class="bi bi-chevron-left text-white fs-4 icon cursor" @onclick="PreviousMonthChanged"></i>
+                    <i class="bi bi-chevron-right text-white fs-4 icon cursor" @onclick="NextMonthChanged"></i>
+                </div>
+                <p class="text-white m-0 p-0 fs-3 fw-normal">@GetMonthName()</p>
+                <p class="text-white m-0 p-0 fs-3 fw-normal">@SelectedYear</p>
+            </div>
+            @* <i class="bi bi-search text-white fs-4 cursor" @onclick="ToggleList"></i> *@
+        </div>
+
+        <!--Table Section-->
+        <div class="card w-100 mb-3 cards">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div class="position-relative mb-2 w-100">
+                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                    <input @bind="joinedSearch" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name..." />
+                </div>
+                @* <i class="bi bi-calendar-event fs-4 cursor m-0 p-0" @onclick="ToggleList"></i> *@
+
+            </div>
+
+            <div class="filterTime">
+                <p>Filter by:</p>
+                <select class="form-select" @onchange="SelectStatus">
+                    <option value="">All</option>
+                    <option value="Event">Event</option>
+                    <option value="Weekly Meeting">Meeting</option>
+                    <option value="Services">Services</option>
+                    <option value="Others">Others</option>
+                </select>
+                <p><em>@messages</em></p>
+            </div>
+
+            
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="thead">Date</th>
+                            <th class="thead">Title</th>
+                            <th class="thead">Category</th>
+                            <th class="thead">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in filteredJoinedList)
+                        {
+                            <tr class="table-row">
+                                <td class="table-cell" style="font-weight:500;">@item.Date</td>
+                                <td class="table-cell" style="font-weight:500;">@item.Title</td>
+                                <td class="table-cell" style="font-weight:500;">@item.Category</td>
+                                <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none; width: auto;">
+                                    <div class="d-flex gap-1">
+                                        <p @onclick:stopPropagation @onclick="(() => OpenEdit(item.AttendanceId))" class="hover">View</p>
+                                    </div>
+                                    
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    
+</div>
+
+@code {
+    private string memberMessage = string.Empty;
+    private string visitorsMessage = string.Empty;
+    private bool isVisitor = false;
+    private List<Schedule> schedulesList = new();
+    private List<Schedule> schedulesListView = new();
+    private string subCategory { get; set; } = string.Empty;
+    private bool isSub { get; set; } = false;
+    private bool isAddModalVisible = false;
+    private Schedule sched = new();
+    private string searchSched = string.Empty;
+    private string messages = string.Empty;
+    private int index = 1;
+    private string selectedStatus = "Upcoming";
+    private IEnumerable<Schedule> filteredSched => schedulesListView.Where(u => string.IsNullOrWhiteSpace(searchSched) || u.Title.Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.StartDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase) || u.EndDate.ToString("MMM dd, yyyy").Contains(searchSched, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    public record MonthOption(int Value, string Name);
+    private List<MonthOption> Months { get; set; }
+    // private int Years = DateOnly.FromDateTime(DateTime.Now).Year;
+    private string[] DayNames { get; set; } = CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedDayNames;
+
+    private int SelectedMonth { get; set; }
+    private int SelectedYear { get; set; }
+    private bool isListVisible = false;
+
+    private List<List<int>> CalendarWeeks = new();
+    private int month = DateTime.Now.Month;
+    private int year = DateTime.Now.Year;
+    private int dayNow = DateTime.Now.Day;
+
+    // Attendance storage
+    private List<Attendance> Attendances = new();
+    private string SelectedCategory = string.Empty;
+    private Attendance att = new();
+    private bool isAttendanceVisible = false;
+    private DateOnly attDate = new DateOnly(2025,9,6);
+    private List<AttendanceScheduleVM> joinedList = new();
+    private string joinedSearch = string.Empty;
+    private AttendanceScheduleVM attVM = new ();
+    private IEnumerable<AttendanceScheduleVM> filteredJoinedList => joinedList.Where(u => string.IsNullOrEmpty(SelectedCategory) || u.Category.Equals(SelectedCategory,StringComparison.CurrentCultureIgnoreCase)).Where(u => string.IsNullOrWhiteSpace(joinedSearch) || u.Title.Contains(joinedSearch, StringComparison.OrdinalIgnoreCase) || u.Date.ToString("MMM dd, yyyy").Contains(joinedSearch, StringComparison.OrdinalIgnoreCase) || u.Category.Contains(joinedSearch, StringComparison.OrdinalIgnoreCase) || u.Title.Contains(joinedSearch, StringComparison.OrdinalIgnoreCase)
+    || u.Count.ToString().Contains(joinedSearch, StringComparison.OrdinalIgnoreCase) || u.Seekers.ToString().Contains(joinedSearch, StringComparison.OrdinalIgnoreCase) || u.Tithes.ToString().Contains(joinedSearch, StringComparison.OrdinalIgnoreCase) || u.Offering.ToString().Contains(joinedSearch, StringComparison.OrdinalIgnoreCase));
+
+    //AttendanceVisitor
+    private List<VisitorsInfo> attendanceVisitorList = new();
+    private List<AttendanceWithMember> attendanceMemberRecordsList = new();
+
+    //Toggle edit
+    private bool isEditMode = false;
+
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        Init();
+        // await getScheduleList();
+        await GetAttendanceList();
+        // await GetSubCategoriesList();
+    }
+
+    private void ToggleMembers()
+    {
+        isVisitor = !isVisitor;
+    }
+
+
+    //set the date to default today
+    private async Task setDateToday()
+    {
+        month = DateTime.Now.Month;
+        year = DateTime.Now.Year;
+        dayNow = DateTime.Now.Day;
+
+        SelectedMonth = month;
+        SelectedYear = year;
+
+        await GetAttendanceList();
+    }
+
+
+    //Get Upcoming list of schedules
+    private async Task GetUpcomingSchedules()
+    {
+        messages = "Fetching files...Please wait";
+
+        var result = await _schedule.GetUpcomingSchedules();
+
+        if (result.Success)
+        {
+            schedulesListView = result.Data;
+            messages = $"{schedulesListView.Count} {selectedStatus} schedules found.";
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
+            messages = "No schedules found.";
+        }
+    }
+
+    //Fetch files according to status
+    private void SelectStatus(ChangeEventArgs e)
+    {
+        SelectedCategory = e.Value!.ToString()!;
+    }
+
+
+    private async Task ToggleModal()
+    {
+        isAddModalVisible = !isAddModalVisible;
+        isEditMode = true;
+        isVisitor = false;
+    }
+
+    private void ToggleView()
+    {
+        isAddModalVisible = !isAddModalVisible;
+        isAttendanceVisible = false;
+        isEditMode = false;
+    }
+
+
+    private void Init()
+    {
+        Months = Enumerable.Range(1, 12)
+            .Select(m => new MonthOption(m, CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)))
+            .ToList();
+
+        int currentYear = DateTime.Now.Year;
+        // Years = Enumerable.Range(currentYear - 5, 11).ToList();
+
+        SelectedMonth = DateTime.Now.Month;
+        SelectedYear = currentYear;
+
+        GenerateCalendar();
+    }
+
+    private async Task ToggleList()
+    {
+        isListVisible = !isListVisible;
+        await GetUpcomingSchedules();
+    }
+
+    //Get Attendance List
+    private async Task GetAttendanceList()
+    {
+        messages = "Fetching files, Please wait...";
+        var result = await _attendance.GetAttendanceByDateAsync(SelectedMonth, SelectedYear);
+
+        if (result.Success)
+        {
+            Attendances = result.Data;
+
+            var results = await _schedule.GetScheduleByDateAsync(SelectedMonth, SelectedYear);
+            if (results.Success)
+            {
+                schedulesList = results.Data;
+
+
+                joinedList = Attendances.Join(schedulesList, a => a.ScheduleId, s => s.Id, (a, s) => new AttendanceScheduleVM
+                {
+                    AttendanceId = a.Id,
+                    Count = a.Count,
+                    Date = a.Date,
+
+                    ScheduleId = s.Id,
+                    // Offering = a.Offering,
+                    // Seekers = a.Seekers,
+                    // Tithes = a.Tithes,
+                    Title = s.Title,
+                    Category = s.CategoryId
+                }).ToList();
+
+                if (joinedList.Count == 0)
+                {
+                    messages = "No records found";
+                }
+                else
+                {
+                    messages = string.Empty;
+                }
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Failed to get schedule list: " + results.Error);
+                messages = "Failed to get files...";
+            }
+
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to get attendance list: " + result.Error);
+            messages = "Failed to get files...";
+        }
+    }
+
+    private async Task getScheduleList()
+    {
+        try
+        {
+            schedulesList = new();
+            var result = await _schedule.GetScheduleAsync();
+
+            if (result.Success)
+            {
+                schedulesList = result.Data;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", result.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            await _js.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+
+
+
+
+    //View Schedule
+    private async Task OpenEdit(string Id)
+    {
+        ToggleView();
+
+        var m = joinedList.FirstOrDefault(u => u.AttendanceId == Id);
+
+        if(m != null)
+        {
+            attVM = m;
+        }
+
+        var result = await _attenanceMemberRecordService.GetAttendanceRecordByAttendanceId(Id);
+
+        if(result.Success)
+        {
+            var attMemList = result.Data;
+
+            var membersResult = await _memberService.GetMembersAsync();
+            if (membersResult.Success)
+            {
+                var members = membersResult.Data;
+
+                attendanceMemberRecordsList = attMemList.Join(members, a => a.MemberId, m => m.Id, (a, m) => new AttendanceWithMember
+                {
+                    AttendanceId = a.AttendanceId,
+                    FullName = m.GetFullName(),
+                    IsPresent = a.IsPresent,
+                }).ToList();
+            }
+        }
+
+        var results = await _attendanceVisitorRecordService.GetAttendanceVisitorByAttendanceIdAsync(Id);
+        var test = await _memberService.GetMembersAsync();
+
+        if (results.Success)
+        {
+            var memResult = await _visitorsService.GetVisitorsAsync();
+
+            if (memResult.Success)
+            {
+                var members = memResult.Data;
+
+                attendanceVisitorList = (from av in results.Data
+                                         where av.AttendanceId == Id
+                                         join v in members on av.VisitorId equals v.Id
+                                         join t in test.Data on av.InvitedByMemberId equals t.Id into gj
+                                         from invitedBy in gj.DefaultIfEmpty() // left join (in case null)
+                                         select new VisitorsInfo
+                                         {
+                                             FullName = v.GetFullName(),
+                                             InvitedByFullName = invitedBy != null ? invitedBy.GetFullName() : "N/A",
+                                             AttendanceVisitor = av
+                                         }).ToList();
+
+                
+            }
+        }
+
+        if (attendanceVisitorList.Count == 0)
+        {
+            visitorsMessage = "There are no visitors during this time";
+        }
+        else
+        {
+            visitorsMessage = string.Empty;
+        }
+    }
+
+
+    private void GenerateCalendar()
+    {
+        CalendarWeeks.Clear();
+
+        var firstDayOfMonth = new DateTime(SelectedYear, SelectedMonth, 1);
+        var daysInMonth = DateTime.DaysInMonth(SelectedYear, SelectedMonth);
+
+        int currentDay = 1;
+        int startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+
+        var week = new List<int>();
+
+        // Fill empty days before first day
+        for (int i = 0; i < startDayOfWeek; i++)
+        {
+            week.Add(0);
+        }
+
+        // Fill actual days
+        while (currentDay <= daysInMonth)
+        {
+            week.Add(currentDay);
+            currentDay++;
+
+            if (week.Count == 7)
+            {
+                CalendarWeeks.Add(week);
+                week = new List<int>();
+            }
+        }
+
+        // Fill remaining empty days
+        if (week.Count > 0)
+        {
+            while (week.Count < 7)
+            {
+                week.Add(0);
+            }
+            CalendarWeeks.Add(week);
+        }
+    }
+
+    private async Task PreviousMonthChanged()
+    {
+        month--;
+        if (month < 1)
+        {
+            month = 12;
+            year--;
+        }
+        SelectedMonth = month;
+        SelectedYear = year;
+        await GetAttendanceList();
+    }
+
+    private async Task NextMonthChanged()
+    {
+
+        month++;
+        if (month > 12)
+        {
+            month = 1;
+            year++;
+        }
+        SelectedMonth = month;
+        SelectedYear = year;
+        await GetAttendanceList();
+    }
+
+    private string GetMonthName()
+    {
+        return new DateTime(year,month,1).ToString("MMMM");
+    }
+
+    private void OnMonthChanged(int value)
+    {
+        SelectedMonth = value;
+        GenerateCalendar();
+    }
+
+    private void OnYearChanged(int value)
+    {
+        SelectedYear = value;
+        GenerateCalendar();
+    }
+
+    private bool HasEvent(DateOnly date) =>
+        schedulesList.Any(e => date >= e.StartDate &&
+                        date <= e.EndDate);
+
+
+
+    private class GroupMemberSelection
+    {
+        public bool isSelected { get; set; }
+        public Member Member { get; set; }
+    }
+
+    private class VisitorSelection
+    {
+        public bool isSelected { get; set; }
+        public Visitor Visitor { get; set; }
+    }
+
+    public class AttendanceScheduleVM
+    {
+        public string AttendanceId { get; set; }
+        public string ScheduleId { get; set; }
+        public decimal Tithes { get; set; }
+        public decimal Offering { get; set; }
+        public DateOnly Date { get; set; }
+        public int Count { get; set; }
+        public int Seekers { get; set; }
+        public string Category { get; set; }
+        public string Title { get; set; }
+    }
+
+    public class AttendanceWithMember
+    {
+        public string AttendanceId { get; set; }
+        public string MemberId { get; set; }
+        public bool IsPresent { get; set; }
+
+        public string FullName { get; set; }
+        public string Contact { get; set; }
+        public string Gender { get; set; }
+    }
+
+    public class VisitorsInfo
+    {
+        public string FullName { get; set; }
+        public string InvitedByFullName { get; set; }
+        public AttendanceVisitor AttendanceVisitor { get; set; }
+    }
+
+    
+}

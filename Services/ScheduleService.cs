@@ -287,5 +287,6 @@ namespace GospelReachCapstone.Services
         public List<Schedule> Data { get; set; }
         public string Error { get; set; }
         public Schedule Schedule { get; set; }
+        public string Id { get; set; }
     }
 }

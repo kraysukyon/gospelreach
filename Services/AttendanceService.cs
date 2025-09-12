@@ -90,6 +90,57 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        public async Task<AttendanceResult> GetAttendanceByScheduleId(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getAttendanceByScheduleId", Id);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Remove Attendance by schedule ID
+        public async Task<AttendanceResult> RemoveAttendanceByScheduleIdAsync(string schedId)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.removeAttendanceByScheduleId", schedId);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
 
     }
 
@@ -99,5 +150,6 @@ namespace GospelReachCapstone.Services
         public string Id { get; set; }
         public List<Attendance> Data { get; set; }
         public string Error { get; set; }
+        public Attendance Attendance { get; set; }
     }
 }
