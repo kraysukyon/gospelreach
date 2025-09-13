@@ -1655,6 +1655,7 @@ button[b-hknug8fysy]{
     max-height: calc(100vh - 10vh);
     overflow-y: auto;
     transition: all 0.5s ease;
+    height: auto;
 }
 
 .addEvents[b-2q70jhrmqz]{

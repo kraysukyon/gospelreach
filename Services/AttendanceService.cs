@@ -208,6 +208,33 @@ namespace GospelReachCapstone.Services
 
         }
 
+        //Get Completed Attendance
+        public async Task<AttendanceResult> UpdateAttendanceStatusAsync(string id, bool isComplete)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.updateAttendanceStatus", id, isComplete);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+
+        }
+
 
 
     }

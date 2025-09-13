@@ -3,6 +3,7 @@
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.ScheduleService _scheduleService
 @inject GospelReachCapstone.Services.FinancialMensService _financialMensService
+@inject GospelReachCapstone.Services.FinanceEventsService _financeEventsService
 @using GospelReachCapstone.Models
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager _nav
@@ -42,7 +43,7 @@
                 </div>
 
                 <select value="@type" class="form-select p-2 mt-2" @onchange="OnTypeChange">
-                    <option value="Offering">Offering</option>
+                    <option value="Offering" disabled="@(scheduleFinancesList.Count == 0)">Offering @(scheduleFinancesList.Count == 0 ? "(No schedules)" : "")</option>
                     <option value="Donation">Donation</option>
                     <option value="Expense">Expense</option>
                 </select>
@@ -76,22 +77,22 @@
                 </div>
 
                 <!--Schedule-->
-                <div hidden="@(isDonation)" class="inputs mt-3">
+                <div hidden="@(type != "Offering" || scheduleFinancesList.Count == 0)" class="inputs mt-3">
                     <div class="d-flex align-items-center gap-2">
                         <p>Event</p>
                         @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                     </div>
 
-                    <select @bind="mensRecord.ScheduleId" class="form-select p-2 mt-2">
-                        @foreach (var item in scheduleList)
+                    <select @onchange="OnScheduleChange" class="form-select p-2 mt-2">
+                        @foreach (var item in scheduleFinancesList)
                         {
-                            <option value="@item.Id">@item.Title - @item.StartDate.ToString("MMM dd, yyyy")</option>
+                            <option value="@item.FinanceId">@item.Title - @item.Date.ToString("MMM dd, yyyy")</option>
                         }
                     </select>
                 </div>
 
                 <!--Donated By-->
-                <div hidden="@(!isDonation)" class="inputs mt-3">
+                <div hidden="@(type != "Donation")" class="inputs mt-3">
                     <div class="d-flex align-items-center gap-2">
                         <p>(Optional) Donated By</p>
                         @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
@@ -655,6 +656,7 @@
     private DateOnly dateFrom = DateOnly.FromDateTime(DateTime.Now.AddMonths(-3));
     private List<string> validationResults = new();
     private List<string> updateValidationResults = new();
+    private List<ScheduleFinanceVM> scheduleFinancesList = new();
     private string idToBeRemoved { get; set; } = string.Empty;
     private bool isRemoving = false;
     private bool isAdding = false;
@@ -665,6 +667,8 @@
     private decimal totalExpense = 0m;
     private decimal currentBalance = 0m;
     private string type = "Offering";
+    private const string DepName = "Mens";
+    private string financeId = string.Empty;
 
 
     //modals
@@ -696,6 +700,17 @@
         string from = dateFrom.ToString("yyyy-MM-dd");
         string to = dateTo.ToString("yyyy-MM-dd");
         _nav.NavigateTo($"/finance/mens/report/{from}/{to}");
+    }
+
+    //On ScheduleChange
+    private void OnScheduleChange(ChangeEventArgs e)
+    {
+        financeId = e.Value!.ToString()!;
+        if (!string.IsNullOrEmpty(financeId))
+        {
+            mensRecord.ScheduleId = scheduleFinancesList.FirstOrDefault(u => u.FinanceId == financeId)?.ScheduleId ?? null;
+        }
+
     }
 
     //Get Sum
@@ -1089,11 +1104,18 @@
         var result = await _financialMensService.AddFinancialMensRecordAsync(mensRecord);
         if (result.Success)
         {
+
             if (mensRecord.ScheduleId != null)
             {
                 var shcedResult = await _scheduleService.UpdateScheduleFinanceById(mensRecord.ScheduleId, true);
             }
 
+            if (mensRecord.Category == "Offering")
+            {
+                var updateRes = await _financeEventsService.UpdateFinanceEventStatus(financeId, true);
+            }
+
+            financeId = string.Empty;
             isAddModal = false;
             isAddedSuccessModal = true;
             await GetAllFinancialData();
@@ -1140,17 +1162,19 @@
         mensRecord = new();
         isIncome = true;
 
-        if (scheduleList != null)
+        if (scheduleFinancesList != null)
         {
-            if (scheduleList.Count != 0)
+            if (scheduleFinancesList.Count != 0)
             {
-                mensRecord.ScheduleId = scheduleList.First().Id;
-                scheduleDate = scheduleList.First().StartDate;
+                mensRecord.ScheduleId = scheduleFinancesList.First().ScheduleId;
+                financeId = scheduleFinancesList.First().FinanceId;
+                scheduleDate = scheduleFinancesList.First().Date;
                 isDonation = false;
             }
             else
             {
                 mensRecord.Category = "Donation";
+                type = "Donation";
                 isDonation = true;
             }
         }
@@ -1178,28 +1202,8 @@
             {
                 mensRecord.Category = "Offering";
                 isDonation = false;
-                mensRecord.ScheduleId = scheduleList.First().Id;
+                mensRecord.ScheduleId = scheduleFinancesList.First().ScheduleId;
                 mensRecord.DonatorName = null;
-
-            
-
-
-                // mensRecord.Category = "Offering";
-                // if (scheduleList != null)
-                // {
-                //     if (scheduleList.Count != 0)
-                //     {
-                //         mensRecord.ScheduleId = scheduleList.First().Id;
-                //         scheduleDate = scheduleList.First().StartDate;
-                //     }
-                //     else
-                //     {
-                //         mensRecord.Category = "Donation";
-                //         isDonation = true;
-                //     }
-                // }
-                // mensRecord.DonatorName = null;
-                // mensRecord.VoucherNumber = null;
             }
             else
             {
@@ -1240,23 +1244,63 @@
     //Gets Schedules that has missing financial record
     private async Task GetSchedules()
     {
-        var result = await _scheduleService.GetSchedulesWithMissingFinanceByDepartment("Mens");
+        scheduleFinancesList = new();
+        var result = await _financeEventsService.GetFinanceEventsByDepartmentIdAsync(DepName);
 
         if (result.Success)
         {
             if (result.Data != null)
             {
-                scheduleList = result.Data;
-            }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", "not loaded");
+
+                var sched = await _scheduleService.GetScheduleAsync();
+                var financeIds = result.Data.Select(u => u.ScheduleId).ToHashSet();
+
+                var schedList = sched.Data.Where(u => financeIds.Contains(u.Id)).ToList();
+                var financeData = result.Data;
+                var joined = schedList.Join(financeData, s => s.Id, f => f.ScheduleId, (s, f) => new ScheduleFinanceVM
+                {
+                    DepartmentId = f.DepartmentId,
+                    ScheduleId = s.Id,
+                    Date = f.Date,
+                    Title = s.Title,
+                    FinanceId = f.Id
+
+                }).ToList();
+
+                scheduleFinancesList = joined.Where(u => u.Date <= DateOnly.FromDateTime(DateTime.Now)).ToList();
             }
         }
         else
         {
-            message = result.Error;
-            await _js.InvokeVoidAsync("alert", message);
+            await _js.InvokeVoidAsync("alert", result.Error);
         }
+
+        // var result = await _scheduleService.GetSchedulesWithMissingFinanceByDepartment("Mens");
+
+        // if (result.Success)
+        // {
+        //     if (result.Data != null)
+        //     {
+        //         scheduleList = result.Data;
+        //     }
+        //     else
+        //     {
+        //         await _js.InvokeVoidAsync("alert", "not loaded");
+        //     }
+        // }
+        // else
+        // {
+        //     message = result.Error;
+        //     await _js.InvokeVoidAsync("alert", message);
+        // }
+    }
+
+    private class ScheduleFinanceVM
+    {
+        public string FinanceId { get; set; }
+        public string ScheduleId {get; set;}
+        public string DepartmentId { get; set; }
+        public DateOnly Date { get; set; }
+        public string Title { get; set; }
     }
 }

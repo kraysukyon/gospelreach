@@ -143,7 +143,7 @@
         </div>
 
         <!--Invite Form Modal-->
-        <div hidden="@(!isInviteVisible)" class="addAttendances cards" style="width: 300px;" @onclick:stopPropagation>
+        <div hidden="@(!isInviteVisible)" class="addAttendances" style="width: 300px;" @onclick:stopPropagation>
             <div class="d-flex align-content-lg-start justify-content-between">
                 <div>
                     <h4 class="fw-bold">Add Visitor</h4>
@@ -180,11 +180,11 @@
         </div>
 
         <!--View Modal-->
-        <div hidden="@(!isEditMode)" class="cards" @onclick:stopPropagation>
+        <div hidden="@(!isEditMode)" class="addAttendances cards" @onclick:stopPropagation>
             <div class="d-flex align-content-lg-start justify-content-between">
                 <div>
-                    <h4 class="fw-bold">@sched.CategoryId</h4>
-                    <p>@sched.Title - @sched.StartDate.ToString("MMM dd, yyyy")</p>
+                    <h4 class="fw-bold">@attVM.Category</h4>
+                    <p>@attVM.Title - @attVM.Date.ToString("MMM dd, yyyy")</p>
                 </div>
             </div>
 
@@ -467,46 +467,63 @@
         }
         isLoadingModal = false;
         isAttendanceVisible = false;
+        isEditMode = true;
     }
 
     //Update attendanceMember and schedule
     private async Task UpdateAttendance()
     {
-        @foreach (var item in groupMemberList)
+        var updateSchedAttendance = await _schedule.UpdateScheduleAttendance(attVM.ScheduleId, true);
+        if (updateSchedAttendance.Success)
         {
-            attendanceMember.MemberId = item.Member.Id;
-            var attMemRes = await _attendanceMemberRecordService.UpdateAttendanceMemberByAttendanceId(attendanceMember.AttendanceId, attendanceMember.MemberId ,item.isSelected);
-        }
-
-        string visitId = string.Empty;
-
-        @foreach (var item in localvisitList)
-        {
-            var results = await _visitorsService.AddVisitorAsync(item);
-            visitId = results.Id;
-
-            var a = new AttendanceVisitor { AttendanceId = attId, InvitedByMemberId = item.InvitedByMemberId, IsPresent = true, VisitorId = visitId };
-            var addAttVisit = await _attendanceVisitorRecordService.AddAttendanceVisitorRecordAsync(a);
-        }
-
-        if (visitorsList.Any())
-        {
-            var visitorsToAdd = visitorsList.Where(u => u.isSelected).ToList();
-            @foreach (var item in visitorsToAdd)
+            var updateAttendanceStatus = await _attendanceService.UpdateAttendanceStatusAsync(attVM.AttendanceId, true);
+            if (updateAttendanceStatus.Success)
             {
-                var b = new AttendanceVisitor { AttendanceId = attId, IsPresent = true, InvitedByMemberId = string.Empty, VisitorId = item.Visitor.Id };
-                var addAttendanceMemberResult = await _attendanceVisitorRecordService.AddAttendanceVisitorRecordAsync(b);
+                @foreach (var item in groupMemberList)
+                {
+
+                    var attMemRes = await _attendanceMemberRecordService.UpdateAttendanceMemberByAttendanceId(attVM.AttendanceId,item.Member.Id, item.isSelected);
+                }
+
+                string visitId = string.Empty;
+
+                @foreach (var item in localvisitList)
+                {
+                    var results = await _visitorsService.AddVisitorAsync(item);
+                    visitId = results.Id;
+
+                    var a = new AttendanceVisitor { AttendanceId = attVM.AttendanceId, InvitedByMemberId = item.InvitedByMemberId, IsPresent = true, VisitorId = visitId };
+                    var addAttVisit = await _attendanceVisitorRecordService.AddAttendanceVisitorRecordAsync(a);
+                }
+
+                if (visitorsList.Any())
+                {
+                    var visitorsToAdd = visitorsList.Where(u => u.isSelected).ToList();
+
+                    @foreach (var item in visitorsToAdd)
+                    {
+                        var b = new AttendanceVisitor { AttendanceId = attVM.AttendanceId, IsPresent = true, InvitedByMemberId = string.Empty, VisitorId = item.Visitor.Id };
+                        var addAttendanceMemberResult = await _attendanceVisitorRecordService.AddAttendanceVisitorRecordAsync(b);
+                    }
+                }
+
+                await _js.InvokeVoidAsync("alert", "Success");
+                ToggleModal();
+                await GetOngoingSchedules();
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", updateAttendanceStatus.Error);
+                ToggleModal();
+                await GetOngoingSchedules();
             }
         }
-
-
-        var updateFinance = await _schedule.UpdateScheduleAttendance(schedId,true);
-        if (updateFinance.Success)
+        else
         {
-            await _js.InvokeVoidAsync("alert", "Success");
+            await _js.InvokeVoidAsync("alert", updateSchedAttendance.Error);
             ToggleModal();
-            await GetUpcomingSchedules();
-        }
+            await GetOngoingSchedules();
+        } 
     }
 
     //Open Attendance page
@@ -517,62 +534,59 @@
         var attRes = await _attendanceService.GetAttendanceByIdAsync(Id);
         if (attRes.Success)
         {
-            attId = attRes.Attendance.Id;
-            var schedRes = await _schedule.GetScheduleByIdAsync(Id);
-            if (schedRes.Success)
+            if (attRes.Attendance != null)
             {
-                if (schedRes.Schedule.hasAttendance)
+                if (attRes.Attendance.isCompleted)
                 {
-                    sched.Title = schedRes.Schedule.Title;
-                    sched.CategoryId = schedRes.Schedule.CategoryId;
-                    sched.StartDate = schedRes.Schedule.StartDate;
-                    isEditMode = true;
+                    attId = attRes.Attendance.Id;
                     await OpenEdit(attRes.Attendance.Id);
-                    return;
-                }
-            }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", schedRes.Error);
-                return;
-            }
-
-            schedId = Id;
-            groupMemberList = new();
-
-            attendanceMember.AttendanceId = attRes.Attendance.Id;
-            var groupMemRes = await _attendanceMemberRecordService.GetAttendanceRecordByAttendanceId(attRes.Attendance.Id);
-
-            if (groupMemRes.Success)
-            {
-                var memRes = await _memberService.GetMembersAsync();
-                if (memRes.Success)
-                {
-
-                    var memIds = groupMemRes.Data.Select(u => u.MemberId).ToHashSet();
-
-                    var Members = memRes.Data.Where(u => memIds.Contains(u.Id)).ToList();
-
-                    groupMemberList = Members.Select(u => new GroupMemberSelection
-                    {
-                        isSelected = true,
-                        Member = u
-                    }).ToList();
-
-                    await GetVisitors();
-                    isLoadingModal = false;
-                    isAttendanceVisible = true;
                 }
                 else
                 {
-                    ToggleModal();
-                    await _js.InvokeVoidAsync("alert", memRes.Error);
+                    var groupMemResult = await _attendanceMemberRecordService.GetAttendanceRecordByAttendanceId(attRes.Attendance.Id);
+                    if (groupMemResult.Success)
+                    {
+
+                        var members = await _memberService.GetMembersAsync();
+                        if (members.Success)
+                        {
+                            var groupMemIds = groupMemResult.Data.Select(u => u.MemberId).ToHashSet();
+                            var Members = members.Data.Where(u => groupMemIds.Contains(u.Id)).ToList();
+                            groupMemberList = Members.Select(u => new GroupMemberSelection
+                            {
+                                isSelected = true,
+                                Member = u
+                            }).ToList();
+
+                            await GetVisitors();
+                            isLoadingModal = false;
+                            attVM = new();
+                            attVM = new AttendanceScheduleVM
+                            {
+                                AttendanceId = attRes.Attendance.Id,
+                                ScheduleId = attRes.Attendance.ScheduleId,
+                            };
+                            isAttendanceVisible = true;
+                        }
+                        else
+                        {
+                            await _js.InvokeVoidAsync("alert", members.Error);
+                            ToggleModal();
+                        }
+                    }
+                    else
+                    {
+                        await _js.InvokeVoidAsync("alert", groupMemResult.Error);
+                        ToggleModal();
+                    }
                 }
+                
+
             }
             else
             {
+                await _js.InvokeVoidAsync("alert", attRes.Error);
                 ToggleModal();
-                await _js.InvokeVoidAsync("alert", groupMemRes.Error);
             }
         }
         else
@@ -645,6 +659,7 @@
     //Get Schedules by status
     private async Task OnFilterChange(ChangeEventArgs e)
     {
+        joinedList.Clear();
         string value = e.Value!.ToString()!;
 
         switch (value)
@@ -690,14 +705,15 @@
     {
         message = "Fetching files...Please wait";
 
-        var result = await _schedule.GetOngoingSchedules();
-
-        if (result.Success)
+        var results = await _attendanceService.GetOngoingAttendanceAsync();
+        if (results.Success)
         {
-            scheduleList = result.Data.Where(u => u.HasAttendee).ToList();
-            var results = await _attendanceService.GetOngoingAttendanceAsync();
-            if (results.Success)
+            var ids = results.Data.Select(u => u.ScheduleId).ToHashSet();
+
+            var scheduleResult = await _schedule.GetScheduleAsync();
+            if (scheduleResult.Success)
             {
+                scheduleList = scheduleResult.Data.Where(u => ids.Contains(u.Id)).ToList();
                 var attList = results.Data;
                 joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
                 {
@@ -705,17 +721,51 @@
                     ScheduleId = s.Id,
                     Date = a.Date,
                     Title = s.Title,
-                    Category = s.CategoryId,
+                    Category = s.CategoryId, 
                     isCompleted = a.isCompleted
                 }).ToList();
+                message = string.Empty;
             }
-            message = string.Empty;
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + scheduleResult.Error);
+                message = "No schedules found.";
+            }
+            
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
-            message = "No schedules found.";
+            await _js.InvokeVoidAsync("alert", "Failed to attendance: " + results.Error);
+            //     message = "No schedules found.";
         }
+
+
+        // var result = await _schedule.get();
+
+        // if (result.Success)
+        // {
+        //     scheduleList = result.Data.Where(u => u.HasAttendee).ToList();
+        //     var results = await _attendanceService.GetOngoingAttendanceAsync();
+        //     if (results.Success)
+        //     {
+        //         var attList = results.Data;
+        //         joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+        //         {
+        //             AttendanceId = a.Id,
+        //             ScheduleId = s.Id,
+        //             Date = a.Date,
+        //             Title = s.Title,
+        //             Category = s.CategoryId,
+        //             isCompleted = a.isCompleted
+        //         }).ToList();
+        //     }
+        //     message = string.Empty;
+        // }
+        // else
+        // {
+        //     await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
+        //     message = "No schedules found.";
+        // }
     }
 
 
@@ -779,11 +829,8 @@
     {
         public string AttendanceId { get; set; }
         public string ScheduleId { get; set; }
-        public decimal Tithes { get; set; }
-        public decimal Offering { get; set; }
         public DateOnly Date { get; set; }
         public int Count { get; set; }
-        public int Seekers { get; set; }
         public string Category { get; set; }
         public string Title { get; set; }
         public bool isCompleted { get; set; }

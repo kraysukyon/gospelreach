@@ -10,6 +10,7 @@
 @inject GospelReachCapstone.Services.AttendanceMemberRecordService _attenanceMemberRecordService
 @inject GospelReachCapstone.Services.AttendanceVisitorRecordService _attendanceVisitorRecordService
 @inject GospelReachCapstone.Services.VisitorService _visitorsService
+@inject GospelReachCapstone.Services.FinanceEventsService _financeEventsService
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
 @using System.Globalization
@@ -1362,6 +1363,21 @@
         var result = await _schedule.AddScheduleAsync(serviceSchedule);
         if(result.Success)
         {
+            int Days = serviceSchedule.EndDate.DayNumber - serviceSchedule.StartDate.DayNumber + 1;
+            for (int i = 0; i < Days; i++)
+            {
+                DateOnly date = serviceSchedule.StartDate.AddDays(i);
+                var financeToAdd = new FinanceEvents
+                {
+                    DepartmentId = serviceSchedule.DepartmentId,
+                    isCompleted = false,
+                    ScheduleId = result.Id,
+                    Date = date
+                };
+
+                var addFinance = await _financeEventsService.AddFinanceEventsAsync(financeToAdd);
+            }
+
             if (serviceSchedule.HasAttendee)
             {
                 int count = 0;
@@ -1435,6 +1451,8 @@
         var checkResult = await _schedule.GetScheduleByIdAsync(updateServiceSchedule.Id);
         if (checkResult.Success)
         {
+            
+
             if (checkResult.Schedule.hasAttendance == true || checkResult.Schedule.hasFinance == true)
             {
                 await _js.InvokeVoidAsync("alert", "Cannot proceed, Schedule has link to attendance or finance");
@@ -1457,6 +1475,22 @@
                 var result = await _schedule.UpdateScheduleAsync(updateServiceSchedule.Id, updateServiceSchedule);
                 if (result.Success)
                 {
+                    var removeFinanceresult = await _financeEventsService.RemoveFinanceRecordsByScheduleIdAsync(updateServiceSchedule.Id);
+
+                    int Days = updateServiceSchedule.EndDate.DayNumber - updateServiceSchedule.StartDate.DayNumber + 1;
+                    for (int i = 0; i < Days; i++)
+                    {
+                        DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
+                        var financeToAdd = new FinanceEvents
+                        {
+                            DepartmentId = updateServiceSchedule.DepartmentId,
+                            isCompleted = false,
+                            ScheduleId = updateServiceSchedule.Id,
+                            Date = date
+                        };
+
+                        var addFinance = await _financeEventsService.AddFinanceEventsAsync(financeToAdd);
+                    }
 
                     if (updateServiceSchedule.HasAttendee)
                     {
@@ -2192,7 +2226,7 @@
             }
             else
             {
-                
+
 
                 var removeSched = await _schedule.RemoveScheduleAsync(sched.Id);
                 if (removeSched.Success)
@@ -2208,6 +2242,8 @@
                         }
 
                     }
+                    ToggleModal();
+                    await getScheduleList();
                 }
                 else
                 {

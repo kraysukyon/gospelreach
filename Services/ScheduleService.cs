@@ -267,6 +267,32 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        //Get Schedule By List of Ids
+        public async Task<ScheduleResult> GetScheduleByListOfIdsAsync(List<string> ids)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<ScheduleResult>("firestoreFunctions.getScheduleByListOfIds", ids);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ScheduleResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
         //Resize textarea of input and output
         public async Task ResizeDetails(ElementReference input)
         {
@@ -279,6 +305,8 @@ namespace GospelReachCapstone.Services
                 await _js.InvokeVoidAsync("alert", ex.Message);
             }
         }
+
+        
     }
 
     public class ScheduleResult

@@ -105,7 +105,7 @@
             }
             else {
                 const attdata = { id: doc.id, ...doc.data() };
-                return { success: true, data: attdata };
+                return { success: true, attendance: attdata };
             }
 
         } catch (error) {
@@ -222,6 +222,24 @@
         }
     },
 
+    async updateAttendanceStatus(Id, isComplete) {
+        try {
+            const docRef = db.collection("Attendance").doc(Id);
+            const doc = await docRef.get();
+
+            if (!doc.exists) {
+                return { success: false, error: "Attendance not found" };
+            }
+            else {
+                await docRef.update({ isCompleted: isComplete });
+                return { success: true };
+            }
+
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
     //============================================Attendance Member Record=============================================
     async addAttendanceMemberRecor(att) {
         try {
@@ -263,6 +281,7 @@
         }
 
     },
+
 
     async updateMemberAttendance(Id, memberId, attend) {
         try {
@@ -645,6 +664,38 @@
             return { success: true, data: sched }
         } catch (error) {
             return { success: false, error: error.message }
+        }
+    },
+
+    async getScheduleByListOfIds(idList) {
+        try {
+            if (!idList || idList.length === 0) {
+                return { success: true, data: [] }; // nothing to fetch
+            }
+
+            // Firestore 'in' supports max 30 IDs per query
+            // Split into batches if needed
+            const batchSize = 30;
+            let schedules = [];
+
+            for (let i = 0; i < idList.length; i += batchSize) {
+                const batchIds = idList.slice(i, i + batchSize);
+
+                const schedSnap = await db.collection("Schedules")
+                    .where(firebase.firestore.FieldPath.documentId(), "in", batchIds)
+                    .get();
+
+                const batchSched = schedSnap.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                schedules = schedules.concat(batchSched);
+            }
+
+            return { success: true, data: schedules };
+        } catch (error) {
+            return { success: false, error: error.message };
         }
     },
 
@@ -1165,6 +1216,8 @@
         }
     },
 
+    
+
     async renderIncomeBreakdown(offering, donation) {
         const ctx = document.getElementById('incomeBreakdown').getContext('2d');
         new Chart(ctx, {
@@ -1196,6 +1249,84 @@
             plugins: [ChartDataLabels] // ✅ enable datalabels plugin
         });
     },
+
+    //==========================================Finance Events Section=================================================
+
+    async addFinanceEvent(event) {
+        try {
+            await db.collection("FinanceEvents").add({
+                departmentId: event.departmentId,
+                scheduleId: event.scheduleId,
+                date: event.date,
+                isCompleted: event.isCompleted
+            });
+
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    //Remove finance records that contains schedule id
+    async removeFinanceEventsByScheduleId(schedId) {
+        try {
+            // 1. Query all docs with the matching scheduleId
+            const querySnap = await db.collection("FinanceEvents")
+                .where("scheduleId", "==", schedId)
+                .get();
+
+            if (querySnap.empty) {
+                // no documents found
+                return { success: false, error: "No records found" };
+            }
+
+            // 2. Delete each doc
+            const batch = db.batch(); // use batch to delete all at once
+
+            querySnap.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+
+            await batch.commit();
+
+            return { success: true };
+
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    //Get documesnt that match department and schedule id
+    async getFinanceEventsByDepartment(dept) {
+        try {
+            const docRef = await db.collection("FinanceEvents")
+                .where("departmentId", "==", dept)
+                .where("isCompleted", "==", false).get();
+
+            if (docRef.empty) {
+                return { success: true, error: "No records found" }
+            }
+
+            const doc = docRef.docs.map(u => ({ id: u.id, ...u.data() }));
+            return { success: true, data: doc }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async updateFinanceEvent(id, isComplete) {
+        try {
+            await db.collection("FinanceEvents").doc(id).update({
+                isCompleted: isComplete
+            });
+
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    //============================================Chart Section============================================//
 
     async renderExpenseBreakdown(tithes, property, transportation, incidental, others ) {
         const ctx = document.getElementById('expenseBreakdown').getContext('2d');
