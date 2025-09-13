@@ -1369,13 +1369,20 @@
                 {
                     var getMemRes = await _memberService.GetMembersAsync();
                     count = getMemRes.Data.Count;
-                    var attendance = new Attendance { ScheduleId = result.Id, Count = count, Date = serviceSchedule.StartDate };
-                    var attRes = await _attendance.AddAttendanceAsync(attendance);
 
-                    foreach (var item in getMemRes.Data)
+                    int days = serviceSchedule.EndDate.DayNumber - serviceSchedule.StartDate.DayNumber + 1;
+
+                    for (int i = 0; i < days; i++)
                     {
-                        var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.Id };
-                        var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                        DateOnly date = serviceSchedule.StartDate.AddDays(i);
+                        var attendance = new Attendance { ScheduleId = result.Id, Count = count, Date = date };
+                        var attRes = await _attendance.AddAttendanceAsync(attendance);
+
+                        foreach (var item in getMemRes.Data)
+                        {
+                            var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.Id };
+                            var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                        }
                     }
                 }
                 else
@@ -1383,19 +1390,26 @@
                     var groupRes = await _groupMemberService.GetGroupMembersByGroupIdAsync(serviceSchedule.GroupId);
                     count = groupRes.Data.Count();
 
-                    var attendance = new Attendance { ScheduleId = result.Id, Count = count, Date = serviceSchedule.StartDate };
-                    var attRes = await _attendance.AddAttendanceAsync(attendance);
+                    int days = serviceSchedule.EndDate.DayNumber - serviceSchedule.StartDate.DayNumber + 1;
 
                     var groupMemRes = await _groupMemberService.GetGroupMembersByGroupIdAsync(serviceSchedule.GroupId);
                     var groupMem = groupMemRes.Data;
-
                     if (groupMem != null)
                     {
-                        foreach (var item in groupMem)
+                        for (int i = 0; i < days; i++)
                         {
-                            var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.MemberId };
-                            var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                            DateOnly date = serviceSchedule.StartDate.AddDays(i);
+                            var attendance = new Attendance { ScheduleId = result.Id, Count = count, Date = date };
+                            var attRes = await _attendance.AddAttendanceAsync(attendance);
+
+                            foreach (var item in groupMem)
+                            {
+                                var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.MemberId };
+                                var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                            }
                         }
+
+
                     }
                 }
             }
@@ -1446,27 +1460,35 @@
 
                     if (updateServiceSchedule.HasAttendee)
                     {
+                        var checkAttend = await _attendance.GetAttendanceByScheduleId(updateServiceSchedule.Id);
+                        if (checkAttend.Data != null)
+                        {
+                            foreach (var item in checkAttend.Data)
+                            {
+                                var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(item.Id);
+                                var removeAttendance = await _attendance.DeleteAttendanceAsync(item.Id);
+                            }
+                        }
+
                         int count = 0;
                         if (updateServiceSchedule.GroupId == "All")
                         {
                             var getMemRes = await _memberService.GetMembersAsync();
                             count = getMemRes.Data.Count;
 
-                            var checkAtt = await _attendance.GetAttendanceByScheduleId(updateServiceSchedule.Id);
-                            var removeAttendance = await _attendance.RemoveAttendanceByScheduleIdAsync(updateServiceSchedule.Id);
+                            int days = updateServiceSchedule.EndDate.DayNumber - updateServiceSchedule.StartDate.DayNumber + 1;
 
-                            if (checkAtt.Attendance != null)
+                            for (int i = 0; i < days; i++)
                             {
-                                var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(checkAtt.Attendance.Id);
-                            }
+                                DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
+                                var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Count = count, Date = date };
+                                var attRes = await _attendance.AddAttendanceAsync(attendance);
 
-                            var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Count = count, Date = updateServiceSchedule.StartDate };
-                            var attRes = await _attendance.AddAttendanceAsync(attendance);
-
-                            foreach (var item in getMemRes.Data)
-                            {
-                                var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.Id };
-                                var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                                foreach (var item in getMemRes.Data)
+                                {
+                                    var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.Id };
+                                    var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                                }
                             }
                         }
                         else
@@ -1474,36 +1496,41 @@
                             var groupRes = await _groupMemberService.GetGroupMembersByGroupIdAsync(updateServiceSchedule.GroupId);
                             count = groupRes.Data.Count();
 
-                            var checkAtt = await _attendance.GetAttendanceByScheduleId(updateServiceSchedule.Id);
-                            if(checkAtt.Attendance != null)
-                            {
-                                var removeAttendance = await _attendance.RemoveAttendanceByScheduleIdAsync(updateServiceSchedule.Id);
-                                var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(checkAtt.Attendance.Id);
-                            }
-
-                            var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Count = count, Date = updateServiceSchedule.StartDate };
-                            var attRes = await _attendance.AddAttendanceAsync(attendance);
+                            int days = updateServiceSchedule.EndDate.DayNumber - updateServiceSchedule.StartDate.DayNumber + 1;
 
                             var groupMemRes = await _groupMemberService.GetGroupMembersByGroupIdAsync(updateServiceSchedule.GroupId);
                             var groupMem = groupMemRes.Data;
-
                             if (groupMem != null)
                             {
-                                foreach (var item in groupMem)
+                                for (int i = 0; i < days; i++)
                                 {
-                                    var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.MemberId };
-                                    var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                                    DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
+                                    var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Count = count, Date = date };
+                                    var attRes = await _attendance.AddAttendanceAsync(attendance);
+
+                                    foreach (var item in groupMem)
+                                    {
+                                        var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.MemberId };
+                                        var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                                    }
                                 }
+
+
                             }
                         }
                     }
                     else
                     {
                         var checkAtt = await _attendance.GetAttendanceByScheduleId(updateServiceSchedule.Id);
-                        if (checkAtt.Attendance != null)
+                        if (checkAtt.Data != null)
                         {
-                            var removeAttendance = await _attendance.RemoveAttendanceByScheduleIdAsync(updateServiceSchedule.Id);
-                            var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(checkAtt.Attendance.Id);
+                            foreach(var item in checkAtt.Data)
+                            {
+                                var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(item.Id);
+                                var removeAttendance = await _attendance.DeleteAttendanceAsync(item.Id);
+
+                            }
+
                         }
                     }
 
@@ -1901,7 +1928,7 @@
                     await GetCompletedSchedules();
                     break;
             }
-            
+
         }
 
     }
@@ -2068,7 +2095,7 @@
                 updateServiceValidation.Clear();
                 isUpdateServiceModal = true;
             }
-            
+
         }
         else
         {
@@ -2165,17 +2192,27 @@
             }
             else
             {
-                var removeResult = await _schedule.RemoveScheduleAsync(sched.Id);
-                if (removeResult.Success)
+                
+
+                var removeSched = await _schedule.RemoveScheduleAsync(sched.Id);
+                if (removeSched.Success)
                 {
-                    await _js.InvokeVoidAsync("alert", "Success");
-                    ToggleModal();
-                    await getScheduleList();
+                    var checkAtt = await _attendance.GetAttendanceByScheduleId(sched.Id);
+                    if (checkAtt.Data != null)
+                    {
+                        foreach (var item in checkAtt.Data)
+                        {
+                            var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(item.Id);
+                            var removeAttendance = await _attendance.DeleteAttendanceAsync(item.Id);
+
+                        }
+
+                    }
                 }
                 else
                 {
-                    await _js.InvokeVoidAsync("alert", removeResult.Error);
                     ToggleModal();
+                    await _js.InvokeVoidAsync("alert", result.Error);
                     await getScheduleList();
                 }
             }

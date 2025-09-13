@@ -300,15 +300,15 @@
                     </thead>
 
                     <tbody>
-                        @foreach (var item in scheduleList)
+                        @foreach (var item in filteredJoinedList)
                         {
                             
                             <tr class="table-row cursor">
-                                <td class="table-cell" style="font-weight:500;">@item.StartDate.ToString("MMM dd, yyyy")</td>
-                                <td class="table-cell c2">@item.CategoryId</td>
+                                <td class="table-cell" style="font-weight:500;">@item.Date.ToString("MMM dd, yyyy")</td>
+                                <td class="table-cell c2">@item.Category</td>
                                 <td class="table-cell c2">@item.Title</td>
-                                <td class="table-cell c2"><p class="fw-bold @(item.hasAttendance ? "text-success" : "text-danger")">@(item.hasAttendance ? "Complete" : "Missing")</p></td>
-                                <td @onclick="() => OpenAttendance(item.Id)" @onclick:stopPropagation class="table-cell d-flex gap-2 hover" style="padding: 24px 24px; border-bottom: none; width: auto;">View</td>
+                                <td class="table-cell c2"><p class="fw-bold @(item.isCompleted ? "text-success" : "text-danger")">@(item.isCompleted ? "Complete" : "Missing")</p></td>
+                                <td @onclick="() => OpenAttendance(item.AttendanceId)" @onclick:stopPropagation class="table-cell d-flex gap-2 hover" style="padding: 24px 24px; border-bottom: none; width: auto;">View</td>
                             </tr>
                         }
                     </tbody>
@@ -349,6 +349,7 @@
     private List<VisitorsInfo> attendanceVisitorList = new();
     private List<AttendanceWithMember> attendanceMemberRecordsList = new();
     private List<AttendanceScheduleVM> joinedList = new();
+    private IEnumerable<AttendanceScheduleVM> filteredJoinedList => joinedList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase) || u.Category.Contains(searchString, StringComparison.OrdinalIgnoreCase) || u.Date.ToString("MMM dd, yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase));
     private IEnumerable<VisitorSelection> filteredVisitor => visitorsList.Where(u => string.IsNullOrWhiteSpace(visitorsSearch) || u.Visitor.GetFullName().Contains(visitorsSearch, StringComparison.OrdinalIgnoreCase));
     private string attId = string.Empty;
 
@@ -513,7 +514,7 @@
     {
         ToggleModal();
         isLoadingModal = true;
-        var attRes = await _attendanceService.GetAttendanceByScheduleId(Id);
+        var attRes = await _attendanceService.GetAttendanceByIdAsync(Id);
         if (attRes.Success)
         {
             attId = attRes.Attendance.Id;
@@ -694,6 +695,20 @@
         if (result.Success)
         {
             scheduleList = result.Data.Where(u => u.HasAttendee).ToList();
+            var results = await _attendanceService.GetOngoingAttendanceAsync();
+            if (results.Success)
+            {
+                var attList = results.Data;
+                joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                {
+                    AttendanceId = a.Id,
+                    ScheduleId = s.Id,
+                    Date = a.Date,
+                    Title = s.Title,
+                    Category = s.CategoryId,
+                    isCompleted = a.isCompleted
+                }).ToList();
+            }
             message = string.Empty;
         }
         else
@@ -702,6 +717,7 @@
             message = "No schedules found.";
         }
     }
+
 
     // Get Upcoming list of schedules
     private async Task GetCompletedSchedules()
@@ -713,6 +729,20 @@
         if (result.Success)
         {
             scheduleList = result.Data.Where(u => u.HasAttendee).ToList();
+            var results = await _attendanceService.GetCompletedAttendanceAsync();
+            if (results.Success)
+            {
+                var attList = results.Data;
+                joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                {
+                    AttendanceId = a.Id,
+                    ScheduleId = s.Id,
+                    Date = a.Date,
+                    Title = s.Title,
+                    Category = s.CategoryId,
+                    isCompleted = a.isCompleted
+                }).ToList();
+            }
             message = string.Empty;
         }
         else
@@ -756,6 +786,7 @@
         public int Seekers { get; set; }
         public string Category { get; set; }
         public string Title { get; set; }
+        public bool isCompleted { get; set; }
     }
 
     public class AttendanceWithMember

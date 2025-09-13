@@ -26,6 +26,20 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        //Getting the Attendance by Id
+        public async Task<AttendanceResult> GetAttendanceByIdAsync(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getAttendanceById", Id);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult { Success = false, Error = ex.Message };
+            }
+        }
+
         //Getting the Attendance List
         public async Task<AttendanceResult> GetAttendanceByDateAsync(int month, int year)
         {
@@ -140,6 +154,60 @@ namespace GospelReachCapstone.Services
                 };
             }
         }
+
+        //Get Ongoing Attendance
+        public async Task<AttendanceResult> GetOngoingAttendanceAsync()
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getOngoingAttendance");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Get Completed Attendance
+        public async Task<AttendanceResult> GetCompletedAttendanceAsync()
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getCompletedAttendance");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+
+        }
+
 
 
     }

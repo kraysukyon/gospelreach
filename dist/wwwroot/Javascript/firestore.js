@@ -87,8 +87,27 @@
                 scheduleId: attendance.scheduleId,
                 date: attendance.date,
                 count: attendance.count,
+                isCompleted: attendance.isCompleted,
             });
             return { success: true, id: tb.id }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    //Get attendance by Id
+    async getAttendanceById(Id) {
+        try {
+            const docRef = db.collection("Attendance").doc(Id);
+            const doc = await docRef.get();
+            if (!doc.exists) {
+                return { success: false, error: "Attendance not exist" };
+            }
+            else {
+                const attdata = { id: doc.id, ...doc.data() };
+                return { success: true, data: attdata };
+            }
+
         } catch (error) {
             return { success: false, error: error.message }
         }
@@ -103,9 +122,8 @@
                 return { success: false, error: "Attendance not exist" };
             }
             else {
-                const firstDoc = docRef.docs[0];
-                const data = { id: firstDoc.id, ...firstDoc.data() };
-                return { success: true, Attendance: data };
+                const doc = docRef.docs.map(u => ({id:u.id, ...u.data()}));
+                return { success: true, data: doc };
             }
         } catch (error) {
             return { success: false, error: error.message }
@@ -119,6 +137,7 @@
                 scheduleId: attendance.scheduleId,
                 date: attendance.date,
                 count: attendance.count,
+                isCompleted: attendance.isCompleted,
             });
             return { success: true }
         } catch (error) {
@@ -133,6 +152,51 @@
             return { success: true }
         } catch (error) {
             return { success: false, error: error.message }
+        }
+    },
+
+    //Get ongoing attendance
+    async getOngoingAttendance() {
+        try {
+            // Get today's date in local yyyy-MM-dd
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+            const todayStr = `${year}-${month}-${day}`;
+
+            // Query schedules where date >= today
+            const schedTable = await db.collection("Attendance")
+                .where("date", "==", todayStr)
+                .get();
+
+            const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: sched };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getCompletedAttendance() {
+        try {
+            // Get today's date in local yyyy-MM-dd
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+            const todayStr = `${year}-${month}-${day}`;
+
+            // Query schedules where date >= today
+            const schedTable = await db.collection("Attendance")
+                .where("date", "<", todayStr)
+                .get();
+
+            const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: sched };
+        } catch (error) {
+            return { success: false, error: error.message };
         }
     },
 
