@@ -336,7 +336,7 @@
                 joinedList = Attendances.Join(schedulesList, a => a.ScheduleId, s => s.Id, (a, s) => new AttendanceScheduleVM
                 {
                     AttendanceId = a.Id,
-                    Count = a.Count,
+                    Count = a.TotalAttendee,
                     Date = a.Date,
 
                     ScheduleId = s.Id,

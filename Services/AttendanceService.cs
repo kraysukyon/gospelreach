@@ -209,11 +209,11 @@ namespace GospelReachCapstone.Services
         }
 
         //Get Completed Attendance
-        public async Task<AttendanceResult> UpdateAttendanceStatusAsync(string id, bool isComplete)
+        public async Task<AttendanceResult> UpdateAttendanceStatusAsync(string id, bool isComplete, int visitor, int present, int absent)
         {
             try
             {
-                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.updateAttendanceStatus", id, isComplete);
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.updateAttendanceStatus", id, isComplete, visitor, present, absent);
                 return result;
             }
             catch (JSException ex)
@@ -235,7 +235,31 @@ namespace GospelReachCapstone.Services
 
         }
 
-
+        //get attendance datas by date range
+        public async Task<AttendanceResult> GetAttendanceByDateRangeAsync(DateOnly date1, DateOnly date2)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getAttendanceByDateRange", date1, date2);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
 
     }
 

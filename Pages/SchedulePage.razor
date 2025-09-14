@@ -1391,7 +1391,7 @@
                     for (int i = 0; i < days; i++)
                     {
                         DateOnly date = serviceSchedule.StartDate.AddDays(i);
-                        var attendance = new Attendance { ScheduleId = result.Id, Count = count, Date = date };
+                        var attendance = new Attendance { ScheduleId = result.Id, TotalAttendee = count, Date = date };
                         var attRes = await _attendance.AddAttendanceAsync(attendance);
 
                         foreach (var item in getMemRes.Data)
@@ -1415,7 +1415,7 @@
                         for (int i = 0; i < days; i++)
                         {
                             DateOnly date = serviceSchedule.StartDate.AddDays(i);
-                            var attendance = new Attendance { ScheduleId = result.Id, Count = count, Date = date };
+                            var attendance = new Attendance { ScheduleId = result.Id, TotalAttendee = count, Date = date };
                             var attRes = await _attendance.AddAttendanceAsync(attendance);
 
                             foreach (var item in groupMem)
@@ -1515,7 +1515,7 @@
                             for (int i = 0; i < days; i++)
                             {
                                 DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
-                                var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Count = count, Date = date };
+                                var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, TotalAttendee = count, Date = date };
                                 var attRes = await _attendance.AddAttendanceAsync(attendance);
 
                                 foreach (var item in getMemRes.Data)
@@ -1539,7 +1539,7 @@
                                 for (int i = 0; i < days; i++)
                                 {
                                     DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
-                                    var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Count = count, Date = date };
+                                    var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, TotalAttendee = count, Date = date };
                                     var attRes = await _attendance.AddAttendanceAsync(attendance);
 
                                     foreach (var item in groupMem)

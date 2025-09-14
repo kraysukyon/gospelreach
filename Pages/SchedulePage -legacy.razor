@@ -1488,7 +1488,7 @@
         var existing = Attendances.FirstOrDefault(a => a.ScheduleId == schedId && a.Date == date);
         if (existing != null)
         {
-            existing.Count = count;
+            existing.TotalAttendee = count;
         }
         else
         {
@@ -1950,7 +1950,7 @@
             var attend = Attendances.FirstOrDefault(u => u.ScheduleId == Id && u.Date == attDate);
             if (attend != null)
             {
-                count = attend.Count;
+                count = attend.TotalAttendee;
                 // seekers = attend.Seekers;
             }
             else
@@ -2183,7 +2183,7 @@
         if (existing != null)
         {
             int visitorsCount = visitorsList.Count(u => u.isSelected);
-            existing.Count = groupMemberList.Count(u => u.isSelected) + visitorsCount;
+            existing.TotalAttendee = groupMemberList.Count(u => u.isSelected) + visitorsCount;
 
             var result = await _attendance.UpdateAttendanceAsync(existing.Id, existing);
             if (result.Success)
@@ -2249,7 +2249,7 @@
         {
 
             att.ScheduleId = sched.Id;
-            att.Count = groupMemberList.Count(u => u.isSelected);
+            att.TotalAttendee = groupMemberList.Count(u => u.isSelected);
             att.Date = attDate;
 
             

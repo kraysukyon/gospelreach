@@ -86,7 +86,10 @@
             const tb = await db.collection("Attendance").add({
                 scheduleId: attendance.scheduleId,
                 date: attendance.date,
-                count: attendance.count,
+                totalAttendee: attendance.totalAttendee,
+                totalVisitors: attendance.totalVisitors,
+                present: attendance.present,
+                absent: attendance.absent,
                 isCompleted: attendance.isCompleted,
             });
             return { success: true, id: tb.id }
@@ -136,7 +139,10 @@
             await db.collection("Attendance").doc(docId).update({
                 scheduleId: attendance.scheduleId,
                 date: attendance.date,
-                count: attendance.count,
+                totalAttendee: attendance.totalAttendee,
+                totalVisitors: attendance.totalVisitors,
+                present: attendance.present,
+                absent: attendance.absent,
                 isCompleted: attendance.isCompleted,
             });
             return { success: true }
@@ -222,7 +228,7 @@
         }
     },
 
-    async updateAttendanceStatus(Id, isComplete) {
+    async updateAttendanceStatus(Id, isComplete, visitor, present, absent) {
         try {
             const docRef = db.collection("Attendance").doc(Id);
             const doc = await docRef.get();
@@ -231,10 +237,35 @@
                 return { success: false, error: "Attendance not found" };
             }
             else {
-                await docRef.update({ isCompleted: isComplete });
+                await docRef.update({
+                    isCompleted: isComplete,
+                    totalVisitors: visitor,
+                    present: present,
+                    absent: absent,
+                });
                 return { success: true };
             }
 
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getAttendanceByDateRange(date1, date2) {
+        try {
+            // Expecting date1 and date2 as "yyyy-MM-dd" strings
+            const docRef = await db.collection("Attendance")
+                .where("isCompleted", "==", true)
+                .where("date", ">=", date2)
+                .where("date", "<=", date1)
+                .get();
+
+            const doc = docRef.docs.map(items => ({
+                id: items.id,
+                ...items.data()
+            }));
+
+            return { success: true, data: doc };
         } catch (error) {
             return { success: false, error: error.message };
         }

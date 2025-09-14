@@ -252,9 +252,13 @@
 
     <!--Header Section-->
     <div class="header mb-4">
-        <div>
-            <h4 class="m-0 fw-bold">Attendance Tracking</h4>
-            <p class="m-0 c2" style="font-size: 14px">Tracks and manage attendance</p>
+        <div class="d-flex justify-content-between align-items-start w-100">
+            <div>
+                <h4 class="m-0 fw-bold">Attendance Tracking</h4>
+                <p class="m-0 c2" style="font-size: 14px">Tracks and manage attendance</p>
+            </div>
+
+            <button @onclick="GoToAttendanceReportPage" class="btn btn-primary text-white px-4 py-2 text-nowrap">Generate Report</button>
         </div>
     </div>
 
@@ -278,7 +282,6 @@
 
                 @* <button class="btn btn-primary text-white px-4 py-2">Filter</button> *@
 
-                <button @onclick="GoToAttendanceReportPage" class="btn btn-primary text-white px-4 py-2 text-nowrap">Generate Report</button>
             </div>
         </div>
 
@@ -373,7 +376,7 @@
     //Navigate to Attendance Report Page
     private void GoToAttendanceReportPage()
     {
-        _nav.NavigateTo($"/attendance/report/{dateFrom}/{dateTo}");
+        _nav.NavigateTo($"/attendance/report");
     }
 
     //GetVisitors List
@@ -387,7 +390,7 @@
 
             var vm = visitors.Select(u => new VisitorSelection
             {
-                isSelected = true,
+                isSelected = false,
                 Visitor = u
             });
 
@@ -476,7 +479,20 @@
         var updateSchedAttendance = await _schedule.UpdateScheduleAttendance(attVM.ScheduleId, true);
         if (updateSchedAttendance.Success)
         {
-            var updateAttendanceStatus = await _attendanceService.UpdateAttendanceStatusAsync(attVM.AttendanceId, true);
+            int totalVisitor = 0;
+            if (localvisitList.Any())
+            {
+                totalVisitor = localvisitList.Count;
+            }
+
+            if (visitorsList.Any())
+            {
+                totalVisitor += visitorsList.Count(u => u.isSelected);
+            }
+
+            int totalPresent = groupMemberList.Where(u => u.isSelected).Count();
+            int totalAbsent = attVM.TotalAttendee - totalPresent;
+            var updateAttendanceStatus = await _attendanceService.UpdateAttendanceStatusAsync(attVM.AttendanceId, true, totalVisitor, totalPresent, totalAbsent);
             if (updateAttendanceStatus.Success)
             {
                 @foreach (var item in groupMemberList)
@@ -565,6 +581,7 @@
                             {
                                 AttendanceId = attRes.Attendance.Id,
                                 ScheduleId = attRes.Attendance.ScheduleId,
+                                TotalAttendee = attRes.Attendance.TotalAttendee,
                             };
                             isAttendanceVisible = true;
                         }
@@ -721,6 +738,7 @@
                     ScheduleId = s.Id,
                     Date = a.Date,
                     Title = s.Title,
+                    TotalAttendee = a.TotalAttendee,
                     Category = s.CategoryId, 
                     isCompleted = a.isCompleted
                 }).ToList();
@@ -789,6 +807,7 @@
                     ScheduleId = s.Id,
                     Date = a.Date,
                     Title = s.Title,
+                    TotalAttendee = a.TotalAttendee,
                     Category = s.CategoryId,
                     isCompleted = a.isCompleted
                 }).ToList();
@@ -830,7 +849,7 @@
         public string AttendanceId { get; set; }
         public string ScheduleId { get; set; }
         public DateOnly Date { get; set; }
-        public int Count { get; set; }
+        public int TotalAttendee { get; set; }
         public string Category { get; set; }
         public string Title { get; set; }
         public bool isCompleted { get; set; }
