@@ -1,4 +1,4 @@
-﻿@page "/attendance"
+﻿@page "/attendance/department"
 @layout LandingLayout
 @inject IJSRuntime _js
 @using GospelReachCapstone.Models
@@ -255,7 +255,7 @@
     <div class="header mb-4">
         <div class="d-flex justify-content-between align-items-start w-100">
             <div>
-                <h4 class="m-0 fw-bold">Attendance Tracking</h4>
+                <h4 class="m-0 fw-bold">@DepName Attendance Tracking</h4>
                 <p class="m-0 c2" style="font-size: 14px">Tracks and manage attendance</p>
             </div>
 
@@ -339,7 +339,7 @@
     private string visitorsMessage = string.Empty;
     private string visitorsSearch = string.Empty;
     private string visitorMessage = string.Empty;
-    private string DepName = "Mens";
+    private string DepName = string.Empty;
 
     //Models
     private Schedule sched = new();
@@ -372,13 +372,17 @@
     //On initialized
     protected override async Task OnInitializedAsync()
     {
+        if (_auth.Department != null)
+        {
+            DepName = _auth.Department;
+        }
         await GetOngoingSchedules();
     }
 
     //Navigate to Attendance Report Page
     private void GoToAttendanceReportPage()
     {
-        _nav.NavigateTo($"/attendance/report");
+        _nav.NavigateTo($"/attendance/department-report");
     }
 
     //GetVisitors List
@@ -724,9 +728,14 @@
     {
         message = "Fetching files...Please wait";
 
-        var results = await _attendanceService.GetOngoingAttendanceAsync();
+        var results = await _attendanceService.GetOngoingAttendanceByDepartmentAsync(DepName);
         if (results.Success)
         {
+            if (!string.IsNullOrEmpty(results.Error))
+            {
+                message = results.Error;
+                return;
+            }
             var ids = results.Data.Select(u => u.ScheduleId).ToHashSet();
 
             var scheduleResult = await _schedule.GetScheduleAsync();
@@ -752,7 +761,7 @@
                 await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + scheduleResult.Error);
                 message = "No schedules found.";
             }
-            
+
         }
         else
         {
@@ -771,8 +780,13 @@
 
         if (result.Success)
         {
+            if (!string.IsNullOrEmpty(result.Error))
+            {
+                message = result.Error;
+                return;
+            }
             scheduleList = result.Data.Where(u => u.HasAttendee).ToList();
-            var results = await _attendanceService.GetCompletedAttendanceAsync();
+            var results = await _attendanceService.GetCompletedAttendanceByDepartmentAsync(DepName);
             if (results.Success)
             {
                 var attList = results.Data;

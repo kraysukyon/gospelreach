@@ -1,4 +1,4 @@
-﻿@page "/attendance/report"
+﻿@page "/attendance/department-report"
 @layout LandingLayout
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.ScheduleService _scheduleService
@@ -7,6 +7,7 @@
 @using GospelReachCapstone.Models
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager _nav
+@inject AuthState _auth
 
 <PageTitle>Attendance Report</PageTitle>
 
@@ -53,7 +54,7 @@
         <div class="mb-4">
             <div class="mb-4">
                 <h5 class="m-0 fw-bold">The Salvation Army Mandaue Outpost</h5>
-                <p>Attendance Report — All Department</p>
+                <p>Attendance Report — @depName Department</p>
                 <p>@fromDate.ToString("MMMM dd, yyyy") - @toDate.ToString("MMMM dd, yyyy")</p>
             </div>
 
@@ -209,17 +210,26 @@
 
     //List
     private List<ScheduleAttendanceVM> joinedList = new();
-    private IEnumerable<ScheduleAttendanceVM> filteredService => joinedList.Where(u => u.Category == "Service").ToList();
-    private IEnumerable<ScheduleAttendanceVM> filteredDepartment => joinedList.Where(u => u.Category == "Department" ).ToList();
+    private IEnumerable<ScheduleAttendanceVM> filteredService => joinedList.Where(u => u.Category == "Service" && u.Department == depName).ToList();
+    private IEnumerable<ScheduleAttendanceVM> filteredDepartment => joinedList.Where(u => u.Category == "Department" && u.Department == depName).ToList();
 
     //Data
+    private string depName = string.Empty;
     private string message = string.Empty;
     private bool isFetching = true;
+
+    protected override void OnInitialized()
+    {
+        if (_auth.Department != null)
+        {
+            depName = _auth.Department;
+        }
+    }
 
     //Navigate to attendance page
     private void ReturnToMensPage()
     {
-        _nav.NavigateTo("/attendance");
+        _nav.NavigateTo("/attendance/department");
     }
 
     //Get Financial Records
@@ -227,7 +237,7 @@
     {
         isFetching = true;
         message = "Fetching data. Please wait...";
-        var result = await _attendanceService.GetAttendanceByDateRangeAsync(date1, date2);
+        var result = await _attendanceService.GetDepartmentAttendanceByDateRangeAsync(date1, date2, depName);
         if (result.Success)
         {
             var attendanceList = result.Data;
@@ -260,7 +270,7 @@
             else
             {
                 message = "Failed to fetch data";
-                await _js.InvokeVoidAsync("alert", result.Error);
+                await _js.InvokeVoidAsync("alert", schedResult.Error);
             }
         }
         else

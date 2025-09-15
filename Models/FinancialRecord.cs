@@ -1,10 +1,11 @@
 ﻿namespace GospelReachCapstone.Models
 {
-    public class FinancialMensRecord
+    public class FinancialRecord
     {
         public string Id { get; set; }
 
         //Commong Fields
+        public string Department { get; set; }
         public string Type { get; set; } = "Income";
         public string Category { get; set; } = "Offering";
         public decimal Amount { get; set; } = 0;
@@ -13,6 +14,7 @@
         //Income Fields
         public string? InvoiceNumber { get; set; }
         public string? ScheduleId { get; set; }
+        public string? ScheduleTitle { get; set; }
         public string? DonatorName { get; set; }
 
         //Expense Fields

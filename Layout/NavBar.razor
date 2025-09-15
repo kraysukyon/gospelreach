@@ -3,7 +3,7 @@
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService AuthService
 @inject GospelReachCapstone.Services.AppState _appState
 @inject AuthState auth
-@* @inherits ProtectedPageBase *@
+@inherits ProtectedPageBase
 
 <div class="side-parent">
     <div class="side-parent-content">
@@ -14,42 +14,44 @@
                 <a href="dashboard" class="text-decoration-none c2">Dashboard</a>
             </div>
 
+            <div hidden="@(auth.Role != "Administrator")">
+                <!--Management-->
+                <h3 class="sidebar-heading">MANAGEMENT</h3>
 
-            <!--Management-->
-            <h3 class="sidebar-heading">MANAGEMENT</h3>
-
-            <!--Admin-->
-            <div class="@GetClass(1, "link")" @onclick="() => SetActive(1)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-person"></i>
+                <!--Admin-->
+                <div class="@GetClass(1, "link")" @onclick="() => SetActive(1)">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <a href="user-management" class="text-decoration-none c2">User</a>
                 </div>
-                <a href="user-management" class="text-decoration-none c2">User</a>
-            </div>
 
-            
 
-            <!--Member Management-->
-            <div class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-people"></i>
+
+                <!--Member Management-->
+                <div class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <a href="membermanagement" class="text-decoration-none c2">Member</a>
                 </div>
-                <a href="membermanagement" class="text-decoration-none c2">Member</a>
-            </div>
 
-            <!--Departments-->
-            <div class="@GetClass(2, "link")" @onclick="() => SetActive(2)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-building"></i>
-                </div>
-                <a href="departments" class="text-decoration-none c2">Departments</a>
+                <!--Departments-->
+                <div class="@GetClass(2, "link")" @onclick="() => SetActive(2)">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <a href="departments" class="text-decoration-none c2">Departments</a>
 
-                @* <div @onclick:stopPropagation class="subDepartment @(isSubDepartmentVisible ? "" : "hide")">
+                    @* <div @onclick:stopPropagation class="subDepartment @(isSubDepartmentVisible ? "" : "hide")">
                     <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Senior"))">Senior</p>
                     <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Womens"))">Womens</p>
                     <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Mens"))">Mens</p>
                     <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Youth"))">Youth</p>
                 </div> *@
+                </div>
             </div>
+            
             
 
             <!--Tracking-->
@@ -60,7 +62,7 @@
                 <div class="d-flex align-items-center">
                     <i class="bi bi-bar-chart"></i>
                 </div>
-                <a href="attendance" class="text-decoration-none c2">Attendance</a>
+                <a @onclick="() => SetActive(5)" class="text-decoration-none c2">Attendance</a>
             </div>
 
             <!--Finance-->
@@ -68,27 +70,30 @@
                 <div class="d-flex align-items-center">
                     <i class="bi bi-piggy-bank"></i>
                 </div>
-                <a href="finance" class="text-decoration-none c2">Finance</a>
+                <p @onclick="() => SetActive(6)"  class="text-decoration-none c2">Finance</p>
             </div>
 
-            <!--Content-->
-            <h3 class="sidebar-heading">CONTENT</h3>
+            <div hidden="@(auth.Role != "Administrator")">
+                <!--Content-->
+                <h3 class="sidebar-heading">CONTENT</h3>
 
-            <!--Media Files-->
-            <div class="@GetClass(7, "link")" @onclick="() => SetActive(7)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-film"></i>
+                <!--Media Files-->
+                <div class="@GetClass(7, "link")" @onclick="() => SetActive(7)">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-film"></i>
+                    </div>
+                    <a href="media" class="text-decoration-none c2">Media Files</a>
                 </div>
-                <a href="media" class="text-decoration-none c2">Media Files</a>
-            </div>
 
-            <!--Music-->
-            <div class="@GetClass(8, "link")" @onclick="() => SetActive(8)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-music-note"></i>
+                <!--Music-->
+                <div class="@GetClass(8, "link")" @onclick="() => SetActive(8)">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-music-note"></i>
+                    </div>
+                    <a href="music" class="text-decoration-none c2">Music</a>
                 </div>
-                <a href="music" class="text-decoration-none c2">Music</a>
             </div>
+            
 
             <!--Planning-->
             <h3 class="sidebar-heading">PLANNING</h3>
@@ -102,7 +107,7 @@
             </div> *@
 
             <!--Group Management-->
-            <div class="@GetClass(4, "link")" @onclick="() => SetActive(4)">
+            <div hidden="@(auth.Role != "Administrator")" class="@GetClass(4, "link")" @onclick="() => SetActive(4)">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-collection"></i>
                 </div>
@@ -182,11 +187,53 @@
                 isSubDepartmentVisible = false;
                 break;
             case 5:
-                Navs.NavigateTo("attendance");
+                switch (auth.Role)
+                {
+                    case "Department Head - Senior":
+                        auth.Department = "Senior";
+                        Navs.NavigateTo("attendance/department");
+                        break;
+                    case "Department Head - Womens":
+                        auth.Department = "Womens";
+                        Navs.NavigateTo("attendance/department");
+                        break;
+                    case "Department Head - Mens":
+                        auth.Department = "Mens";
+                        Navs.NavigateTo("attendance/department");
+                        break;
+                    case "Department Head - Youth":
+                        auth.Department = "Youth";
+                        Navs.NavigateTo("attendance/department");
+                        break;
+                    default:
+                        Navs.NavigateTo("attendance");
+                        break;
+                }
                 isSubDepartmentVisible = false;
                 break;
             case 6:
-                Navs.NavigateTo("finance");
+                switch (auth.Role)
+                {
+                    case "Department Head - Senior":
+                        auth.Department = "Senior";
+                        Navs.NavigateTo("finance/department");
+                        break;
+                    case "Department Head - Womens":
+                        auth.Department = "Womens";
+                        Navs.NavigateTo("finance/department");
+                        break;
+                    case "Department Head - Mens":
+                        auth.Department = "Mens";
+                        Navs.NavigateTo("finance/department");
+                        break;
+                    case "Department Head - Youth":
+                        auth.Department = "Youth";
+                        Navs.NavigateTo("finance/department");
+                        break;
+                    default:
+                        Navs.NavigateTo("finance");
+                        break;
+                }
                 isSubDepartmentVisible = false;
                 break;
             case 7:
@@ -216,7 +263,7 @@
 
         if (!confirm) return;
         await AuthService.LogoutAsync();
-
+        auth = new();
         Navs.NavigateTo("/");
     }
 

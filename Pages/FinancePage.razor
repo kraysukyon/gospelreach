@@ -2,6 +2,7 @@
 @layout LandingLayout
 @inject NavigationManager _nav
 @inject ToastService ToastService
+@inject AuthState _auth
 
 <PageTitle>Finance</PageTitle>
 
@@ -90,10 +91,10 @@
             </table>
         </div>
     </div> *@
-    <button class="btn btn-primary p-2 text-white">Senior</button>
-    <button class="btn btn-primary p-2 text-white">Womens</button>
-    <button @onclick="GoToMens" class="btn btn-primary p-2 text-white">Mens</button>
-    <button class="btn btn-primary p-2 text-white">Youth</button>
+    <button @onclick='() => GoToFinance("Senior")' class="btn btn-primary p-2 text-white">Senior</button>
+    <button @onclick='() => GoToFinance("Womens")' class="btn btn-primary p-2 text-white">Womens</button>
+    <button @onclick='() => GoToFinance("Mens")' class="btn btn-primary p-2 text-white">Mens</button>
+    <button @onclick='() => GoToFinance("Youth")' class="btn btn-primary p-2 text-white">Youth</button>
 
 </div>
 
@@ -107,8 +108,9 @@
         isBackgroundVisible = !isBackgroundVisible;
     }
 
-    private void GoToMens()
+    private void GoToFinance(string department)
     {
-        _nav.NavigateTo("finance/mens");
+        _auth.Department = department;
+        _nav.NavigateTo("finance/department");
     }
 }

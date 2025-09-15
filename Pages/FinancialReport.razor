@@ -1,11 +1,12 @@
-﻿@page "/finance/mens/report/{dateFrom}/{dateTo}"
+﻿@page "/finance/department/report/{dateFrom}/{dateTo}"
 @layout LandingLayout
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.ScheduleService _scheduleService
-@inject GospelReachCapstone.Services.FinancialMensService _financialMensService
+@inject GospelReachCapstone.Services.FinancialRecordService _financialMensService
 @using GospelReachCapstone.Models
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager _nav
+@inject AuthState _auth
 
 <PageTitle>Finance Mens</PageTitle>
 
@@ -32,7 +33,7 @@
     <div class="mb-4">
         <div class="mb-4">
             <h5 class="m-0 fw-bold">The Salvation Army Mandaue Outpost</h5>
-            <p>Financial Report — Men Department</p>
+            <p>Financial Report — @DepName Department</p>
             <p>@fromDate.ToString("MMMM dd, yyyy") - @toDate.ToString("MMMM dd, yyyy")</p>
         </div>
 
@@ -191,31 +192,39 @@
     private decimal currentBalance = 0m;
 
     //List
-    private List<FinancialMensRecord> financeMensList = new();
-    private IEnumerable<FinancialMensRecord> filteredIncomeList => financeMensList.Where(u => u.Type == "Income").ToList();
-    private IEnumerable<FinancialMensRecord> filteredExpenseList => financeMensList.Where(u => u.Type == "Expense").ToList();
+    private List<FinancialRecord> financeMensList = new();
+    private IEnumerable<FinancialRecord> filteredIncomeList => financeMensList.Where(u => u.Type == "Income").ToList();
+    private IEnumerable<FinancialRecord> filteredExpenseList => financeMensList.Where(u => u.Type == "Expense").ToList();
+
+    //Data
+    private string DepName = string.Empty;
 
     //First Initialization
     protected override async Task OnInitializedAsync()
     {
+        if (_auth.Department != null)
+        {
+            DepName = _auth.Department;
+        }
+
         if (DateOnly.TryParse(dateFrom, out var parsedFrom))
             fromDate = parsedFrom;
 
         if (DateOnly.TryParse(dateTo, out var parsedTo))
             toDate = parsedTo;
-        await GetDataByDateRange(toDate,fromDate);
+        await GetDataByDateRange(toDate,fromDate, DepName);
         await GetDataByYear();
     }
 
     private void ReturnToMensPage()
     {
-        _nav.NavigateTo("/finance/mens");
+        _nav.NavigateTo("/finance/department");
     }
 
     //Get Financial Records
-    private async Task GetDataByDateRange(DateOnly date1, DateOnly date2)
+    private async Task GetDataByDateRange(DateOnly date1, DateOnly date2, string department)
     {
-        var result = await _financialMensService.GetFinancialDataByDateRange(date1, date2);
+        var result = await _financialMensService.GetDepartmentFinancialDataByDateRange(date1, date2,department);
         if (result.Success)
         {
             if (result.Data != null)

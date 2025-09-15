@@ -1,8 +1,10 @@
-﻿@page "/finance/mens-legacy"
+﻿@page "/finance/department"
 @layout LandingLayout
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.ScheduleService _scheduleService
-@inject GospelReachCapstone.Services.FinancialMensService _financialMensService
+@inject GospelReachCapstone.Services.FinancialRecordService _financialMensService
+@inject GospelReachCapstone.Services.FinanceEventsService _financeEventsService
+@inject GospelReachCapstone.Services.AuthState _auth
 @using GospelReachCapstone.Models
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager _nav
@@ -41,8 +43,9 @@
                     @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                 </div>
 
-                <select value="@mensRecord.Type" class="form-select p-2 mt-2" @onchange="OnTypeChange">
-                    <option value="Income">Income</option>
+                <select value="@type" class="form-select p-2 mt-2" @onchange="OnTypeChange">
+                    <option value="Offering" disabled="@(scheduleFinancesList.Count == 0)">Offering @(scheduleFinancesList.Count == 0 ? "(No schedules)" : "")</option>
+                    <option value="Donation">Donation</option>
                     <option value="Expense">Expense</option>
                 </select>
             </div>
@@ -51,45 +54,46 @@
             <div hidden="@(!isIncome)">
                 <!--Category-->
                 <div class="col2">
-                    <div class="inputs mt-3">
+                    @* <div class="inputs mt-3">
                         <div class="d-flex align-items-center gap-2">
                             <p>Category</p>
-                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                         </div>
 
                         <select value="@mensRecord.Category" @onchange="OnIncomeCategoryChanged" class="form-select p-2 mt-2">
                             <option value="Offering" disabled="@(scheduleList.Count == 0)">Offering @(scheduleList.Count == 0 ? "(No Schedules)" : "")</option>
                             <option value="Donation">Donation</option>
                         </select>
+                    </div> *@
+
+                    
+                </div>
+
+                <div class="inputs mt-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <p>Amount</p>
+                        @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                     </div>
 
-                    <div class="inputs mt-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <p>Amount</p>
-                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
-                        </div>
-
-                        <input @bind="mensRecord.Amount" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" min="0" onkeydown="if(event.key === '-' || event.key === '+') event.preventDefault();" />
-                    </div>
+                    <input @bind="mensRecord.Amount" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" min="0" onkeydown="if(event.key === '-' || event.key === '+') event.preventDefault();" />
                 </div>
 
                 <!--Schedule-->
-                <div hidden="@(isDonation)" class="inputs mt-3">
+                <div hidden="@(type != "Offering" || scheduleFinancesList.Count == 0)" class="inputs mt-3">
                     <div class="d-flex align-items-center gap-2">
                         <p>Event</p>
                         @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
                     </div>
 
-                    <select @bind="mensRecord.ScheduleId" class="form-select p-2 mt-2">
-                        @foreach (var item in scheduleList)
+                    <select @onchange="OnScheduleChange" class="form-select p-2 mt-2">
+                        @foreach (var item in scheduleFinancesList)
                         {
-                            <option value="@item.Id">@item.Title - @item.StartDate.ToString("MMM dd, yyyy")</option>
+                            <option value="@item.FinanceId">@item.Title - @item.Date.ToString("MMM dd, yyyy")</option>
                         }
                     </select>
                 </div>
 
                 <!--Donated By-->
-                <div hidden="@(!isDonation)" class="inputs mt-3">
+                <div hidden="@(type != "Donation")" class="inputs mt-3">
                     <div class="d-flex align-items-center gap-2">
                         <p>(Optional) Donated By</p>
                         @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
@@ -530,36 +534,43 @@
 
     </div>
     <!--Header Section-->
-    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
-        <div>
-            <h4 class="m-0 fw-bold">Mens Financial Management</h4>
-            <p class="m-0 c2" style="font-size: 14px">Track church finances, donations, and expenses.</p>
+    <div class="header d-block d-md-flex flex-md-column mb-2">
+        <div class="d-flex justify-content-between">
+            <div>
+                <h4 class="m-0 fw-bold">@DepName Financial Management</h4>
+                <p class="m-0 c2" style="font-size: 14px">Track church finances, donations, and expenses.</p>
+            </div>
+
+            <div>
+                <button @onclick="ToggleAddEntry" class="btn btn-primary p-2 text-white">Add Entry</button>
+            </div>
         </div>
 
-        <div>
-            <button @onclick="ToggleAddEntry" class="btn btn-primary p-2 text-white">Add Entry</button>
+        <p>@test</p>
+        
+
+        <!--Quick Stats Section-->
+        <div class="d-flex flex-column mt-4">
+            <div class="d-md-flex d-block justify-content-evenly gap-4">
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">Total Income</p>
+                    <h3 class="m-0 c2 text-success fw-bold">₱@totalIncome.ToString("N2")</h3>
+                </div>
+
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">Total Expenses</p>
+                    <h3 class="m-0 c2 text-danger fw-bold">₱@totalExpense.ToString("N2")</h3>
+                </div>
+
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
+                    <h3 class="m-0 c2 text-primary fw-bold">₱@currentBalance.ToString("N2")</h3>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!--Quick Stats Section-->
-    <div class="d-flex flex-column mt-4 mb-2">
-        <div class="d-md-flex d-block justify-content-evenly gap-4">
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">Total Income</p>
-                <h3 class="m-0 c2 text-success fw-bold">₱@totalIncome.ToString("N2")</h3>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">Total Expenses</p>
-                <h3 class="m-0 c2 text-danger fw-bold">₱@totalExpense.ToString("N2")</h3>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
-                <h3 class="m-0 c2 text-primary fw-bold">₱@currentBalance.ToString("N2")</h3>
-            </div>
-        </div>
-    </div>
+    
 
     <!--Table Section-->
     <div class="card w-100 mb-3 cards">
@@ -615,7 +626,7 @@
                                     <!--Edit-->
                                     <button @onclick:stopPropagation @onclick="() => OpenUpdateModal(item.Id)" class="btn btn-outline-light px-2 py-1 border border-1" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Update</button>
                                     <!--Delete-->
-                                    <button @onclick:stopPropagation @onclick="() => OpenRemoveModal(item.Id)" class="btn btn-danger px-2 py-1 text-white" style="font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
+                                    @* <button @onclick:stopPropagation @onclick="() => OpenRemoveModal(item.Id)" class="btn btn-danger px-2 py-1 text-white" style="font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button> *@
                                 </td>
                             </tr>
                         }
@@ -636,10 +647,10 @@
     private bool isDonation = false;
     private List<Schedule> scheduleList = new();
     private string message = string.Empty;
-    private FinancialMensRecord mensRecord = new();
-    private FinancialMensRecord updateMensRecord = new();
-    private List<FinancialMensRecord> financeMensList = new();
-    private IEnumerable<FinancialMensRecord> filteredFinanceList => financeMensList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Type.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+    private FinancialRecord mensRecord = new();
+    private FinancialRecord updateMensRecord = new();
+    private List<FinancialRecord> financeMensList = new();
+    private IEnumerable<FinancialRecord> filteredFinanceList => financeMensList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Type.Contains(searchString, StringComparison.OrdinalIgnoreCase)
     || u.Category.Contains(searchString, StringComparison.OrdinalIgnoreCase) || (u.InvoiceNumber ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase) || (u.VoucherNumber ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase)
     || u.Date.ToString("MMM dd, yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase) || u.Amount.ToString("N2").Contains(searchString, StringComparison.OrdinalIgnoreCase)
     || (u.DonatorName ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase)).OrderByDescending(u => DateTime.Parse(u.CreatedAt));
@@ -648,6 +659,7 @@
     private DateOnly dateFrom = DateOnly.FromDateTime(DateTime.Now.AddMonths(-3));
     private List<string> validationResults = new();
     private List<string> updateValidationResults = new();
+    private List<ScheduleFinanceVM> scheduleFinancesList = new();
     private string idToBeRemoved { get; set; } = string.Empty;
     private bool isRemoving = false;
     private bool isAdding = false;
@@ -657,6 +669,10 @@
     private decimal totalIncome = 0m;
     private decimal totalExpense = 0m;
     private decimal currentBalance = 0m;
+    private string type = "Offering";
+    private string DepName = string.Empty;
+    private string financeId = string.Empty;
+    string test = string.Empty;
 
 
     //modals
@@ -676,10 +692,20 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (_auth.Department != null)
+        {
+            DepName = _auth.Department;
+        }
         message = "Fetching data...";
         await GetSchedules();
-        await GetDataByDateRange(dateTo, dateFrom);
+        await GetDataByDateRange(dateTo, dateFrom, DepName);
         await GetAllFinancialData();
+    }
+
+    //Assign Department
+    private void AssignDepartment()
+    {
+
     }
 
     //Go To Report Page
@@ -687,28 +713,47 @@
     {
         string from = dateFrom.ToString("yyyy-MM-dd");
         string to = dateTo.ToString("yyyy-MM-dd");
-        _nav.NavigateTo($"/finance/mens/report/{from}/{to}");
+        _nav.NavigateTo($"/finance/department/report/{from}/{to}");
+    }
+
+    //On ScheduleChange
+    private void OnScheduleChange(ChangeEventArgs e)
+    {
+        financeId = e.Value!.ToString()!;
+        if (!string.IsNullOrEmpty(financeId))
+        {
+            mensRecord.ScheduleId = scheduleFinancesList.FirstOrDefault(u => u.FinanceId == financeId)?.ScheduleId ?? null;
+        }
+
     }
 
     //Get Sum
     private async Task GetAllFinancialData()
     {
         //query to firebase
-        var result = await _financialMensService.GetAllFinancialRecordAsync();
+        var result = await _financialMensService.GetAllFinancialRecordByDepartmentAsync(DepName);
 
         if (result.Success)
         {
-            if (result.Data != null)
+            if (string.IsNullOrEmpty(result.Error))
             {
-                //assign to local variables
-                totalIncome = result.Data.Where(u => u.Type == "Income").Sum(u => u.Amount);
-                totalExpense = result.Data.Where(u => u.Type == "Expense").Sum(u => u.Amount);
-                currentBalance = totalIncome - totalExpense;
+                if (result.Data != null)
+                {
+                    //assign to local variables
+                    totalIncome = financeMensList.Where(u => u.Type == "Income").Sum(u => u.Amount);
+                    totalExpense = financeMensList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
+                    currentBalance = totalIncome - totalExpense;
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "data is null");
+                }
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", "data is null");
+                message = "No records found";
             }
+
         }
         else
         {
@@ -788,7 +833,7 @@
                 isUpdateModal = false;
                 isFailedToUpdateModal = true;
                 await GetAllFinancialData();
-                await GetDataByDateRange(dateTo, dateFrom);
+                await GetDataByDateRange(dateTo, dateFrom, DepName);
                 updateMensRecord = new();
                 return;
             }
@@ -796,7 +841,7 @@
             isUpdateModal = false;
             isUpdateSuccessModal = true;
             await GetAllFinancialData();
-            await GetDataByDateRange(dateTo, dateFrom);
+            await GetDataByDateRange(dateTo, dateFrom, DepName);
             updateMensRecord = new();
         }
         else
@@ -841,7 +886,7 @@
             {
                 isLoadingModal = false;
                 isFailedToFetchModal = true;
-                await GetDataByDateRange(dateTo, dateFrom);
+                await GetDataByDateRange(dateTo, dateFrom, DepName);
             }
         }
         else
@@ -858,7 +903,7 @@
             dateFrom = dateTo.AddMonths(-1);
         }
 
-        await GetDataByDateRange(dateTo, dateFrom);
+        await GetDataByDateRange(dateTo, dateFrom,DepName);
 
     }
 
@@ -879,14 +924,14 @@
         {
             ToggleModal();
             await GetAllFinancialData();
-            await GetDataByDateRange(dateTo, dateFrom);
+            await GetDataByDateRange(dateTo, dateFrom, DepName);
         }
         else
         {
             isRemoveModal = false;
             isFailedToRemoveModal = true;
             await GetAllFinancialData();
-            await GetDataByDateRange(dateTo, dateFrom);
+            await GetDataByDateRange(dateTo, dateFrom, DepName);
         }
     }
 
@@ -915,7 +960,7 @@
                 isLoadingModal = false;
                 isFailedToFetchModal = true;
                 await GetAllFinancialData();
-                await GetDataByDateRange(dateTo, dateFrom);
+                await GetDataByDateRange(dateTo, dateFrom,DepName);
                 return;
             }
 
@@ -943,13 +988,17 @@
     }
 
     //Get Financial Records
-    private async Task GetDataByDateRange(DateOnly date1, DateOnly date2)
+    private async Task GetDataByDateRange(DateOnly date1, DateOnly date2, string department)
     {
         message = "Fetching data...";
-        var result = await _financialMensService.GetFinancialDataByDateRange(date1,date2);
+        var result = await _financialMensService.GetDepartmentFinancialDataByDateRange(date1,date2,department);
         if (result.Success)
         {
             financeMensList = result.Data;
+            //assign to local variables
+            totalIncome = financeMensList.Where(u => u.Type == "Income").Sum(u => u.Amount);
+            totalExpense = financeMensList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
+            currentBalance = totalIncome - totalExpense;
 
             if (financeMensList.Count != 0)
             {
@@ -962,6 +1011,7 @@
         }
         else
         {
+            test = result.Error;
             message = "Failed to fetch data...";
             await _js.InvokeVoidAsync("alert", result.Error);
         }
@@ -1073,19 +1123,26 @@
         DateTime date = DateTime.Now;
         mensRecord.CreatedAt = date.ToString();
 
-
-        var result = await _financialMensService.AddFinancialMensRecordAsync(mensRecord);
+        mensRecord.Department = DepName;
+        var result = await _financialMensService.AddFinancialRecordAsync(mensRecord);
         if (result.Success)
         {
+
             if (mensRecord.ScheduleId != null)
             {
                 var shcedResult = await _scheduleService.UpdateScheduleFinanceById(mensRecord.ScheduleId, true);
             }
 
+            if (mensRecord.Category == "Offering")
+            {
+                var updateRes = await _financeEventsService.UpdateFinanceEventStatus(financeId, true);
+            }
+
+            financeId = string.Empty;
             isAddModal = false;
             isAddedSuccessModal = true;
             await GetAllFinancialData();
-            await GetDataByDateRange(dateTo, dateFrom);
+            await GetDataByDateRange(dateTo, dateFrom,DepName);
             mensRecord = new();
         }
         else
@@ -1128,17 +1185,19 @@
         mensRecord = new();
         isIncome = true;
 
-        if (scheduleList != null)
+        if (scheduleFinancesList != null)
         {
-            if (scheduleList.Count != 0)
+            if (scheduleFinancesList.Count != 0)
             {
-                mensRecord.ScheduleId = scheduleList.First().Id;
-                scheduleDate = scheduleList.First().StartDate;
+                mensRecord.ScheduleId = scheduleFinancesList.First().ScheduleId;
+                financeId = scheduleFinancesList.First().FinanceId;
+                scheduleDate = scheduleFinancesList.First().Date;
                 isDonation = false;
             }
             else
             {
                 mensRecord.Category = "Donation";
+                type = "Donation";
                 isDonation = true;
             }
         }
@@ -1147,27 +1206,35 @@
     //Handle Type Change
     private void OnTypeChange(ChangeEventArgs e)
     {
-        mensRecord.Type = e.Value!.ToString()!;
+        type = e.Value!.ToString()!;
+
+        if (type != "Expense")
+        {
+            mensRecord.Type = "Income";
+        }
+        else
+        {
+            mensRecord.Type = "Expense";
+        }
+
 
         if (mensRecord.Type == "Income")
         {
             isIncome = true;
-            mensRecord.Category = "Offering";
-            if (scheduleList != null)
+            if (type == "Offering")
             {
-                if (scheduleList.Count != 0)
-                {
-                    mensRecord.ScheduleId = scheduleList.First().Id;
-                    scheduleDate = scheduleList.First().StartDate;
-                }
-                else
-                {
-                    mensRecord.Category = "Donation";
-                    isDonation = true;
-                }
+                mensRecord.Category = "Offering";
+                isDonation = false;
+                mensRecord.ScheduleId = scheduleFinancesList.First().ScheduleId;
+                mensRecord.DonatorName = null;
             }
-            mensRecord.DonatorName = null;
-            mensRecord.VoucherNumber = null;
+            else
+            {
+                mensRecord.Category = "Donation";
+                isDonation = true;
+                mensRecord.ScheduleId = null;
+            }
+
         }
         else
         {
@@ -1200,23 +1267,63 @@
     //Gets Schedules that has missing financial record
     private async Task GetSchedules()
     {
-        var result = await _scheduleService.GetSchedulesWithMissingFinanceByDepartment("Mens");
+        scheduleFinancesList = new();
+        var result = await _financeEventsService.GetFinanceEventsByDepartmentIdAsync(DepName);
 
         if (result.Success)
         {
             if (result.Data != null)
             {
-                scheduleList = result.Data;
-            }
-            else
-            {
-                await _js.InvokeVoidAsync("alert", "not loaded");
+
+                var sched = await _scheduleService.GetScheduleAsync();
+                var financeIds = result.Data.Select(u => u.ScheduleId).ToHashSet();
+
+                var schedList = sched.Data.Where(u => financeIds.Contains(u.Id)).ToList();
+                var financeData = result.Data;
+                var joined = schedList.Join(financeData, s => s.Id, f => f.ScheduleId, (s, f) => new ScheduleFinanceVM
+                {
+                    DepartmentId = f.DepartmentId,
+                    ScheduleId = s.Id,
+                    Date = f.Date,
+                    Title = s.Title,
+                    FinanceId = f.Id
+
+                }).ToList();
+
+                scheduleFinancesList = joined.Where(u => u.Date <= DateOnly.FromDateTime(DateTime.Now)).ToList();
             }
         }
         else
         {
-            message = result.Error;
-            await _js.InvokeVoidAsync("alert", message);
+            await _js.InvokeVoidAsync("alert", result.Error);
         }
+
+        // var result = await _scheduleService.GetSchedulesWithMissingFinanceByDepartment("Mens");
+
+        // if (result.Success)
+        // {
+        //     if (result.Data != null)
+        //     {
+        //         scheduleList = result.Data;
+        //     }
+        //     else
+        //     {
+        //         await _js.InvokeVoidAsync("alert", "not loaded");
+        //     }
+        // }
+        // else
+        // {
+        //     message = result.Error;
+        //     await _js.InvokeVoidAsync("alert", message);
+        // }
+    }
+
+    private class ScheduleFinanceVM
+    {
+        public string FinanceId { get; set; }
+        public string ScheduleId {get; set;}
+        public string DepartmentId { get; set; }
+        public DateOnly Date { get; set; }
+        public string Title { get; set; }
     }
 }

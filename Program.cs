@@ -39,7 +39,7 @@ builder.Services.AddScoped<AttendanceMemberRecordService>();
 builder.Services.AddScoped<SubDepartmentService>();
 builder.Services.AddScoped<VisitorService>();
 builder.Services.AddScoped<AttendanceVisitorRecordService>();
-builder.Services.AddScoped<FinancialMensService>();
+builder.Services.AddScoped<FinancialRecordService>();
 builder.Services.AddScoped<FinanceEventsService>();
 builder.Services.AddScoped<ToastService>();
 

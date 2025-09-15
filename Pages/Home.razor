@@ -6,6 +6,7 @@
 @inject GospelReachCapstone.Services.AuthState Auth
 @inject GospelReachCapstone.Services.AccountsService _accountService
 @using GospelReachCapstone.Models;
+@using System.Globalization
 
 <PageTitle>Home</PageTitle>
 
@@ -236,6 +237,7 @@
     private bool isSidebarVisible = false;
     private bool isLogginIn = false;
     private bool isPasswordShow = false;
+    private TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
 
     //variables for authentication
     private string email = string.Empty;
@@ -301,6 +303,33 @@
                     {
                         if (user.Status != "Disabled")
                         {
+                            Auth.IsLoggedIn = true;
+                            Auth.Role = user.Role;
+                            Auth.DisplayName = textInfo.ToTitleCase(user.FirstName);
+                            switch (Auth.Role)
+                            {
+                                case "Department Head - Senior":
+                                    Auth.Department = "Senior";
+                                    break;
+
+                                case "Department Head - Womens":
+                                    Auth.Department = "Womens";
+                                    break;
+
+                                case "Department Head - Mens":
+                                    Auth.Department = "Mens";
+                                    break;
+
+                                case "Department Head - Youth":
+                                    Auth.Department = "Youth";
+
+                                    break;
+
+                                default:
+                                    Auth.Department = "Administrator";
+                                    break;
+
+                            }
                             await JSRuntime.InvokeVoidAsync("alert", "Login Success");
                             NavigationManager.NavigateTo("dashboard");
                         }

@@ -85,6 +85,7 @@
         try {
             const tb = await db.collection("Attendance").add({
                 scheduleId: attendance.scheduleId,
+                department: attendance.department,
                 date: attendance.date,
                 totalAttendee: attendance.totalAttendee,
                 totalVisitors: attendance.totalVisitors,
@@ -138,6 +139,7 @@
         try {
             await db.collection("Attendance").doc(docId).update({
                 scheduleId: attendance.scheduleId,
+                department: attendance.department,
                 date: attendance.date,
                 totalAttendee: attendance.totalAttendee,
                 totalVisitors: attendance.totalVisitors,
@@ -184,6 +186,35 @@
         }
     },
 
+    //Get ongoing attendance
+    async getOngoingAttendanceByDepartment(department) {
+        try {
+            // Get today's date in local yyyy-MM-dd
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+            const todayStr = `${year}-${month}-${day}`;
+
+            // Query schedules where date >= today
+            const schedTable = await db.collection("Attendance")
+                .where("department", "==", department)
+                .where("date", "==", todayStr)
+                .get();
+
+            if (!schedTable.empty) {
+                const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+                return { success: true, data: sched };
+            }
+
+            return { success: true, error: "No record found" };
+            
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
     async getCompletedAttendance() {
         try {
             // Get today's date in local yyyy-MM-dd
@@ -199,6 +230,35 @@
                 .get();
 
             const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+            return { success: true, data: sched };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getCompletedAttendanceByDepartment(department) {
+        try {
+            // Get today's date in local yyyy-MM-dd
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+            const todayStr = `${year}-${month}-${day}`;
+
+            // Query schedules where date >= today
+            const schedTable = await db.collection("Attendance")
+                .where("department", "==", department)
+                .where("date", "<", todayStr)
+                .get();
+
+            if (!schedTable.empty) {
+                const sched = schedTable.docs.map(u => ({ id: u.id, ...u.data() }));
+
+                return { success: true, data: sched };
+            }
+
+            return { success: true, error: "No record found" };
 
             return { success: true, data: sched };
         } catch (error) {
@@ -255,6 +315,27 @@
         try {
             // Expecting date1 and date2 as "yyyy-MM-dd" strings
             const docRef = await db.collection("Attendance")
+                .where("isCompleted", "==", true)
+                .where("date", ">=", date2)
+                .where("date", "<=", date1)
+                .get();
+
+            const doc = docRef.docs.map(items => ({
+                id: items.id,
+                ...items.data()
+            }));
+
+            return { success: true, data: doc };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getDepartmentAttendanceByDateRange(date1, date2, department) {
+        try {
+            // Expecting date1 and date2 as "yyyy-MM-dd" strings
+            const docRef = await db.collection("Attendance")
+                .where("department", "==", department)
                 .where("isCompleted", "==", true)
                 .where("date", ">=", date2)
                 .where("date", "<=", date1)
@@ -1101,18 +1182,20 @@
 
 
     //==========================================Finance Section=================================================
-    async addFinanceMens(mens) {
+    async addFinancialRecord(rec) {
         try {
-            await db.collection("FinanceMens").add({
-                type: mens.type,
-                category: mens.category,
-                amount: mens.amount,
-                scheduleId: mens.scheduleId,
-                donatorName: mens.donatorName,
-                invoiceNumber: mens.invoiceNumber,
-                voucherNumber: mens.voucherNumber,
-                date: mens.date,
-                createdAt: mens.createdAt
+            await db.collection("FinanceRecord").add({
+                department: rec.department,
+                type: rec.type,
+                category: rec.category,
+                amount: rec.amount,
+                scheduleId: rec.scheduleId,
+                scheduleTitle: rec.scheduleTitle,
+                donatorName: rec.donatorName,
+                invoiceNumber: rec.invoiceNumber,
+                voucherNumber: rec.voucherNumber,
+                date: rec.date,
+                createdAt: rec.createdAt
             });
 
             return { success: true }
@@ -1123,7 +1206,7 @@
 
     async getAllFinance() {
         try {
-            const docRef = await db.collection("FinanceMens").get();
+            const docRef = await db.collection("FinanceRecord").get();
             const doc = docRef.docs.map(u => ({ id: u.id, ...u.data() }));
 
             return { success: true, data: doc };
@@ -1132,9 +1215,25 @@
         }
     },
 
+    async getAllFinanceByDepartment(department) {
+        try {
+            const docRef = await db.collection("FinanceRecord").where("department", "==", department).get();
+
+            if (docRef.empty) {
+                return { success: true, error: "No records found" };
+            }
+            else {
+                const doc = docRef.docs.map(u => ({ id: u.id, ...u.data() }));
+                return { success: true, data: doc };
+            }
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
     async getFinanceMensById(Id) {
         try {
-            const docRef = db.collection("FinanceMens").doc(Id);
+            const docRef = db.collection("FinanceRecord").doc(Id);
             const doc = await docRef.get();
 
             if (!doc.exists) {
@@ -1152,7 +1251,7 @@
 
     async removeFinanceMens(Id) {
         try {
-            const docRef = db.collection("FinanceMens").doc(Id);
+            const docRef = db.collection("FinanceRecord").doc(Id);
             const doc = await docRef.get();
 
             if (!doc.exists) {
@@ -1169,7 +1268,27 @@
     async getFinancialRecordByDateRange(date1, date2) {
         try {
             // Expecting date1 and date2 as "yyyy-MM-dd" strings
-            const financeMensTable = await db.collection("FinanceMens")
+            const financeMensTable = await db.collection("FinanceRecord")
+                .where("date", ">=", date2)
+                .where("date", "<=", date1)
+                .get();
+
+            const finance = financeMensTable.docs.map(items => ({
+                id: items.id,
+                ...items.data()
+            }));
+
+            return { success: true, data: finance };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getDepartmentFinancialRecordByDateRange(date1, date2, department) {
+        try {
+            // Expecting date1 and date2 as "yyyy-MM-dd" strings
+            const financeMensTable = await db.collection("FinanceRecord")
+                .where("department", "==", department)
                 .where("date", ">=", date2)
                 .where("date", "<=", date1)
                 .get();
@@ -1189,7 +1308,7 @@
         try {
             // 1. Check invoice numbers
             const invoiceSnap = await db
-                .collection("FinanceMens")
+                .collection("FinanceRecord")
                 .where("invoiceNumber", "==", invoice)
                 .get();
 
@@ -1199,7 +1318,7 @@
 
             // 2. Check voucher numbers
             const voucherSnap = await db
-                .collection("FinanceMens")
+                .collection("FinanceRecord")
                 .where("voucherNumber", "==", invoice)
                 .get();
 
@@ -1216,7 +1335,7 @@
     },
 
 
-    async updateFinanceMensRecord(Id, mens) {
+    async updateFinanceMensRecord(Id, rec) {
         try {
             const docRef = db.collection("FinanceMens").doc(Id);
             const doc = await docRef.get();
@@ -1226,16 +1345,18 @@
             }
             else {
                 await docRef.update({
-                    type: mens.type,
-                    category: mens.category,
-                    amount: mens.amount,
-                    scheduleId: mens.scheduleId,
-                    donatorName: mens.donatorName,
-                    invoiceNumber: mens.invoiceNumber,
-                    voucherNumber: mens.voucherNumber,
-                    date: mens.date,
-                    lastModifiedDate: mens.lastModifiedDate,
-                    lastModifiedBy: mens.lastModifiedBy
+                    department: rec.department,
+                    type: rec.type,
+                    category: rec.category,
+                    amount: rec.amount,
+                    scheduleId: rec.scheduleId,
+                    scheduleTitle: rec.scheduleTitle,
+                    donatorName: rec.donatorName,
+                    invoiceNumber: rec.invoiceNumber,
+                    voucherNumber: rec.voucherNumber,
+                    date: rec.date,
+                    lastModifiedDate: rec.lastModifiedDate,
+                    lastModifiedBy: rec.lastModifiedBy
                 });
 
                 return { success: true };

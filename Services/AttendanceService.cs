@@ -181,12 +181,65 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        //Get Ongoing Attendance
+        public async Task<AttendanceResult> GetOngoingAttendanceByDepartmentAsync(string department)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getOngoingAttendanceByDepartment", department);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
         //Get Completed Attendance
         public async Task<AttendanceResult> GetCompletedAttendanceAsync()
         {
             try
             {
                 var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getCompletedAttendance");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+
+        }
+
+        //Get Completed Attendance
+        public async Task<AttendanceResult> GetCompletedAttendanceByDepartmentAsync(string department)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getCompletedAttendanceByDepartment", department);
                 return result;
             }
             catch (JSException ex)
@@ -241,6 +294,32 @@ namespace GospelReachCapstone.Services
             try
             {
                 var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getAttendanceByDateRange", date1, date2);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AttendanceResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //get attendance datas by date range by department
+        public async Task<AttendanceResult> GetDepartmentAttendanceByDateRangeAsync(DateOnly date1, DateOnly date2, string department)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<AttendanceResult>("firestoreFunctions.getDepartmentAttendanceByDateRange", date1, date2, department);
                 return result;
             }
             catch (JSException ex)

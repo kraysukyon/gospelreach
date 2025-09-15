@@ -13,6 +13,23 @@
     flex-direction: column;
 }
 
+.addAttendances {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    display: flex;
+    flex-direction: column;
+    width: 600px;
+    padding: 2rem 1.5rem;
+    background-color: #FFFFFF;
+    border-radius: 25px;
+    max-height: calc(100vh - 10vh);
+    overflow-y: auto;
+    transition: all 0.5s ease;
+    height: auto;
+}
+
 .addEvents{
     background-color: #FFF;
     max-height: calc(100vh - 15vh);
@@ -173,6 +190,7 @@ textarea{
 
 .table-container {
     overflow-x: auto;
+    overflow-y:auto;
 }
 
 
@@ -407,7 +425,18 @@ a {
     cursor: pointer;
 }
 
+.com {
+    color: #d4edda;
+}
+
+.inCom {
+    color: #f8d7da;
+}
+
 .cards {
+    display:flex;
+    flex-direction: column;
+    height:100%;
     border-radius: .75rem;
     box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
     transition: box-shadow 0.3s ease, filter 0.3s ease;
@@ -416,8 +445,7 @@ a {
     max-height: calc(100vh - 10vh);
     background-color: #FFF;
     overflow-y: auto;
-    width: 600px;
-    min-height: 600px;
+    
 }
 
     .cards:hover {
@@ -439,6 +467,18 @@ a {
     gap: 10px;
 }
 
+.helperModal {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 24px;
+    max-height: calc(100vh - 20vh);
+    background-color: #FFF;
+    overflow-y: auto;
+    width: 400px;
+}
+
 .pill {
     background-color: #1b6ec2;
     padding: 4px 8px;
@@ -450,6 +490,18 @@ a {
     color: #FFF;
     cursor: pointer;
 }
+
+.pill7 {
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: .75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+}
+
+
 
 .pill2 {
     background-color: green;
