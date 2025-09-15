@@ -21,9 +21,9 @@
         public string? VoucherNumber { get; set; }
 
         //Created
-        public string CreatedAt { get; set; }
-        public string LastModifiedDate { get; set; }
-        public string CreatedByUserId { get; set; }
-        public string LastModifiedBy { get; set; }
+        public DateOnly DateAdded { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+        public DateOnly DateModified { get; set; }
+        public string AddedByUserId { get; set; }
+        public string? ModifiedByUserId { get; set; }
     }
 }

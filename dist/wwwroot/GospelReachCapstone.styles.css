@@ -3418,6 +3418,170 @@ a[b-w7zj7xwaoj] {
         flex-direction: column;
     }
 }
+/* /Pages/FinancePage-legacy.razor.rz.scp.css */
+*[b-t3xt2j94rx] {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: black;
+    font-family: "Inter", sans-serif;
+}
+
+.BackgroundModal[b-t3xt2j94rx] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2001;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0,0,0,.5);
+    display: none;
+}
+
+.show[b-t3xt2j94rx] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.c2[b-t3xt2j94rx] {
+    color: #4b5563;
+}
+
+a[b-t3xt2j94rx] {
+    color: rgb(75 85 99);
+}
+
+.planning[b-t3xt2j94rx] {
+    display: grid;
+    grid-template-columns: 1fr 30%;
+    height: auto;
+    gap: 1.5rem;
+}
+
+.link[b-t3xt2j94rx] {
+    cursor: pointer;
+}
+
+.cards[b-t3xt2j94rx] {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 24px;
+}
+
+    .cards:hover[b-t3xt2j94rx] {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+.search[b-t3xt2j94rx] {
+    padding: .5rem .75rem;
+    padding-left: 2.5rem;
+}
+
+    .search[b-t3xt2j94rx]::placeholder {
+        color: #4b5563;
+    }
+
+.table-container[b-t3xt2j94rx] {
+    overflow-x: auto;
+}
+
+.thead[b-t3xt2j94rx] {
+    background-color: rgb(249,250,251);
+    text-align: left;
+    font-size: .75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: rgb(107,114,128);
+    padding: 1rem 1.5rem;
+    border: none;
+}
+
+.table-row[b-t3xt2j94rx] {
+    border-bottom-width: 1px;
+    border-color: rgb(229,231,235);
+}
+
+.table-cell[b-t3xt2j94rx] {
+    white-space: nowrap;
+    padding: 30px 24px 20px 24px;
+    font-size: .875rem;
+    line-height: 1.25rem;
+}
+
+.toast-container[b-t3xt2j94rx] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2001;
+    width: 100%;
+    height: 100vh;
+        background-color: rgba(0,0,0,.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-message[b-t3xt2j94rx] {
+    background-color: #323232;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+    animation: fadein-b-t3xt2j94rx 0.3s, fadeout-b-t3xt2j94rx 0.5s 2.5s;
+}
+
+@keyframes fadein-b-t3xt2j94rx {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeout-b-t3xt2j94rx {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .page[b-t3xt2j94rx] {
+        display: block;
+    }
+
+    .header a[b-t3xt2j94rx] {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .cards[b-t3xt2j94rx]{
+        padding: 0;
+    }
+
+    .planning[b-t3xt2j94rx] {
+        display: block;
+    }
+
+    .stats[b-t3xt2j94rx] {
+        display: flex;
+        flex-direction: column;
+    }
+}
 /* /Pages/FinancePage.razor.rz.scp.css */
 *[b-wf2niajy5v] {
     padding: 0;
@@ -3425,6 +3589,12 @@ a[b-w7zj7xwaoj] {
     box-sizing: border-box;
     color: black;
     font-family: "Inter", sans-serif;
+}
+
+.page[b-wf2niajy5v]{
+    display:grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
 }
 
 .BackgroundModal[b-wf2niajy5v] {
@@ -3444,6 +3614,11 @@ a[b-w7zj7xwaoj] {
     justify-content: center;
 }
 
+.col2[b-wf2niajy5v]{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
 
 .c2[b-wf2niajy5v] {
     color: #4b5563;
@@ -3460,7 +3635,7 @@ a[b-wf2niajy5v] {
     gap: 1.5rem;
 }
 
-.link[b-wf2niajy5v] {
+.cursor[b-wf2niajy5v] {
     cursor: pointer;
 }
 
@@ -3470,6 +3645,22 @@ a[b-wf2niajy5v] {
     transition: box-shadow 0.3s ease, filter 0.3s ease;
     border: solid .3px rgb(128, 128, 128, 0.08);
     padding: 24px;
+    max-height: calc(100vh - 20vh);
+    background-color: #FFFFFF;
+    overflow-y: auto;
+    width: 500px;
+}
+
+.helperModal[b-wf2niajy5v] {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 24px;
+    max-height: calc(100vh - 20vh);
+    background-color: #FFF;
+    overflow-y: auto;
+    width: 400px;
 }
 
     .cards:hover[b-wf2niajy5v] {
@@ -3514,50 +3705,12 @@ a[b-wf2niajy5v] {
     line-height: 1.25rem;
 }
 
-.toast-container[b-wf2niajy5v] {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 2001;
-    width: 100%;
-    height: 100vh;
-        background-color: rgba(0,0,0,.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.details[b-wf2niajy5v]{
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+    margin-bottom:.5rem;
 }
-
-.toast-message[b-wf2niajy5v] {
-    background-color: #323232;
-    color: white;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
-    animation: fadein-b-wf2niajy5v 0.3s, fadeout-b-wf2niajy5v 0.5s 2.5s;
-}
-
-@keyframes fadein-b-wf2niajy5v {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeout-b-wf2niajy5v {
-    from {
-        opacity: 1;
-    }
-
-    to {
-        opacity: 0;
-    }
-}
-
 
 @media (max-width: 768px) {
     .page[b-wf2niajy5v] {

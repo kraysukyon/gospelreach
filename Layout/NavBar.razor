@@ -70,7 +70,7 @@
                 <div class="d-flex align-items-center">
                     <i class="bi bi-piggy-bank"></i>
                 </div>
-                <p @onclick="() => SetActive(6)"  class="text-decoration-none c2">Finance</p>
+                <a @onclick="() => SetActive(6)"  class="text-decoration-none c2">Finance</a>
             </div>
 
             <div hidden="@(auth.Role != "Administrator")">

@@ -752,7 +752,7 @@
     async getScheduleByDateRange(date1, date2) {
         try {
             // Expecting date1 and date2 as "yyyy-MM-dd" strings
-            const financeMensTable = await db.collection("FinanceMens")
+            const financeMensTable = await db.collection("FinanceRecord")
                 .where("date", ">=", date2)
                 .where("date", "<=", date1)
                 .get();
@@ -1195,7 +1195,8 @@
                 invoiceNumber: rec.invoiceNumber,
                 voucherNumber: rec.voucherNumber,
                 date: rec.date,
-                createdAt: rec.createdAt
+                dateAdded: rec.dateAdded,
+                addedByUserId: rec.addedByUserId,
             });
 
             return { success: true }
@@ -1207,9 +1208,13 @@
     async getAllFinance() {
         try {
             const docRef = await db.collection("FinanceRecord").get();
-            const doc = docRef.docs.map(u => ({ id: u.id, ...u.data() }));
 
-            return { success: true, data: doc };
+            if (!docRef.empty) {
+                const doc = docRef.docs.map(u => ({ id: u.id, ...u.data() }));
+                return { success: true, data: doc };
+            }
+
+            return { success: true, error: "No records found" };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -1337,7 +1342,7 @@
 
     async updateFinanceMensRecord(Id, rec) {
         try {
-            const docRef = db.collection("FinanceMens").doc(Id);
+            const docRef = db.collection("FinanceRecord").doc(Id);
             const doc = await docRef.get();
 
             if (!doc.exists) {
@@ -1355,8 +1360,8 @@
                     invoiceNumber: rec.invoiceNumber,
                     voucherNumber: rec.voucherNumber,
                     date: rec.date,
-                    lastModifiedDate: rec.lastModifiedDate,
-                    lastModifiedBy: rec.lastModifiedBy
+                    dateModified: rec.dateModified,
+                    modifiedByUserId: rec.modifiedByUserId
                 });
 
                 return { success: true };
@@ -1414,6 +1419,21 @@
             });
 
             return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+    },
+
+    async getAllFinanceEvents() {
+        try {
+            const docRef = await db.collection("FinanceEvents").get();
+
+            if (!docRef.empty) {
+                const doc = docRef.docs.map(u => ({ id: u.id, ...u.data() }));
+                return { success: true , data: doc}
+            }
+
+            return { success: true, error: "No data found" };
         } catch (error) {
             return { success: false, error: error.message }
         }

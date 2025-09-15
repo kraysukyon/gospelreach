@@ -1,116 +1,1474 @@
 ﻿@page "/finance"
 @layout LandingLayout
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.ScheduleService _scheduleService
+@inject GospelReachCapstone.Services.FinancialRecordService _financeRecordService
+@inject GospelReachCapstone.Services.FinanceEventsService _financeEventsService
+@inject GospelReachCapstone.Services.AuthState _auth
+@using GospelReachCapstone.Models
+@using System.ComponentModel.DataAnnotations
 @inject NavigationManager _nav
-@inject ToastService ToastService
-@inject AuthState _auth
 
-<PageTitle>Finance</PageTitle>
+<PageTitle>Finance Mens</PageTitle>
 
 
 <div class="page">
     <div @onclick="ToggleModal" class="BackgroundModal @(isBackgroundVisible ? "show" : "")">
 
+        <!--Add Entry-->
+        <div hidden="@(!isAddModal)" @onclick:stopPropagation class="cards">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <h4 class="fw-bold">
+                        Record a Financial Entry
+                    </h4>
+                    <p class="m-0 c2" style="font-size: 14px">Create an entry</p>
+                </div>
+            </div>
+
+            @if (validationResults.Any())
+            {
+                <div class="d-flex flex-column justify-content-between mb-3">
+                    @foreach (string a in validationResults)
+                    {
+                        <p class="text-danger">@a</p>
+                    }
+                </div>
+            }
+
+            <!--Type-->
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-2">
+                    <p>Select Fund</p>
+                    @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                </div>
+
+                <select value="@typeOfFund" @onchange="OnFundChange" class="form-select p-2 mt-2">
+                    <option value="General">General Fund</option>
+                    <option value="Senior">Senior</option>
+                    <option value="Womens">Womens</option>
+                    <option value="Mens">Mens</option>
+                    <option value="Youth">Youth</option>
+                </select>
+            </div>
+            
+            <!--Type-->
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-2">
+                    <p>Type</p>
+                    @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                </div>
+
+                <select value="@type" class="form-select p-2 mt-2" @onchange="OnTypeChange">
+                    <option hidden="@(typeOfFund == "General")" value="Offering" disabled="@(scheduleFinancesList.Count == 0)">Offering @(scheduleFinancesList.Count == 0 ? "(No schedules)" : "")</option>
+                    <option value="Donation">Donation</option>
+                    <option value="Expense">Expense</option>
+                </select>
+            </div>
+
+            <!--Income Type-->
+            <div hidden="@(!isIncome)">
+                <!--Category-->
+                <div class="inputs mt-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <p>Amount</p>
+                        @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                    </div>
+
+                    <input @bind="mensRecord.Amount" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" min="0" onkeydown="if(event.key === '-' || event.key === '+') event.preventDefault();" />
+                </div>
+
+                <!--Schedule-->
+                <div hidden="@(type != "Offering" || scheduleFinancesList.Count == 0)" class="inputs mt-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <p>Event</p>
+                        @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                    </div>
+
+                    <select @onchange="OnScheduleChange" class="form-select p-2 mt-2">
+                        @foreach (var item in scheduleFinancesList)
+                        {
+                            <option value="@item.FinanceId">@item.Title - @item.Date.ToString("MMM dd, yyyy")</option>
+                        }
+                    </select>
+                </div>
+
+                <!--Donated By-->
+                <div hidden="@(type != "Donation")" class="inputs mt-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <p>(Optional) Donated By</p>
+                        @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                    </div>
+
+                    <input @bind="mensRecord.DonatorName" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Name" type="text" />
+                </div>
+
+                <!--Invoice-->
+                <div class="col2">
+
+                    <!--Invoice-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Invoice No.</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input @bind="mensRecord.InvoiceNumber" oninput="this.value = this.value.toUpperCase().trim()" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Voucher Number" type="text" />
+                    </div>
+
+                    <!--Date-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Invoice Date</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" @bind="mensRecord.Date" spellcheck="false" type="date" />
+                    </div>
+                </div>
+            </div>
+
+            <!--Expense Type-->
+            <div hidden="@(isIncome)">
+                <!--Category-->
+                <div class="col2">
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Category</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <select @bind="mensRecord.Category" class="form-select p-2 mt-2">
+                            <option value="Tithes">Tithes</option>
+                            <option value="PropertyMaintenance">Property Maintenance</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Incidental">Incidental</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Amount</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+                         
+                        <input @bind="mensRecord.Amount" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" min="0" onkeydown="if(event.key === '-' || event.key === '+') event.preventDefault();" />
+                    </div>
+                </div>
+
+                <!--Voucher-->
+                <div class="col2">
+
+                    <!--Voucher-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Voucher No.</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input @bind="mensRecord.VoucherNumber" oninput="this.value = this.value.toUpperCase().trim()" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Voucher Number" type="text" />
+                    </div>
+
+                    <!--Date-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Voucher Date</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" @bind="mensRecord.Date" spellcheck="false" type="date" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 @(isAdding ? "d-flex" : "d-none") align-items-center justify-content-center">
+                <p>Saving record.Please wait...</p>
+
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
+                    <img src="/img/loading.svg" style="height:50px; width: 50px;" />
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2 mt-4" style="justify-self: end;">
+                <button disabled="@(isAdding)" class="btn border border-1 px-4 py-1" @onclick="ToggleModal">Close</button>
+                <button disabled="@(isAdding)" @onclick="AddFinancialRecord" class="btn btn-primary px-4 py-1 text-white">Create</button>
+            </div>
+            
+
+        </div>
+
+        <!--Update Record-->
+        <div hidden="@(!isUpdateModal)" @onclick:stopPropagation class="cards">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <h4 class="fw-bold">
+                        Update financial record
+                    </h4>
+                    <p class="m-0 c2" style="font-size: 14px">Update an entry</p>
+                </div>
+            </div>
+
+            @if (updateValidationResults.Any())
+            {
+                <div class="d-flex flex-column mb-3">
+                    @foreach (string a in updateValidationResults)
+                    {
+                        <p class="text-danger">@a</p>
+                    }
+                </div>
+            }
+
+            <!--Type-->
+            <div class="inputs mt-3">
+                <div class="d-flex align-items-center gap-2">
+                    <p>Type</p>
+                    @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                </div>
+
+                <input @bind="updateMensRecord.Type" type="text" readonly class="form-control p-2 mt-2"/>
+            </div>
+
+            <!--Income Type-->
+            <div hidden="@(updateMensRecord.Type != "Income")">
+                <!--Category-->
+                <div class="col2">
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Category</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input @bind="updateMensRecord.Category" type="text" readonly class="form-control p-2 mt-2" />
+                    </div>
+
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Amount</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input @bind="updateMensRecord.Amount" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" min="0" onkeydown="if(event.key === '-' || event.key === '+') event.preventDefault();" />
+                    </div>
+                </div>
+
+                <!--Schedule-->
+                <div hidden="@(updateMensRecord.Category != "Offering")" class="inputs mt-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <p>Event</p>
+                        @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                    </div>
+
+                    <input @bind="updateScheduleName" readonly class="form-control p-2 mt-2" spellcheck="false"  type="text" />
+
+                </div>
+
+                <!--Donated By-->
+                <div hidden="@(updateMensRecord.Category != "Donation")" class="inputs mt-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <p>(Optional) Donated By</p>
+                        @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                    </div>
+
+                    <input @bind="updateMensRecord.DonatorName" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Name" type="text" />
+                </div>
+
+                <!--Invoice-->
+                <div class="col2">
+
+                    <!--Invoice-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Invoice No.</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input readonly @bind="updateMensRecord.InvoiceNumber" oninput="this.value = this.value.toUpperCase().trim()" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Voucher Number" type="text" />
+                    </div>
+
+                    <!--Date-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Invoice Date</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" @bind="updateMensRecord.Date" spellcheck="false" type="date" />
+                    </div>
+                </div>
+            </div>
+
+            <!--Expense Type-->
+            <div hidden="@(updateMensRecord.Type != "Expense")">
+                <!--Category-->
+                <div class="col2">
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Category</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" @bind="updateMensRecord.Category" readonly spellcheck="false" type="text" />
+
+                    </div>
+
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Amount</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input @bind="updateMensRecord.Amount" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Amount" type="number" min="0" onkeydown="if(event.key === '-' || event.key === '+') event.preventDefault();" />
+                    </div>
+                </div>
+
+                <!--Voucher-->
+                <div class="col2">
+
+                    <!--Voucher-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Voucher No.</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input readonly @bind="updateMensRecord.VoucherNumber" oninput="this.value = this.value.toUpperCase().trim()" class="form-control p-2 mt-2" spellcheck="false" placeholder="Enter Voucher Number" type="text" />
+                    </div>
+
+                    <!--Date-->
+                    <div class="inputs mt-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <p>Voucher Date</p>
+                            @* <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p> *@
+                        </div>
+
+                        <input class="form-control p-2 mt-2" @bind="updateMensRecord.Date" spellcheck="false" type="date" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 @(isUpdating ? "d-flex" : "d-none") align-items-center justify-content-center">
+                <p>Updating record.Please wait...</p>
+
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
+                    <img src="/img/loading.svg" style="height:50px; width: 50px;" />
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4" style="justify-self: end;">
+                <button disabled="@(isAdding)" class="btn border border-1 px-4 py-1" @onclick="ToggleModal">Cancel</button>
+                <button disabled="@(isAdding)" @onclick="UpdateFinancial" class="btn btn-primary px-4 py-1 text-white">Update</button>
+            </div>
+
+
+        </div>
+
+        <!--View Modal-->
+        <div @onclick:stopPropagation hidden="@(!isViewModal)" class="cards">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <h4 class="fw-bold">
+                        Details
+                    </h4>
+                    <p class="m-0 c2" style="font-size: 14px">View an entry</p>
+                </div>
+            </div>
+
+            <div class="details">
+                <p>Date Added</p>
+                <p>@mensRecord.DateAdded</p>
+            </div>
+
+            <div class="details">
+                <p>Type</p>
+                <p>@mensRecord.Type</p>
+            </div>
+
+            <div class="details">
+                <p>Category</p>
+                <p>@mensRecord.Category</p>
+            </div>
+
+            <div hidden="@(mensRecord.Type != "Income")" class="details">
+                <p>Invoice No.</p>
+                <p>@mensRecord.InvoiceNumber</p>
+            </div>
+
+            <div hidden="@(mensRecord.Type == "Income")" class="details">
+                <p>Voucher No.</p>
+                <p>@mensRecord.VoucherNumber</p>
+            </div>
+
+            <div class="details">
+                <p>@(mensRecord.Type == "Income" ? "Invoice" : "Voucher") Date</p>
+                <p>@mensRecord.Date.ToString("MMM dd, yyyy")</p>
+            </div>
+
+            <div class="details">
+                <p>Amount</p>
+                <p>₱@mensRecord.Amount.ToString("N2")</p>
+            </div>
+
+            <div hidden="@(mensRecord.Type != "Income" || mensRecord.Category != "Offering")" class="details">
+                <p>Event</p>
+                <p>@scheduleDisplay</p>
+            </div>
+
+            <div hidden="@(mensRecord.Type != "Income" || mensRecord.Category != "Donation")" class="details">
+                <p>Donated By</p>
+                <p>@mensRecord.DonatorName</p>
+            </div>
+        </div>
+
+        <!--Loading Modal-->
+        <div @onclick:stopPropagation hidden="@(!isLoadingModal)"  class="helperModal">
+            <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                <h1 style="font-weight: 600;">Loading</h1>
+                <p>Please wait...</p>
+            </div>
+
+
+            <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
+                <img src="/img/loading.svg" style="height:50px; width: 50px;"/>
+            </div>
+        </div>
+
+        <!--Success Add Modal-->
+        <div @onclick:stopPropagation hidden="@(!isAddedSuccessModal)" class="helperModal">
+            <div>
+                <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                    <h3 class="text-success">Record has been added</h3>
+                    <p>Your entry has been saved.</p>
+                </div>
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-4 mb-3">
+                    <button @onclick="ToggleModal" class="btn btn-primary px-3 py-1 text-white" style="font-size: 18px;">Ok</button>
+                </div>
+            </div>
+        </div>
+
+        <!--Success Update Modal-->
+        <div @onclick:stopPropagation hidden="@(!isUpdateSuccessModal)" class="helperModal">
+            <div>
+                <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                    <h3 class="text-success">Record has been updated</h3>
+                    <p>Your entry has been saved.</p>
+                </div>
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-4 mb-3">
+                    <button @onclick="ToggleModal" class="btn btn-primary px-3 py-1 text-white" style="font-size: 18px;">Ok</button>
+                </div>
+            </div>
+        </div>
+
+        <!--Failed To Remove Modal-->
+        <div @onclick:stopPropagation hidden="@(!isFailedToRemoveModal)" class="helperModal">
+            <div>
+                <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                    <h3 class="text-danger">Failed To Remove</h3>
+                    <p>File not found</p>
+                </div>
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-4 mb-3">
+                    <button @onclick="ToggleModal" class="btn btn-primary px-3 py-1 text-white" style="font-size: 18px;">Ok</button>
+                </div>
+            </div>
+        </div>
+
+        <!--Failed To Update Modal-->
+        <div @onclick:stopPropagation hidden="@(!isFailedToUpdateModal)" class="helperModal">
+            <div>
+                <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                    <h3 class="text-danger">Update Failed</h3>
+                    <p>Record not found</p>
+                </div>
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-4 mb-3">
+                    <button @onclick="ToggleModal" class="btn btn-primary px-3 py-1 text-white" style="font-size: 18px;">Ok</button>
+                </div>
+            </div>
+        </div>
+
+        <!--Failed To Fetch Modal-->
+        <div @onclick:stopPropagation hidden="@(!isFailedToFetchModal)" class="helperModal">
+            <div>
+                <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                    <h3 class="text-danger">Failed to fetch data</h3>
+                    <p>Record not found</p>
+                </div>
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-4 mb-3">
+                    <button @onclick="ToggleModal" class="btn btn-primary px-3 py-1 text-white" style="font-size: 18px;">Ok</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!--Delete Modal-->
+        <div @onclick:stopPropagation hidden="@(!isRemoveModal)" class="helperModal">
+            <div hidden="@(isRemoving)">
+                <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                    <h3>Confirm Remove Record</h3>
+                    <p>You are about to remove a record</p>
+                </div>
+
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-4 mb-3">
+                    <button disabled="@(isRemoving)" @onclick="ToggleModal" class="btn btn-outline-light px-3 py-1 border border-1" style="font-size: 18px;">Cancel</button>
+                    <button disabled="@(isRemoving)" @onclick="RemoveEntry" class="btn btn-danger px-3 py-1 text-white" style="font-size: 18px;">Remove</button>
+                </div>
+            </div>
+            
+
+            <div hidden="@(!isRemoving)">
+                <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+                    <h3>Removing</h3>
+                    <p>Please wait...</p>
+                </div>
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
+                    <img src="/img/loading.svg" style="height:50px; width: 50px;" />
+                </div>
+            </div>
+        </div>
 
     </div>
     <!--Header Section-->
-    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
-        <div>
-            <h4 class="m-0 fw-bold">Financial Management</h4>
-            <p class="m-0 c2" style="font-size: 14px">Track church finances, donations, and expenses.</p>
+    <div class="header d-block d-md-flex flex-md-column mb-2">
+        <div class="d-flex justify-content-between">
+            <div>
+                <h4 class="m-0 fw-bold">Financial Management</h4>
+                <p class="m-0 c2" style="font-size: 14px">Track church finances, donations, and expenses.</p>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button @onclick="GoToReportPage" class="btn btn-primary text-white px-4 py-1">Generate Report</button>
+                <button @onclick="ToggleAddEntry" class="btn btn-primary py-1 px-4 text-white">Add Entry</button>
+            </div>
         </div>
 
-        <div>
-            
+        <p>@test</p>
+        
+
+        <!--Quick Stats Section-->
+        <div class="d-flex flex-column mt-4">
+            <div class="d-md-flex d-block justify-content-evenly gap-4">
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">General Income</p>
+                    <h3 class="m-0 c2 text-success fw-bold">₱@totalIncome.ToString("N2")</h3>
+                </div>
+
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">General Expenses</p>
+                    <h3 class="m-0 c2 text-danger fw-bold">₱@totalExpense.ToString("N2")</h3>
+                </div>
+
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">General Balance</p>
+                    <h3 class="m-0 c2 text-primary fw-bold">₱@currentBalance.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+
+        <!--Quick Stats Section-->
+        <div class="d-flex flex-column mt-4">
+            <div class="d-md-flex d-block justify-content-evenly gap-4">
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">Total Income</p>
+                    <h3 class="m-0 c2 text-success fw-bold">₱@partialIncome.ToString("N2")</h3>
+                </div>
+
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">Total Expenses</p>
+                    <h3 class="m-0 c2 text-danger fw-bold">₱@partialExpense.ToString("N2")</h3>
+                </div>
+
+                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
+                    <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
+                    <h3 class="m-0 c2 text-primary fw-bold">₱@partialBalance.ToString("N2")</h3>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!--Quick Stats Section-->
-    <div class="d-flex flex-column mt-4 mb-2">
-        <div class="d-md-flex d-block justify-content-evenly gap-4">
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">Total Income</p>
-                <h3 class="m-0 c2 text-success fw-bold">$8120.50</h3>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">Total Expenses</p>
-                <h3 class="m-0 c2 text-danger fw-bold">$5521.00</h3>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">Current Balance</p>
-                <h3 class="m-0 c2 text-success fw-bold">$2599.50</h3>
-            </div>
-        </div>
-    </div>
-    
-
-    @* <!--Table Section-->
+    <!--Table Section-->
     <div class="card w-100 mb-3 cards">
 
-        <!--Search Section-->
-        <div class="position-relative mb-4">
-            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-            <input type="text" class="form-control border search" placeholder="Search members..." />
+        <div class="d-flex gap-2 mb-2 w-100 align-items-center">
+            <!--Search Section-->
+            <div class="position-relative d-flex flex-grow-1">
+                <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                <input @bind="@searchString" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search records..." />
+            </div>
+
+            <div class="d-flex gap-2 align-items-center ms-2">
+                <div class="d-flex gap-2 align-items-center">
+                    <p>From</p>
+                    <input @bind="dateFrom" type="date" class="form-control px-2 py-2" />
+                </div>
+
+                <div class="d-flex gap-2 align-items-center">
+                    <p>To</p>
+                    <input @bind="dateTo" type="date" class="form-control px-2 py-2" />
+                </div>
+
+                <select @bind="departmentName" class="form-select p-2 px-4">
+                    @* <option value="Upcoming">Upcoming</option> *@
+                    <option value="All">All</option>
+                    <option value="General">General</option>
+                    <option value="Senior">Senior</option>
+                    <option value="Womens">Womens</option>
+                    <option value="Mens">Mens</option>
+                    <option value="Youth">Youth</option>
+                </select>
+
+                <button @onclick="GetDataByDateRange" class="btn btn-primary text-white px-4 py-2">Filter</button>
+            </div>
         </div>
+        
 
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="thead">Date</th>
-                        <th class="thead">Category</th>
-                        <th class="thead">Description</th>
-                        <th class="thead">Amount</th>
-                        <th class="thead">Type</th>
-                        <th class="thead">Actions</th>
-                    </tr>
-                </thead>
+        <p><em>@message</em></p>
 
-                <tbody>
-                    @for (int i = 0; i < 4; i++)
-                    {
-                        <tr class="table-row">
-                            <td class="table-cell" style="font-weight:500;">2025-04-20</td>
-                            <td class="table-cell c2">Tithes</td>
-                            <td class="table-cell c2">Sunday Collection</td>
-                            <td class="table-cell c2">$3520.50</td>
-                            <td class="table-cell c2">Income</td>
-                            <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
-                                <!--Edit-->
-                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</a>
-                                </div>
-
-                                <!--Delete-->
-                                <button class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button>
-                            </td>
+        @if (financeList != null)
+        {
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="thead">Date</th>
+                            <th class="thead">Department</th>
+                            <th class="thead">Category</th>
+                            <th class="thead">Amount</th>
+                            <th class="thead">Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div> *@
-    <button @onclick='() => GoToFinance("Senior")' class="btn btn-primary p-2 text-white">Senior</button>
-    <button @onclick='() => GoToFinance("Womens")' class="btn btn-primary p-2 text-white">Womens</button>
-    <button @onclick='() => GoToFinance("Mens")' class="btn btn-primary p-2 text-white">Mens</button>
-    <button @onclick='() => GoToFinance("Youth")' class="btn btn-primary p-2 text-white">Youth</button>
+                    </thead>
 
+                    <tbody>
+                        @foreach (var item in filteredFinanceList)
+                        {
+                            <tr @onclick="() => GetDetails(item.Id)" class="table-row cursor">
+                                <td class="table-cell" style="font-weight:500;">@item.Date.ToString("MMM dd, yyyy")</td>
+                                <td class="table-cell c2">@item.Department</td>
+                                <td class="table-cell c2">@item.Category</td>
+                                <td class="table-cell c2 fw-bold @(item.Type == "Income" ? "text-success" : "text-danger")">@(item.Type == "Income" ? "+" : "-")₱@item.Amount.ToString("N2")</td>
+                                <td  class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                    <!--Edit-->
+                                    <button @onclick:stopPropagation @onclick="() => OpenUpdateModal(item.Id)" class="btn btn-outline-light px-2 py-1 border border-1" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Update</button>
+                                    <!--Delete-->
+                                    @* <button @onclick:stopPropagation @onclick="() => OpenRemoveModal(item.Id)" class="btn btn-danger px-2 py-1 text-white" style="font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button> *@
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        
+    </div>
 </div>
 
 
 @code{
+    //Variable Declaration
     private bool isBackgroundVisible = false;
+    private bool isIncome = true;
+    private DateOnly scheduleDate;
+    private bool isDonation = false;
+    private List<Schedule> scheduleList = new();
+    private string message = string.Empty;
+    private FinancialRecord mensRecord = new();
+    private FinancialRecord updateMensRecord = new();
+    private List<FinancialRecord> financeList = new();
+    private IEnumerable<FinancialRecord> filteredFinanceList => financeList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Type.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+    || u.Category.Contains(searchString, StringComparison.OrdinalIgnoreCase) || (u.InvoiceNumber ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase) || (u.VoucherNumber ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase)
+    || u.Date.ToString("MMM dd, yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase) || u.Amount.ToString("N2").Contains(searchString, StringComparison.OrdinalIgnoreCase)
+    || (u.DonatorName ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase)).OrderByDescending(u => u.DateAdded);
+    private string scheduleDisplay = string.Empty;
+    private DateOnly dateTo = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly dateFrom = DateOnly.FromDateTime(DateTime.Now.AddMonths(-3));
+    private List<string> validationResults = new();
+    private List<string> updateValidationResults = new();
+    private List<ScheduleFinanceVM> scheduleFinancesList = new();
+    private string idToBeRemoved { get; set; } = string.Empty;
+    private bool isRemoving = false;
+    private bool isAdding = false;
+    private bool isUpdating = false;
+    private string searchString { get; set; } = string.Empty;
+    private string updateScheduleName = string.Empty;
+    private decimal totalIncome = 0m;
+    private decimal totalExpense = 0m;
+    private decimal currentBalance = 0m;
+    private decimal partialIncome = 0m;
+    private decimal partialExpense = 0m;
+    private decimal partialBalance = 0m;
+    private string type = "Offering";
+    // private string departmentName = string.Empty;
+    private string financeId = string.Empty;
+    string test = string.Empty;
+    private string departmentName = "All";
+    private string typeOfFund = "General";
+
+
+
+
+    //modals
+    private bool isAddModal = false;
+    private bool isAddedSuccessModal = false;
+    private bool isUpdateSuccessModal = false;
+    private bool isViewModal = false;
+    private bool isLoadingModal = false;
+    private bool isRemoveModal = false;
+    private bool isFailedToRemoveModal = false;
+    private bool isFailedToUpdateModal = false;
+    private bool isFailedToFetchModal = false;
+    private bool isUpdateModal = false;
+
+
+    //====================Functions==================================//
+
+    protected override async Task OnInitializedAsync()
+    {
+        message = "Fetching data...";
+        await GetGeneralFinanceData();
+        await GetAllFinanceDataByDataRange();
+    }
+
+    //On Fund Change
+    private async Task OnFundChange(ChangeEventArgs e)
+    {
+        typeOfFund = e.Value!.ToString()!;
+        if (typeOfFund == "General")
+        {
+            mensRecord.Department = "General";
+            mensRecord.ScheduleTitle = null;
+            mensRecord.Category = "Donation";
+            type = "Donation";
+            isIncome = true;
+            isDonation = true;
+        }
+        else
+        {
+            mensRecord = new();
+            mensRecord.Department = typeOfFund;
+            departmentName = typeOfFund;
+
+            //query schedules to populate for offering
+            await GetSchedules();
+            isIncome = true;
+
+            if (scheduleFinancesList.Any())
+            {
+                type = "Offering";
+                mensRecord.ScheduleId = scheduleFinancesList.First().ScheduleId;
+                financeId = scheduleFinancesList.First().FinanceId;
+                scheduleDate = scheduleFinancesList.First().Date;
+                isDonation = false;
+            }
+            else
+            {
+                mensRecord.Category = "Donation";
+                type = "Donation";
+                isDonation = true;
+            }
+
+        }
+    }
+
+    //Get General Finance
+    private async Task GetGeneralFinanceData()
+    {
+        message = "Fetching data...";
+        var result = await _financeRecordService.GetAllFinancialRecordAsync();
+        if (result.Success)
+        {
+            if (!string.IsNullOrEmpty(result.Error))
+            {
+                message = "No records found";
+            }
+            else
+            {
+                //assign to local variables
+                totalIncome = result.Data.Where(u => u.Type == "Income" && u.Date >= dateFrom && u.Date <= dateTo).Sum(u => u.Amount);
+                totalExpense = result.Data.Where(u => u.Type == "Expense" && u.Date >= dateFrom && u.Date <= dateTo).Sum(u => u.Amount);
+                currentBalance = totalIncome - totalExpense;
+            }
+        }
+        else
+        {
+            message = "Failed to get data...";
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    //Go To Report Page
+    private void GoToReportPage()
+    {
+        string from = dateFrom.ToString("yyyy-MM-dd");
+        string to = dateTo.ToString("yyyy-MM-dd");
+        _nav.NavigateTo($"/finance/department/report/{from}/{to}");
+    }
+
+    //On ScheduleChange
+    private void OnScheduleChange(ChangeEventArgs e)
+    {
+        financeId = e.Value!.ToString()!;
+        if (!string.IsNullOrEmpty(financeId))
+        {
+            mensRecord.ScheduleId = scheduleFinancesList.FirstOrDefault(u => u.FinanceId == financeId)?.ScheduleId ?? null;
+        }
+
+    }
+
+    //Get Sum
+    private async Task GetAllFinancialData()
+    {
+        //query to firebase
+        var result = await _financeRecordService.GetAllFinancialRecordByDepartmentAsync(departmentName);
+
+        if (result.Success)
+        {
+            if (string.IsNullOrEmpty(result.Error))
+            {
+                if (result.Data != null)
+                {
+                    //assign to local variables
+                    totalIncome = financeList.Where(u => u.Type == "Income").Sum(u => u.Amount);
+                    totalExpense = financeList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
+                    currentBalance = totalIncome - totalExpense;
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "data is null");
+                }
+            }
+            else
+            {
+                message = "No records found";
+            }
+
+        }
+        else
+        {
+            //shows error
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    //Update Financial Record
+    private async Task UpdateFinancial()
+    {
+        isUpdating = true;
+        updateValidationResults = new();
+
+        //Validation
+        if (updateMensRecord.Type == "Income")
+        {
+
+            if (updateMensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
+            {
+                updateValidationResults.Add("-Invoice Date cannot be greater than date today");
+            }
+
+            if (updateMensRecord.Category == "Offering")
+            {
+                var schedule = scheduleList.FirstOrDefault(u => u.Id == mensRecord.ScheduleId);
+
+                if (schedule != null)
+                {
+                    scheduleDate = schedule.StartDate;
+
+                    if (updateMensRecord.Date < scheduleDate)
+                    {
+                        updateValidationResults.Add("-Invoice Date cannot be less than event date");
+                    }
+                }
+            }
+
+            if (updateMensRecord.Category == "Donation")
+            {
+                if (updateMensRecord.Amount == 0)
+                {
+                    updateValidationResults.Add("-Donation amount must be greater than 0");
+                }
+            }
+        }
+        else
+        {
+            if (updateMensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
+            {
+                updateValidationResults.Add("-Voucher Date cannot be greater than date today");
+            }
+
+            if (updateMensRecord.Amount == 0)
+            {
+                updateValidationResults.Add("-Expense amount must be greater than 0");
+            }
+        }
+
+
+        if (updateValidationResults.Any())
+        {
+            isUpdating = false;
+            return;
+        }
+
+        DateTime date = DateTime.Now;
+        updateMensRecord.DateModified = DateOnly.FromDateTime(date);
+        updateMensRecord.ModifiedByUserId = _auth.UserId;
+
+
+        var result = await _financeRecordService.UpdateFinancialRecordAsync(updateMensRecord.Id, updateMensRecord);
+        if (result.Success)
+        {
+            if (!string.IsNullOrEmpty(result.Error))
+            {
+                isUpdating = false;
+                isUpdateModal = false;
+                isFailedToUpdateModal = true;
+                message = "Fetching data...";
+                await GetGeneralFinanceData();
+                await GetAllFinanceDataByDataRange();
+                updateMensRecord = new();
+                return;
+            }
+            isUpdating = false;
+            isUpdateModal = false;
+            isUpdateSuccessModal = true;
+            message = "Fetching data...";
+            await GetGeneralFinanceData();
+            await GetAllFinanceDataByDataRange();
+            updateMensRecord = new();
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Error);
+            message = "Fetching data...";
+            await GetGeneralFinanceData();
+            await GetAllFinanceDataByDataRange();
+        }
+    }
+
+    //Open update modal
+    private async Task OpenUpdateModal(string Id)
+    {
+        ToggleModal();
+        updateMensRecord = new();
+        isLoadingModal = true;
+
+        var result = await _financeRecordService.GetFinancialRecordByIdAsync(Id);
+
+        if (result.Success)
+        {
+            if (string.IsNullOrEmpty(result.Error))
+            {
+                updateMensRecord = result.FinanceMens;
+                if (!string.IsNullOrEmpty(result.FinanceMens.ScheduleId))
+                {
+                    updateScheduleName = result.FinanceMens.ScheduleId;
+                    var schedRes = await _scheduleService.GetScheduleByIdAsync(result.FinanceMens.ScheduleId);
+
+                    if (schedRes.Success)
+                    {
+                        var sched = schedRes.Schedule;
+                        if (sched != null)
+                        {
+                            updateScheduleName = $"{sched.Title} - {sched.StartDate}";
+                        }
+                    }
+                }
+
+                isLoadingModal = false;
+                isUpdateModal = true;
+            }
+            else
+            {
+                isLoadingModal = false;
+                isFailedToFetchModal = true;
+                await GetDataByDateRange(dateTo, dateFrom, departmentName);
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    //Get Data By Range All Department
+    private async Task GetAllFinanceDataByDataRange()
+    {
+        message = "Fetching data...";
+        var result = await _financeRecordService.GetFinancialDataByDateRange(dateTo, dateFrom);
+        if (result.Success)
+        {
+            financeList = result.Data;
+            //assign to local variables
+            partialIncome = financeList.Where(u => u.Type == "Income").Sum(u => u.Amount);
+            partialExpense = financeList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
+            partialBalance = partialIncome - partialExpense;
+
+            if (financeList.Count != 0)
+            {
+                message = string.Empty;
+            }
+            else
+            {
+                message = "No data found";
+            }
+        }
+        else
+        {
+            test = result.Error;
+            message = "Failed to fetch data...";
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    //Get data by date range
+    private async Task GetDataByDateRange()
+    {
+        if (departmentName == "All")
+        {
+            await GetGeneralFinanceData();
+            await GetAllFinanceDataByDataRange();
+        }
+        else
+        {
+            await GetGeneralFinanceData();
+            await GetDataByDateRange(dateTo, dateFrom, departmentName);
+        }
+
+        switch (departmentName)
+        {
+            default:
+
+                break;
+        }
+        if (dateFrom > dateTo)
+        {
+            dateFrom = dateTo.AddMonths(-1);
+        }
+
+
+
+    }
+
+    //Remove entry from database
+    private async Task RemoveEntry()
+    {
+        isRemoving = true;
+        var item = financeList.FirstOrDefault(u => u.Id == idToBeRemoved);
+        if(item != null)
+        {
+            if (!string.IsNullOrEmpty(item.ScheduleId))
+            {
+                var schedRes = await _scheduleService.UpdateScheduleFinanceById(item.ScheduleId, false);
+            }
+        }
+        var result = await _financeRecordService.RemoveFinancialRecordAsync(idToBeRemoved);
+        if (result.Success)
+        {
+            ToggleModal();
+            await GetAllFinancialData();
+            await GetDataByDateRange(dateTo, dateFrom, departmentName);
+        }
+        else
+        {
+            isRemoveModal = false;
+            isFailedToRemoveModal = true;
+            await GetAllFinancialData();
+            await GetDataByDateRange(dateTo, dateFrom, departmentName);
+        }
+    }
+
+    //Open Remove Modal
+    private void OpenRemoveModal(string Id)
+    {
+        ToggleModal();
+        idToBeRemoved = Id;
+        isRemoveModal = true;
+    }
+
+    //Get details
+    private async Task GetDetails(string Id)
+    {
+        ToggleModal(); //Opens background modal
+        isLoadingModal = true;
+        mensRecord = new();
+
+        //check financial using Id
+        var result = await _financeRecordService.GetFinancialRecordByIdAsync(Id);
+        if (result.Success)
+        {
+            //checks if query failed
+            if (!string.IsNullOrEmpty(result.Error))
+            {
+                isLoadingModal = false;
+                isFailedToFetchModal = true;
+                await GetAllFinancialData();
+                await GetDataByDateRange(dateTo, dateFrom,departmentName);
+                return;
+            }
+
+            //pass attributes to local
+            mensRecord = result.FinanceMens;
+            if (!string.IsNullOrEmpty(result.FinanceMens.ScheduleId))
+            {
+                var sched = await _scheduleService.GetScheduleByIdAsync(result.FinanceMens.ScheduleId);
+
+                if (sched.Success)
+                {
+                    scheduleDisplay = $"{sched.Schedule.Title} - {sched.Schedule.StartDate.ToString("MMM dd, yyyy")}";
+                }
+            }
+
+            isLoadingModal = false;
+            isViewModal = true;
+        }
+        else
+        {
+            ToggleModal();
+            //shows error
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    //Get Financial Records
+    private async Task GetDataByDateRange(DateOnly date1, DateOnly date2, string department)
+    {
+        message = "Fetching data...";
+        financeList.Clear();
+        var result = await _financeRecordService.GetDepartmentFinancialDataByDateRange(date1,date2,department);
+        if (result.Success)
+        {
+            financeList = result.Data;
+            //assign to local variables
+            partialIncome = financeList.Where(u => u.Type == "Income").Sum(u => u.Amount);
+            partialExpense = financeList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
+            partialBalance = partialIncome - partialExpense;
+
+            if (financeList.Count != 0)
+            {
+                message = string.Empty;
+            }
+            else
+            {
+                message = "No data found";
+            }
+        }
+        else
+        {
+            test = result.Error;
+            message = "Failed to fetch data...";
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    private void OnScheduleChange(DateOnly date)
+    {
+        scheduleDate = date;
+    }
+
+    //Add Financial Record To Database
+    private async Task AddFinancialRecord()
+    {
+        isAdding = true;
+        validationResults = new();
+
+        //Validation
+        if (mensRecord.Type == "Income")
+        {
+            if (string.IsNullOrEmpty(mensRecord.InvoiceNumber))
+            {
+                validationResults.Add("-Invoice Number cannot be empty");
+            }
+            else
+            {
+                var check = await _financeRecordService.CheckReceiptNumber(mensRecord.InvoiceNumber);
+
+                if (check.Success)
+                {
+                    if (!string.IsNullOrEmpty(check.Error))
+                    {
+                        validationResults.Add(check.Error);
+                    }
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", check.Error);
+                }
+            }
+
+            if (mensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
+            {
+                validationResults.Add("-Invoice Date cannot be greater than date today");
+            }
+
+            if (mensRecord.Category == "Offering")
+            {
+                var schedule = scheduleList.FirstOrDefault(u => u.Id == mensRecord.ScheduleId);
+
+                if (schedule != null)
+                {
+                    scheduleDate = schedule.StartDate;
+
+                    if (mensRecord.Date < scheduleDate)
+                    {
+                        validationResults.Add("-Invoice Date cannot be less than event date");
+                    }
+                }
+            }
+
+            if (mensRecord.Category == "Donation" && mensRecord.Amount == 0)
+            {
+                validationResults.Add("-Donation amount must be greater than 0");
+            }
+
+
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(mensRecord.VoucherNumber))
+            {
+                validationResults.Add("-Voucher Number cannot be empty");
+            }
+            else
+            {
+                var check = await _financeRecordService.CheckReceiptNumber(mensRecord.VoucherNumber);
+
+                if (check.Success)
+                {
+                    if (!string.IsNullOrEmpty(check.Error))
+                    {
+                        validationResults.Add(check.Error);
+                    }
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", check.Error);
+                }
+            }
+
+            if (mensRecord.Amount == 0)
+            {
+                validationResults.Add("-Expense amount must be greater than 0");
+            }
+
+            if (mensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
+            {
+                validationResults.Add("-Voucher Date cannot be greater than date today");
+            }
+        }
+
+
+        if (validationResults.Any())
+        {
+            isAdding = false;
+            return;
+        }
+        if (_auth.UserId != null)
+        {
+            mensRecord.AddedByUserId = _auth.UserId;
+        }
+
+        var result = await _financeRecordService.AddFinancialRecordAsync(mensRecord);
+        if (result.Success)
+        {
+
+            if (mensRecord.ScheduleId != null)
+            {
+                var shcedResult = await _scheduleService.UpdateScheduleFinanceById(mensRecord.ScheduleId, true);
+            }
+
+            if (mensRecord.Category == "Offering")
+            {
+                var updateRes = await _financeEventsService.UpdateFinanceEventStatus(financeId, true);
+            }
+
+            financeId = string.Empty;
+            isAddModal = false;
+            isAddedSuccessModal = true;
+            message = "Fetching data...";
+            await GetGeneralFinanceData();
+            await GetAllFinanceDataByDataRange();
+            mensRecord = new();
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
 
     //Hides and Shows Background modal
     private void ToggleModal()
     {
         isBackgroundVisible = !isBackgroundVisible;
+        isUpdateModal = false;
+        isUpdateSuccessModal = false;
+        isAdding = false;
+        isAddModal = false;
+        isAddedSuccessModal = false;
+        isViewModal = false;
+        isLoadingModal = false;
+        isRemoveModal = false;
+        isRemoving = false;
+        isFailedToRemoveModal = false;
+        isFailedToUpdateModal = false;
+        isFailedToFetchModal = false;
+        validationResults = new();
     }
 
-    private void GoToFinance(string department)
+    //Open Add Entry
+    private void ToggleAddEntry()
     {
-        _auth.Department = department;
-        _nav.NavigateTo("finance/department");
+        mensRecord = new();
+        //shows modals
+        ToggleModal();
+        typeOfFund = "General";
+        type = "Donation";
+        mensRecord.Department = "General";
+        isAddModal = true;
+
+    }
+
+    //Handle Type Change
+    private void OnTypeChange(ChangeEventArgs e)
+    {
+        type = e.Value!.ToString()!;
+
+        if (type != "Expense")
+        {
+            mensRecord.Type = "Income";
+        }
+        else
+        {
+            mensRecord.Type = "Expense";
+        }
+
+
+        if (mensRecord.Type == "Income")
+        {
+            isIncome = true;
+            if (type == "Offering")
+            {
+                mensRecord.Category = "Offering";
+                isDonation = false;
+                mensRecord.ScheduleId = scheduleFinancesList.First().ScheduleId;
+                mensRecord.DonatorName = null;
+            }
+            else
+            {
+                mensRecord.Category = "Donation";
+                isDonation = true;
+                mensRecord.ScheduleId = null;
+            }
+
+        }
+        else
+        {
+            isIncome = false;
+            mensRecord.Category = "Tithes";
+            mensRecord.DonatorName = null;
+            mensRecord.ScheduleId = null;
+            mensRecord.InvoiceNumber = null;
+        }
+    }
+
+    //handle Income category change
+    private void OnIncomeCategoryChanged(ChangeEventArgs e)
+    {
+        mensRecord.Category = e.Value!.ToString()!;
+
+        if (mensRecord.Category == "Offering")
+        {
+            isDonation = false;
+            mensRecord.ScheduleId = scheduleList.First().Id;
+            mensRecord.DonatorName = null;
+        }
+        else
+        {
+            isDonation = true;
+            mensRecord.ScheduleId = null;
+        }
+    }
+
+    //Gets Schedules that has missing financial record
+    private async Task GetSchedules()
+    {
+        scheduleFinancesList = new();
+        var result = await _financeEventsService.GetFinanceEventsByDepartmentIdAsync(departmentName);
+
+        if (result.Success)
+        {
+            if (result.Data != null)
+            {
+
+                var sched = await _scheduleService.GetScheduleAsync();
+                var financeIds = result.Data.Select(u => u.ScheduleId).ToHashSet();
+
+                var schedList = sched.Data.Where(u => financeIds.Contains(u.Id)).ToList();
+                var financeData = result.Data;
+                var joined = schedList.Join(financeData, s => s.Id, f => f.ScheduleId, (s, f) => new ScheduleFinanceVM
+                {
+                    DepartmentId = f.DepartmentId,
+                    ScheduleId = s.Id,
+                    Date = f.Date,
+                    Title = s.Title,
+                    FinanceId = f.Id
+
+                }).ToList();
+
+                scheduleFinancesList = joined.Where(u => u.Date <= DateOnly.FromDateTime(DateTime.Now)).ToList();
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    //Gets Schedules that has missing financial record
+    private async Task GetAllSchedules()
+    {
+        scheduleFinancesList = new();
+        var result = await _financeEventsService.GetAllFinanceEventsAsync();
+
+        if (result.Success)
+        {
+            if (result.Data != null)
+            {
+
+                var sched = await _scheduleService.GetScheduleAsync();
+                var financeIds = result.Data.Select(u => u.ScheduleId).ToHashSet();
+
+                var schedList = sched.Data.Where(u => financeIds.Contains(u.Id)).ToList();
+                var financeData = result.Data;
+                var joined = schedList.Join(financeData, s => s.Id, f => f.ScheduleId, (s, f) => new ScheduleFinanceVM
+                {
+                    DepartmentId = f.DepartmentId,
+                    ScheduleId = s.Id,
+                    Date = f.Date,
+                    Title = s.Title,
+                    FinanceId = f.Id
+
+                }).ToList();
+
+                scheduleFinancesList = joined.Where(u => u.Date <= dateTo).ToList();
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", result.Error);
+        }
+    }
+
+    private class ScheduleFinanceVM
+    {
+        public string FinanceId { get; set; }
+        public string ScheduleId {get; set;}
+        public string DepartmentId { get; set; }
+        public DateOnly Date { get; set; }
+        public string Title { get; set; }
     }
 }

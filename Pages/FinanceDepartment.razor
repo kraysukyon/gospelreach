@@ -377,7 +377,7 @@
 
             <div class="details">
                 <p>Date Added</p>
-                <p>@mensRecord.CreatedAt</p>
+                <p>@mensRecord.DateAdded</p>
             </div>
 
             <div class="details">
@@ -653,7 +653,7 @@
     private IEnumerable<FinancialRecord> filteredFinanceList => financeMensList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Type.Contains(searchString, StringComparison.OrdinalIgnoreCase)
     || u.Category.Contains(searchString, StringComparison.OrdinalIgnoreCase) || (u.InvoiceNumber ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase) || (u.VoucherNumber ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase)
     || u.Date.ToString("MMM dd, yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase) || u.Amount.ToString("N2").Contains(searchString, StringComparison.OrdinalIgnoreCase)
-    || (u.DonatorName ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase)).OrderByDescending(u => DateTime.Parse(u.CreatedAt));
+    || (u.DonatorName ?? "").Contains(searchString, StringComparison.OrdinalIgnoreCase)).OrderByDescending(u => u.DateAdded);
     private string scheduleDisplay = string.Empty;
     private DateOnly dateTo = DateOnly.FromDateTime(DateTime.Now);
     private DateOnly dateFrom = DateOnly.FromDateTime(DateTime.Now.AddMonths(-3));
@@ -821,8 +821,8 @@
         }
 
         DateTime date = DateTime.Now;
-        updateMensRecord.LastModifiedDate = date.ToString();
-
+        updateMensRecord.DateModified = DateOnly.FromDateTime(date);
+        updateMensRecord.ModifiedByUserId = _auth.UserId;
 
         var result = await _financialMensService.UpdateFinancialRecordAsync(updateMensRecord.Id, updateMensRecord);
         if (result.Success)
@@ -1121,7 +1121,8 @@
         }
 
         DateTime date = DateTime.Now;
-        mensRecord.CreatedAt = date.ToString();
+        mensRecord.DateAdded = DateOnly.FromDateTime(date);
+        mensRecord.AddedByUserId = _auth.UserId;
 
         mensRecord.Department = DepName;
         var result = await _financialMensService.AddFinancialRecordAsync(mensRecord);

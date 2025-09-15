@@ -306,6 +306,7 @@
                             Auth.IsLoggedIn = true;
                             Auth.Role = user.Role;
                             Auth.DisplayName = textInfo.ToTitleCase(user.FirstName);
+                            Auth.UserId = user.Id;
                             switch (Auth.Role)
                             {
                                 case "Department Head - Senior":

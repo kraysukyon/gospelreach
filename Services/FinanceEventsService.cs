@@ -48,6 +48,24 @@ namespace GospelReachCapstone.Services
         }
 
         //Get documents that contains departmentId and scheduleId all
+        public async Task<FinanceEventResult> GetAllFinanceEventsAsync()
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<FinanceEventResult>("firestoreFunctions.getAllFinanceEvents");
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new FinanceEventResult { Success = false, Error = ex.Message };
+            }
+            catch (Exception ex)
+            {
+                return new FinanceEventResult { Success = false, Error = ex.Message };
+            }
+        }
+
+        //Get documents that contains departmentId and scheduleId all
         public async Task<FinanceEventResult> GetFinanceEventsByDepartmentIdAsync(string departmentName)
         {
             try

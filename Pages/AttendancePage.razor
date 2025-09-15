@@ -275,10 +275,19 @@
 
             <div class="d-flex gap-2 align-items-center ms-2">
                 <p class="me-2 text-nowrap">Filter by:</p>
-                <select @onchange="OnFilterChange" class="form-select p-2 px-4">
+                <select value="@dateFilter" @onchange="OnFilterChange" class="form-select p-2 px-4">
                     @* <option value="Upcoming">Upcoming</option> *@
                     <option value="Ongoing">Ongoing</option>
                     <option value="Complete">Complete</option>
+                </select>
+
+                <select value="@departmentName" @onchange="FilterDepartment" class="form-select p-2 px-4">
+                    @* <option value="Upcoming">Upcoming</option> *@
+                    <option value="All">All</option>
+                    <option value="Senior">Senior</option>
+                    <option value="Womens">Womens</option>
+                    <option value="Mens">Mens</option>
+                    <option value="Youth">Youth</option>
                 </select>
 
                 @* <button class="btn btn-primary text-white px-4 py-2">Filter</button> *@
@@ -339,7 +348,11 @@
     private string visitorsMessage = string.Empty;
     private string visitorsSearch = string.Empty;
     private string visitorMessage = string.Empty;
-    private string DepName = "Mens";
+
+
+    //Filters
+    private string dateFilter = "Ongoing";
+    private string departmentName = "All";
 
     //Models
     private Schedule sched = new();
@@ -373,6 +386,73 @@
     protected override async Task OnInitializedAsync()
     {
         await GetOngoingSchedules();
+    }
+
+    //Get Schedules by status
+    private async Task OnFilterChange(ChangeEventArgs e)
+    {
+        dateFilter = e.Value!.ToString()!;
+        joinedList.Clear();
+
+        switch (dateFilter)
+        {
+            case "Ongoing":
+                switch (departmentName)
+                {
+                    case "All":
+                        await GetOngoingSchedules();
+                        break;
+                    default:
+                        await GetOngoingSchedulesByDepartment(departmentName);
+                        break;
+                }
+                break;
+            case "Complete":
+                switch (departmentName)
+                {
+                    case "All":
+                        await GetCompletedSchedules();
+                        break;
+                    default:
+                        await GetCompletedSchedulesByDepartment(departmentName);
+                        break;
+                }
+                break;
+        }
+    }
+
+    //Filter Department
+    private async Task FilterDepartment(ChangeEventArgs e)
+    {
+        departmentName = e.Value!.ToString()!;
+
+        joinedList.Clear();
+
+        switch (dateFilter)
+        {
+            case "Ongoing":
+                switch (departmentName)
+                {
+                    case "All":
+                        await GetOngoingSchedules();
+                        break;
+                    default:
+                        await GetOngoingSchedulesByDepartment(departmentName);
+                        break;
+                }
+                break;
+            case "Complete":
+                switch (departmentName)
+                {
+                    case "All":
+                        await GetCompletedSchedules();
+                        break;
+                    default:
+                        await GetCompletedSchedulesByDepartment(departmentName);
+                        break;
+                }
+                break;
+        }
     }
 
     //Navigate to Attendance Report Page
@@ -675,31 +755,6 @@
         isVisitor = !isVisitor;
     }
 
-    //Get Schedules by status
-    private async Task OnFilterChange(ChangeEventArgs e)
-    {
-        joinedList.Clear();
-        string value = e.Value!.ToString()!;
-
-        switch (value)
-        {
-            //Get Upcoming
-            case "Upcoming":
-                await GetUpcomingSchedules();
-                break;
-
-            //Get Upcoming
-            case "Ongoing":
-                await GetOngoingSchedules();
-                break;
-
-            //Get Upcoming
-            case "Complete":
-                await GetCompletedSchedules();
-                break;
-        }
-    }
-
     //Get Upcoming list of schedules
     private async Task GetUpcomingSchedules()
     {
@@ -719,7 +774,7 @@
         }
     }
 
-    // Get Upcoming list of schedules
+    // Get Ongoing list of schedules
     private async Task GetOngoingSchedules()
     {
         message = "Fetching files...Please wait";
@@ -761,6 +816,47 @@
         }
     }
 
+    // Get Ongoing list of schedules By Department
+    private async Task GetOngoingSchedulesByDepartment(string department)
+    {
+        message = "Fetching files...Please wait";
+
+        var results = await _attendanceService.GetOngoingAttendanceByDepartmentAsync(department);
+        if (results.Success)
+        {
+            var ids = results.Data.Select(u => u.ScheduleId).ToHashSet();
+
+            var scheduleResult = await _schedule.GetScheduleAsync();
+            if (scheduleResult.Success)
+            {
+                scheduleList = scheduleResult.Data.Where(u => ids.Contains(u.Id)).ToList();
+                var attList = results.Data;
+                joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                {
+                    AttendanceId = a.Id,
+                    ScheduleId = s.Id,
+                    Department = s.DepartmentId,
+                    Date = a.Date,
+                    Title = s.Title,
+                    TotalAttendee = a.TotalAttendee,
+                    Category = s.CategoryId,
+                    isCompleted = a.isCompleted
+                }).ToList();
+                message = string.Empty;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + scheduleResult.Error);
+                message = "No schedules found.";
+            }
+
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to attendance: " + results.Error);
+            //     message = "No schedules found.";
+        }
+    }
 
     // Get Upcoming list of schedules
     private async Task GetCompletedSchedules()
@@ -773,6 +869,40 @@
         {
             scheduleList = result.Data.Where(u => u.HasAttendee).ToList();
             var results = await _attendanceService.GetCompletedAttendanceAsync();
+            if (results.Success)
+            {
+                var attList = results.Data;
+                joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                {
+                    AttendanceId = a.Id,
+                    ScheduleId = s.Id,
+                    Date = a.Date,
+                    Title = s.Title,
+                    TotalAttendee = a.TotalAttendee,
+                    Category = s.CategoryId,
+                    isCompleted = a.isCompleted
+                }).ToList();
+            }
+            message = string.Empty;
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
+            message = "No schedules found.";
+        }
+    }
+
+    // Get Upcoming list of schedules By Dpartment
+    private async Task GetCompletedSchedulesByDepartment(string department)
+    {
+        message = "Fetching files...Please wait";
+
+        var result = await _schedule.GetCompletedSchedules();
+
+        if (result.Success)
+        {
+            scheduleList = result.Data.Where(u => u.HasAttendee).ToList();
+            var results = await _attendanceService.GetCompletedAttendanceByDepartmentAsync(department);
             if (results.Success)
             {
                 var attList = results.Data;
