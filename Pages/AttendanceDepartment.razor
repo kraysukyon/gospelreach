@@ -33,12 +33,9 @@
         <!--Attendance Section Modal-->
         <div @onclick="HideInviteModal" hidden="@(!isAttendanceVisible)" class="addAttendance" @onclick:stopPropagation>
             <div>
-                <div class="d-flex align-content-lg-start justify-content-between">
-                    <div>
-                        <h4 class="fw-bold">Attendance</h4>
-                        <p>@sched.Title - @attDate.ToString("MMM dd, yyyy")</p>
-                    </div>
-                    <i class="bi bi-arrow-return-left fs cursor hover fs-4"></i>
+                <div>
+                    <h4 class="fw-bold">Attendance</h4>
+                    <p>@sched.Title - @attDate.ToString("MMM dd, yyyy")</p>
                 </div>
             </div>
 
@@ -780,33 +777,52 @@
 
         if (result.Success)
         {
-            if (!string.IsNullOrEmpty(result.Error))
+            if (result.Data != null)
             {
-                message = result.Error;
-                return;
-            }
-            scheduleList = result.Data.Where(u => u.HasAttendee).ToList();
-            var results = await _attendanceService.GetCompletedAttendanceByDepartmentAsync(DepName);
-            if (results.Success)
-            {
-                var attList = results.Data;
-                joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                if (!string.IsNullOrEmpty(result.Error))
                 {
-                    AttendanceId = a.Id,
-                    ScheduleId = s.Id,
-                    Date = a.Date,
-                    Title = s.Title,
-                    TotalAttendee = a.TotalAttendee,
-                    Category = s.CategoryId,
-                    isCompleted = a.isCompleted
-                }).ToList();
+                    message = result.Error;
+                    return;
+                }
+                scheduleList = result.Data.Where(u => u.HasAttendee).ToList();
+                var results = await _attendanceService.GetCompletedAttendanceByDepartmentAsync(DepName);
+                if (results.Success)
+                {
+                    if (results.Data != null)
+                    {
+                        var attList = results.Data;
+                        joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                        {
+                            AttendanceId = a.Id,
+                            ScheduleId = s.Id,
+                            Date = a.Date,
+                            Title = s.Title,
+                            TotalAttendee = a.TotalAttendee,
+                            Category = s.CategoryId,
+                            isCompleted = a.isCompleted
+                        }).ToList();
+
+                        message = string.Empty;
+                    }
+                    else
+                    {
+
+                        message = "No data found";
+                        await _js.InvokeVoidAsync("alert", results.Error);
+                    }
+
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", results.Error);
+                }
             }
-            message = string.Empty;
+            
         }
         else
         {
             await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
-            message = "No schedules found.";
+            message = "Failed to fetch files.";
         }
     }
 

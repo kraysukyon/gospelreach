@@ -321,7 +321,9 @@
                                 <td class="table-cell c2">@item.Category</td>
                                 <td class="table-cell c2">@item.Title</td>
                                 <td class="table-cell c2"><p class="fw-bold @(item.isCompleted ? "text-success" : "text-danger")">@(item.isCompleted ? "Complete" : "Missing")</p></td>
-                                <td @onclick="() => OpenAttendance(item.AttendanceId)" @onclick:stopPropagation class="table-cell d-flex gap-2 hover" style="padding: 24px 24px; border-bottom: none; width: auto;">View</td>
+                                <td class="table-cell">
+                                    <button class="btn btn-outline-light border border-1 p-2" style="font-size: 13px;" @onclick="() => OpenAttendance(item.AttendanceId)" @onclick:stopPropagation><span><i class="bi bi-info-circle"></i></span> View</button>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -807,7 +809,7 @@
                 await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + scheduleResult.Error);
                 message = "No schedules found.";
             }
-            
+
         }
         else
         {
@@ -824,30 +826,38 @@
         var results = await _attendanceService.GetOngoingAttendanceByDepartmentAsync(department);
         if (results.Success)
         {
-            var ids = results.Data.Select(u => u.ScheduleId).ToHashSet();
-
-            var scheduleResult = await _schedule.GetScheduleAsync();
-            if (scheduleResult.Success)
+            if (results.Data != null)
             {
-                scheduleList = scheduleResult.Data.Where(u => ids.Contains(u.Id)).ToList();
-                var attList = results.Data;
-                joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                var ids = results.Data.Select(u => u.ScheduleId).ToHashSet();
+
+                var scheduleResult = await _schedule.GetScheduleAsync();
+                if (scheduleResult.Success)
                 {
-                    AttendanceId = a.Id,
-                    ScheduleId = s.Id,
-                    Department = s.DepartmentId,
-                    Date = a.Date,
-                    Title = s.Title,
-                    TotalAttendee = a.TotalAttendee,
-                    Category = s.CategoryId,
-                    isCompleted = a.isCompleted
-                }).ToList();
-                message = string.Empty;
+
+                    scheduleList = scheduleResult.Data.Where(u => ids.Contains(u.Id)).ToList();
+                    var attList = results.Data;
+                    joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                    {
+                        AttendanceId = a.Id,
+                        ScheduleId = s.Id,
+                        Department = s.DepartmentId,
+                        Date = a.Date,
+                        Title = s.Title,
+                        TotalAttendee = a.TotalAttendee,
+                        Category = s.CategoryId,
+                        isCompleted = a.isCompleted
+                    }).ToList();
+                    message = string.Empty;
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + scheduleResult.Error);
+                    message = "No schedules found.";
+                }
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + scheduleResult.Error);
-                message = "No schedules found.";
+                message = "No records found";
             }
 
         }

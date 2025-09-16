@@ -259,8 +259,6 @@
             }
 
             return { success: true, error: "No record found" };
-
-            return { success: true, data: sched };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -1375,37 +1373,7 @@
 
     
 
-    async renderIncomeBreakdown(offering, donation) {
-        const ctx = document.getElementById('incomeBreakdown').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Offering', 'Donation'],
-                datasets: [{
-                    data: [offering, donation],
-                    backgroundColor: ['#f28749', '#4473ca'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' },
-                    datalabels: {
-                        color: '#fff',
-                        font: { weight: 'bold', size: 14 },
-                        formatter: (value, ctx) => {
-                            // Show both value and percentage
-                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            let percentage = (value * 100 / sum).toFixed(1) + "%";
-                            return value + " (" + percentage + ")";
-                        }
-                    }
-                }
-            },
-            plugins: [ChartDataLabels] // ✅ enable datalabels plugin
-        });
-    },
+    
 
     //==========================================Finance Events Section=================================================
 
@@ -1500,6 +1468,38 @@
 
     //============================================Chart Section============================================//
 
+    async renderIncomeBreakdown(offering, donation) {
+        const ctx = document.getElementById('incomeBreakdown').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Offering', 'Donation'],
+                datasets: [{
+                    data: [offering, donation],
+                    backgroundColor: ['#f28749', '#4473ca'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 14 },
+                        formatter: (value, ctx) => {
+                            // Show both value and percentage
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            let percentage = (value * 100 / sum).toFixed(1) + "%";
+                            return value + " (" + percentage + ")";
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels] // ✅ enable datalabels plugin
+        });
+    },
+
     async renderExpenseBreakdown(tithes, property, transportation, incidental, others ) {
         const ctx = document.getElementById('expenseBreakdown').getContext('2d');
         new Chart(ctx, {
@@ -1525,7 +1525,7 @@
                         position: 'bottom'
                     },
                     datalabels: {
-                        color: '#fff',
+                        color: '#000000',
                         font: { weight: 'bold', size: 13 },
                         formatter: (value, ctx) => {
                             // calculate total
@@ -1538,6 +1538,82 @@
                 }
             },
             plugins: [ChartDataLabels] // ✅ enable the datalabels plugin
+        });
+    },
+
+    async renderGeneralIncomeBreakdown(sI,wI,mI,yI) {
+        const ctx = document.getElementById('incomeBreakdown').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Senior', 'Womens', 'Mens', 'Youth'],
+                datasets: [{
+                    data: [sI, wI, mI, yI],
+                    backgroundColor: [
+                        '#f28749', // orange
+                        '#4473ca', // blue
+                        '#64D223', // green
+                        '#C6D223', // yellow
+                        '#D22323'  // red
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 14 },
+                        formatter: (value, ctx) => {
+                            // Show both value and percentage
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            let percentage = (value * 100 / sum).toFixed(1) + "%";
+                            return value + " (" + percentage + ")";
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels] // ✅ enable datalabels plugin
+        });
+    },
+
+    async renderGeneralExpenseBreakdown(sI, wI, mI, yI) {
+        const ctx = document.getElementById('expenseBreakdown').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Senior', 'Womens', 'Mens', 'Youth'],
+                datasets: [{
+                    data: [sI, wI, mI, yI],
+                    backgroundColor: [
+                        '#f28749', // orange
+                        '#4473ca', // blue
+                        '#64D223', // green
+                        '#C6D223', // yellow
+                        '#D22323'  // red
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#0000000',
+                        font: { weight: 'bold', size: 14 },
+                        formatter: (value, ctx) => {
+                            // Show both value and percentage
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            let percentage = (value * 100 / sum).toFixed(1) + "%";
+                            return value + " (" + percentage + ")";
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels] // ✅ enable datalabels plugin
         });
     },
 

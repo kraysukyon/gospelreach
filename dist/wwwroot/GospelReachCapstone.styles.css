@@ -3735,6 +3735,62 @@ a[b-wf2niajy5v] {
         flex-direction: column;
     }
 }
+/* /Pages/FinancialGeneralReport.razor.rz.scp.css */
+*[b-y7i1vzfacx] {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: black;
+    font-family: "Inter", sans-serif;
+}
+
+.BackgroundModal[b-y7i1vzfacx] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2001;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0,0,0,.5);
+    display: none;
+}
+
+.show[b-y7i1vzfacx] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart[b-y7i1vzfacx]{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top:2rem;
+}
+
+@media (max-width: 768px) {
+    .page[b-y7i1vzfacx] {
+        display: block;
+    }
+
+    .header a[b-y7i1vzfacx] {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .cards[b-y7i1vzfacx]{
+        padding: 0;
+    }
+
+    .planning[b-y7i1vzfacx] {
+        display: block;
+    }
+
+    .stats[b-y7i1vzfacx] {
+        display: flex;
+        flex-direction: column;
+    }
+}
 /* /Pages/FinancialReport.razor.rz.scp.css */
 *[b-6c5u226dyc] {
     padding: 0;

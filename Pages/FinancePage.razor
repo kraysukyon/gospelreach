@@ -44,7 +44,7 @@
                 </div>
 
                 <select value="@typeOfFund" @onchange="OnFundChange" class="form-select p-2 mt-2">
-                    <option value="General">General Fund</option>
+                    @* <option value="General">General Fund</option> *@
                     <option value="Senior">Senior</option>
                     <option value="Womens">Womens</option>
                     <option value="Mens">Mens</option>
@@ -552,7 +552,7 @@
         
 
         <!--Quick Stats Section-->
-        <div class="d-flex flex-column mt-4">
+        @* <div class="d-flex flex-column mt-4">
             <div class="d-md-flex d-block justify-content-evenly gap-4">
                 <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                     <p class="c2 mb-2" style="font-size:14px;">General Income</p>
@@ -569,7 +569,7 @@
                     <h3 class="m-0 c2 text-primary fw-bold">₱@currentBalance.ToString("N2")</h3>
                 </div>
             </div>
-        </div>
+        </div> *@
 
         <!--Quick Stats Section-->
         <div class="d-flex flex-column mt-4">
@@ -616,7 +616,6 @@
                 <select @bind="departmentName" class="form-select p-2 px-4">
                     @* <option value="Upcoming">Upcoming</option> *@
                     <option value="All">All</option>
-                    <option value="General">General</option>
                     <option value="Senior">Senior</option>
                     <option value="Womens">Womens</option>
                     <option value="Mens">Mens</option>
@@ -706,7 +705,7 @@
     // private string departmentName = string.Empty;
     private string financeId = string.Empty;
     string test = string.Empty;
-    private string departmentName = "All";
+    private string departmentName = "Senior";
     private string typeOfFund = "General";
 
 
@@ -806,7 +805,7 @@
     {
         string from = dateFrom.ToString("yyyy-MM-dd");
         string to = dateTo.ToString("yyyy-MM-dd");
-        _nav.NavigateTo($"/finance/department/report/{from}/{to}");
+        _nav.NavigateTo($"/finance/report/{from}/{to}");
     }
 
     //On ScheduleChange
@@ -1320,14 +1319,38 @@
     }
 
     //Open Add Entry
-    private void ToggleAddEntry()
+    private async Task ToggleAddEntry()
     {
         mensRecord = new();
         //shows modals
         ToggleModal();
-        typeOfFund = "General";
-        type = "Donation";
-        mensRecord.Department = "General";
+        isLoadingModal = true;
+        typeOfFund = "Senior";
+        departmentName = "Senior";
+
+        // type = "Donation";
+        // mensRecord.Department = "General";
+        // isAddModal = true;
+
+        //query schedules to populate for offering
+        await GetSchedules();
+        isIncome = true;
+
+        if (scheduleFinancesList.Any())
+        {
+            type = "Offering";
+            mensRecord.ScheduleId = scheduleFinancesList.First().ScheduleId;
+            financeId = scheduleFinancesList.First().FinanceId;
+            scheduleDate = scheduleFinancesList.First().Date;
+            isDonation = false;
+        }
+        else
+        {
+            mensRecord.Category = "Donation";
+            type = "Donation";
+            isDonation = true;
+        }
+        isLoadingModal = false;
         isAddModal = true;
 
     }
