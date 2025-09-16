@@ -49,6 +49,7 @@ namespace GospelReachCapstone.Services
             }
         }
 
+        
         //Fetch Data for schedule
         public async Task<ScheduleResult> GetScheduleByDateAsync(int month, int year)
         {

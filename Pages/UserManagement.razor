@@ -62,11 +62,13 @@
                     </div>
                 </div>
             } *@
-           
+
             <div class="input mt-3">
                 <p>Role</p>
                 <select @bind="role" class="form-select p-2 mt-2">
                     <option value="Administrator">Administrator</option>
+                    <option value="Pastor">Pastor</option>
+                    <option value="Music Head">Music Head</option>
                     <option value="Department Head - Mens">Department Head - Mens</option>
                     <option value="Department Head - Homeleague">Department Head - Homeleague</option>
                     <option value="Department Head - Youth">Department Head - Youth</option>
@@ -77,25 +79,23 @@
             @if (title == "Add User")
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
-                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
-                    <button  class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="AddUser">Create</button>
+                    <button class="btn p-2 px-4" style="border: 1px solid #dee2e6;" @onclick="ToggleAddUserModal">Cancel</button>
+                    <button class="btn btn-primary p-2 px-4 text-white" @onclick="AddUser">Create</button>
                 </div>
             }
             else
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
-                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleAddUserModal">Cancel</button>
-                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="UpdateUser">Update</button>
+                    <button class="btn p-2 px-4" style="border: 1px solid #dee2e6;" @onclick="ToggleAddUserModal">Cancel</button>
+                    <button class="btn btn-primary p-2 px-4 text-white" @onclick="UpdateUser">Update</button>
                 </div>
             }
             
         </div>
     </div>
 
-    
-
     <!--Header Section-->
-    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-4">
         <div>
             <h4 class="m-0 fw-bold">User Management</h4>
             <p class="m-0 c2" style="font-size: 14px">Manage users and access controls.</p>
@@ -107,17 +107,17 @@
     </div>
 
     <!--Table Section-->
-    <div class="card w-100 mb-3 cards">
+    <div class="card w-100 mb-4 cards">
 
         <!--Search Section-->
-        <div class="position-relative">
+        <div class="position-relative mb-4">
             <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
             <input @bind="searchedActivity" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search by name, email, or role..."/>
         </div>
         
         <p class="mb-4 ms-1 @(isLoad ? "" : "d-none")"><em>@load</em></p>
 
-        <div class="table-container">
+        <div hidden="@(isLoad)" class="table-container">
             <table class="table">
                 <thead>
                     <tr>
@@ -134,26 +134,27 @@
                         <tr class="table-row">
                             <td class="table-cell c2">@items.Email</td>
                             <td class="table-cell c2">@items.Role</td>
-                            <td class="table-cell c2">@items.Status</td>
+                            <td class="table-cell c2 fw-bold @(items.Status == "Active" ? "text-success" : "text-danger")">@items.Status</td>
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
                                 <!--Edit-->
-                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(()=> ToggleUpdateModal(items.Id, items.Role))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
+                                <div class="d-flex align-items-center justify-content-center gap-1w-auto">
+                                    <button class="btn p-2 px-4" @onclick="@(() => ToggleUpdateModal(items.Id, items.Role))" style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-pencil-square"></i> Update</button>
+                                    @* <button class="btn btn-outline-light p-2 px-4" style="font-size: 13px;" ><span><i class="bi bi-pencil-square"></i></span> Update</button> *@
                                 </div>
+
+                                <!--Reset-->
+                                <button @onclick="@(() => ResetPassword(items.Email))" class="btn btn-outline-danger text-danger p-2 px-4 btn-reset" style="font-size:13px;"><i class="bi bi-arrow-repeat text-danger"></i> Reset</button>
 
                                 <!--Check account status-->
                                 @if (items.Status != "Disabled")
                                 {
-                                    <!--Reset-->
-                                    <button @onclick="@(() => ResetPassword(items.Email))" class="btn btn-warning" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-arrow-repeat"></i></span> Reset</button>
-
                                     <!--Disable-->
-                                    <button @onclick="@(() => DisableUser(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Disable</button>
+                                    <button @onclick="@(() => DisableUser(items.Id))" class="btn btn-danger text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Disable</button>
                                 }
                                 else
                                 {
                                     <!--Enable-->
-                                    <button @onclick="@(() => EnableUser(items.Id))" class="btn btn-success text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Enable</button>
+                                    <button @onclick="@(() => EnableUser(items.Id))" class="btn btn-primary text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Enable</button>
                                 }
                             </td>
                                 
@@ -221,7 +222,7 @@
         isAddUserModalVisible = !isAddUserModalVisible;
         role = roles;
         memberId = docId;
-        title = "Edit User";
+        title = "Update User";
     }
 
 

@@ -8,25 +8,24 @@
 <div class="side-parent">
     <div class="side-parent-content">
         <nav class="w-100">
+
             <!--Pages Section-->
             <div class="@GetClass(0, "link")" @onclick="() => SetActive(0)">
                 <i class="bi bi-house-door"></i>
                 <a href="dashboard" class="text-decoration-none c2">Dashboard</a>
             </div>
 
-            <div hidden="@(auth.Role != "Administrator")">
+            <div hidden="@(auth.Role != "Administrator" && auth.Role != "Pastor")">
                 <!--Management-->
                 <h3 class="sidebar-heading">MANAGEMENT</h3>
 
                 <!--Admin-->
-                <div class="@GetClass(1, "link")" @onclick="() => SetActive(1)">
+                <div hidden="@(auth.Role == "Pastor")" class="@GetClass(1, "link")" @onclick="() => SetActive(1)">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-person"></i>
                     </div>
                     <a href="user-management" class="text-decoration-none c2">User</a>
                 </div>
-
-
 
                 <!--Member Management-->
                 <div class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
@@ -42,43 +41,15 @@
                         <i class="bi bi-building"></i>
                     </div>
                     <a href="departments" class="text-decoration-none c2">Departments</a>
-
-                    @* <div @onclick:stopPropagation class="subDepartment @(isSubDepartmentVisible ? "" : "hide")">
-                    <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Senior"))">Senior</p>
-                    <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Womens"))">Womens</p>
-                    <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Mens"))">Mens</p>
-                    <p class="ds hov" @onclick="@(() => GoToDepartmentPage("Youth"))">Youth</p>
-                </div> *@
                 </div>
             </div>
             
-            
-
-            <!--Tracking-->
-            <h3 class="sidebar-heading">TRACKING</h3>
-
-            <!--Attendance-->
-            <div class="@GetClass(5, "link")" @onclick="() => SetActive(5)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-bar-chart"></i>
-                </div>
-                <a @onclick="() => SetActive(5)" class="text-decoration-none c2">Attendance</a>
-            </div>
-
-            <!--Finance-->
-            <div class="@GetClass(6, "link")" @onclick="() => SetActive(6)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-piggy-bank"></i>
-                </div>
-                <a @onclick="() => SetActive(6)"  class="text-decoration-none c2">Finance</a>
-            </div>
-
-            <div hidden="@(auth.Role != "Administrator")">
+            <div hidden="@(auth.Role != "Administrator" && auth.Role != "Pastor" && auth.Role != "Music Head")">
                 <!--Content-->
                 <h3 class="sidebar-heading">CONTENT</h3>
 
                 <!--Media Files-->
-                <div class="@GetClass(7, "link")" @onclick="() => SetActive(7)">
+                <div hidden="@(auth.Role != "Administrator" && auth.Role != "Pastor")" class="@GetClass(7, "link")" @onclick="() => SetActive(7)">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-film"></i>
                     </div>
@@ -120,6 +91,25 @@
                     <i class="bi bi-clock"></i>
                 </div>
                 <a href="schedules" class="text-decoration-none c2">Schedules</a>
+            </div>
+
+            <!--Tracking-->
+            <h3 class="sidebar-heading">TRACKING</h3>
+
+            <!--Attendance-->
+            <div class="@GetClass(5, "link")" @onclick="() => SetActive(5)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-bar-chart"></i>
+                </div>
+                <a @onclick="() => SetActive(5)" class="text-decoration-none c2">Attendance</a>
+            </div>
+
+            <!--Finance-->
+            <div class="@GetClass(6, "link")" @onclick="() => SetActive(6)">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-piggy-bank"></i>
+                </div>
+                <a @onclick="() => SetActive(6)" class="text-decoration-none c2">Finance</a>
             </div>
         </nav>
     </div>

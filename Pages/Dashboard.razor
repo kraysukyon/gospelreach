@@ -1,95 +1,28 @@
 ﻿@page "/dashboard"
+@using GospelReachCapstone.Models
 @layout LandingLayout
 @inject NavigationManager Navs
 @inject IJSRuntime JS
 @inject GospelReachCapstone.Services.AuthState Auths
-
+@inject GospelReachCapstone.Services.ScheduleService _scheduleService
+@inject IJSRuntime _js
+@using GospelReachCapstone.Models
 
 <PageTitle>Home</PageTitle>
 
 
 <div class="page">
     <!--Header Section-->
-    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-4">
         <div>
-            <h4 class="m-0 fw-bold">Welcome, @Auths.DisplayName</h4>
+            <h3 class="m-0 fw-bold">Welcome, @Auths.DisplayName</h3>
             <p class="m-0 c2" style="font-size: 14px">Here's what's happening at TSA Mandaue today</p>
         </div>
     </div>
 
-    <!--Announcements and Events Sections-->
-    <div class="planning mb-4">
-        <!--Announcements-->
-        <div class="d-flex flex-column">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h5 class="fw-bold m-0">Announcements</h5>
-                <div class="d-flex gap-2 align-items-center link">
-                    <i class="fa-solid fa-plus"></i>
-                    <a>New</a>
-                </div>
-            </div>
-            
-            <div class="card w-100 p-4 mb-3 cards">
-                <h6 class="mb-2 fw-bold" style="font-size:18px">Sunday Service Time Change</h6>
-                <p class="c2 mb-2" style="font-size:14px;">April 20, 2025</p>
-                <p class="m-0 c2">Starting next Sunday, our morning service will begin at 9:30 AM instead of 10:00 AM. This change will allow us to extend our worship time and accommodate the growing attendance.</p>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards">
-                <h6 class="mb-2 fw-bold" style="font-size:18px">Volunteer Appreciation Day</h6>
-                <p class="c2 mb-2" style="font-size:14px;">April 25, 2025</p>
-                <p class="m-0 c2">We're hosting a special dinner to appreciate all our volunteers this Friday at 6:00 PM in the church hall. Please RSVP with your department head by Wednesday.</p>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards">
-                <h6 class="mb-2 fw-bold" style="font-size:18px">Building Fund Campaign</h6>
-                <p class="c2 mb-2" style="font-size:14px;">April 30, 2025</p>
-                <p class="m-0 c2">We're excited to announce the launch of our new building fund campaign. Our goal is to raise $50,000 for necessary renovations to our sanctuary. More details will be shared during Sunday's service.</p>
-            </div>
-        </div>
-
-        <!--Events-->
-        <div class="d-flex flex-column">
-            <div class="d-flex align-items-center justify-content-between">
-                <h5 class="fw-bold m-0">Upcoming Events</h5>
-                <div class="d-flex gap-2 align-items-center link">
-                    <i class="fa-solid fa-plus"></i>
-                    <a>New</a>
-                </div>
-            </div>
-            
-            <div class="card w-100 p-4 mb-3 cards">
-                <h6 class="mb-2 fw-bold" style="font-size:18px">Easter Sunday Service</h6>
-                <p class="c2 mb-2" style="font-size:14px;">April 21, 2025 • 10:00 AM</p>
-                <p class="m-0 c2">Location: Main Sanctuary</p>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards">
-                <h6 class="mb-2 fw-bold" style="font-size:18px">Youth Group Meeting</h6>
-                <p class="c2 mb-2" style="font-size:14px;">April 27, 2025 • 6:00 PM</p>
-                <p class="m-0 c2">Location: Youth Center</p>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards">
-                <h6 class="mb-2 fw-bold" style="font-size:18px">Bible Study</h6>
-                <p class="c2 mb-2" style="font-size:14px;">April 30, 2025 • 7:00 PM</p>
-                <p class="m-0 c2">Location: Fellowship Hall</p>
-            </div>
-
-            <div class="card w-100 p-4 mb-3 cards">
-                <h6 class="mb-2 fw-bold" style="font-size:18px">Prayer Meeting</h6>
-                <p class="c2 mb-2" style="font-size:14px;">May 2, 2025 • 6:30 AM</p>
-                <p class="m-0 c2">Location: Prayer Room</p>
-            </div>
-        </div>
-        
-    </div>
-
     <!--Quick Stats Section-->
-    <div class="d-flex flex-column mt-4">
-        <div class="d-flex align-items-center">
-            <h5 class="fw-bold m-0">Quick Stats</h5>
-        </div>
+    <div class="d-flex flex-column mb-2">
+        <h5 class="fw-bold m-0 mb-4">Quick Stats</h5>
 
         <div class="d-flex justify-content-evenly gap-4 stats">
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
@@ -106,15 +39,112 @@
                 <p class="c2 mb-2" style="font-size:14px;">Upcoming Events</p>
                 <h3 class="m-0 c2 text-primary fw-bold">3</h3>
             </div>
-
-            <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                <p class="c2 mb-2" style="font-size:14px;">New Members (This Month)</p>
-                <h3 class="m-0 c2 text-primary fw-bold">12</h3>
-            </div>
         </div>
-    </div>  
+    </div>
+
+    <!--Announcements and Events Sections-->
+    <div class="planning mb-4">
+        <!--Announcements-->
+        <div class="d-flex flex-column">
+            <h5 class="fw-bold m-0 mb-4">Announcements</h5>
+            
+            @if (todaysEvent.Any())
+            {
+                @foreach (var item in todaysEvent)
+                {
+                    <div class="card w-100 p-4 mb-3 cards">
+                        <h6 class="mb-2 fw-bold" style="font-size:18px">@item.Title - @item.DepartmentId</h6>
+                        <p class="c2 mb-2" style="font-size:14px;">@(item.StartDate != item.EndDate ? $"{item.StartDate} - {item.EndDate}" : $"{item.StartDate}")</p>
+                        <p class="m-0 c2">@item.Description</p>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="card w-100 p-4 mb-3 cards">
+                    <h6 class="mb-2 fw-bold" style="font-size:18px">No Upcoming Events</h6>
+                    <p class="c2 mb-2" style="font-size:14px;">April 20, 2025</p>
+                    <p class="m-0 c2">Starting next Sunday, Minyo na si Abel</p>
+                </div>
+            }
+            
+
+            @* <div class="card w-100 p-4 mb-3 cards">
+                <h6 class="mb-2 fw-bold" style="font-size:18px">Volunteer Appreciation Day</h6>
+                <p class="c2 mb-2" style="font-size:14px;">April 25, 2025</p>
+                <p class="m-0 c2">We're hosting a special dinner to appreciate all our volunteers this Friday at 6:00 PM in the church hall. Please RSVP with your department head by Wednesday.
+                    aksjdkjasdkjajkdskajdhkahskdhskjdghskdfhglkjsdhfgjkshdfjkgsdjhkfgjhfgjhsdjfsdfg
+                    sdfgskdfgbskdfglkjsdhfglkjhsdfgs
+                    dfgsdlfgsdfgskjdfgkjsdhfkgjhsdfgs
+                    sdkfgbsdkjfbgkjsdfgkjsdhfg
+                </p>
+            </div>
+
+            <div class="card w-100 p-4 mb-3 cards">
+                <h6 class="mb-2 fw-bold" style="font-size:18px">Building Fund Campaign</h6>
+                <p class="c2 mb-2" style="font-size:14px;">April 30, 2025</p>
+                <p class="m-0 c2"></p>
+            </div> *@
+        </div>
+
+        <!--Events-->
+        <div class="d-flex flex-column">
+            <h5 class="fw-bold m-0 mb-4">Upcoming Events</h5>
+            
+            @if (upcomingEvents.Any())
+            {
+                @foreach (var item in upcomingEvents)
+                {
+                    <div class="card w-100 p-4 mb-3 cards">
+                        <h6 class="mb-2 fw-bold" style="font-size:18px">@item.Title</h6>
+                        <p class="c2 mb-2" style="font-size:14px;">@(item.StartDate != item.EndDate ? $"{item.StartDate} - {item.EndDate}" : $"{item.StartDate}")</p>
+                        <p class="m-0 c2">Venue: @item.Location</p>
+                    </div>
+                }
+                
+            }
+            else
+            {
+                <div class="card w-100 p-4 mb-3 cards">
+                    <h6 class="mb-2 fw-bold" style="font-size:18px">No Upcoming Events</h6>
+                </div>
+            }
+        </div>
+        
+    </div>
+
+    
 </div>
 
 @code{
+    //Variables
+    private List<Schedule> todaysEvent = new();
+    private List<Schedule> upcomingEvents = new();
 
+    protected override async Task OnInitializedAsync()
+    {
+        await GetEvents();
+    }
+
+    private async Task GetEvents()
+    {
+        var result = await _scheduleService.GetScheduleAsync();
+        if (result.Success)
+        {
+            if (result.Data != null)
+            {
+                var list = result.Data;
+   
+                DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+                var eventThisMonth = result.Data.Where(u => u.StartDate.Month == DateOnly.FromDateTime(DateTime.Now).Month);
+                upcomingEvents = result.Data.Where(u => u.StartDate.Month == DateOnly.FromDateTime(DateTime.Now).Month).OrderByDescending(u => u.StartDate).Take(5).ToList();
+                todaysEvent = eventThisMonth.Where(u => today >= u.StartDate && today <= u.EndDate).OrderByDescending(u => u.StartDate).Take(5).ToList();
+
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("await", result.Error);
+        }
+    }
 }

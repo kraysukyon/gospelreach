@@ -23,13 +23,19 @@
     display: none;
 }
 
+.btn-reset:hover{
+    background-color: #FFFFFF;
+}
+
 .addUser{
     display: flex;
     flex-direction: column;
     width: 550px;
-    padding: 2rem 1.5rem;
+    padding: 2rem;
     background-color: #FFFFFF;
-    border-radius:25px;
+    border-radius:12px;
+    max-height: calc(100vh - 10vh);
+    overflow-y: auto;
 }
 
 .editUser {
@@ -123,6 +129,7 @@ a {
     transition: box-shadow 0.3s ease, filter 0.3s ease;
     border: solid .3px rgb(128, 128, 128, 0.08);
     padding: 24px;
+    overflow-y: auto;
 }
 
     .cards:hover {

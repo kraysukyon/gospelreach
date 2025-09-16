@@ -42,7 +42,7 @@
                 </div>
 
 
-                <div class="table-container mt-2">
+                <div class="table-container mt-2 d-flex flex-grow-1">
                     <table class="table">
                         <thead>
                             <tr>
@@ -87,7 +87,7 @@
 
             <p class="mb-2 mt-2 ms-2"><em>@addMemberMessage</em></p>
 
-            <div class="table-container mt-2">
+            <div class="table-container mt-2 d-flex flex-grow-1">
                 <table class="table">
                     <thead>
                         <tr>
@@ -137,12 +137,14 @@
             <h4 class="m-0 fw-bold">Group Management</h4>
             <p class="m-0 c2" style="font-size: 14px">Manage group and members</p>
         </div>
+
+        <button class="btn btn-primary px-4 py-2 text-white m-0 text-nowrap" @onclick="ToggleAddGroup">Add Group</button>
     </div>
 
     <div @onclick="HideOption" class="groupAndMembers">
         <div class="d-flex flex-grow-1">
             <!--Group Section=========================-->
-            <div class="card w-100 mt-4 mb-3 cardss">
+            <div class="card w-100 mb-3 cardss">
                 <!--Search Section-->
                 <div class="d-flex gap-2">
                     <div class="position-relative w-100">
@@ -150,7 +152,7 @@
                         <input @bind="groupSearch" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search group..." />
                     </div>
 
-                    <button class="btn btn-primary px-4 py-2 text-white m-0" @onclick="ToggleAddGroup" style="width: 100px;">Add</button>
+                    
 
                 </div>
 
@@ -172,8 +174,8 @@
                             @foreach (var item in filteredGroupList)
                             {
                                 <tr class="table-row">
-                                    <td class="table-cell" style="width: 100%; font-weight: 500;" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))"><p class="link">@item.Name</p></td>
-                                    <td class="table=cell">
+                                    <td @onclick:stopPropagation class="table-cell" style="width: 100%; font-weight: 500;" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))"><p class="link">@item.Name</p></td>
+                                    <td @onclick:stopPropagation class="table=cell">
                                         <div @onclick:stopPropagation class="optionDot">
                                             <i @onclick="() => ToggleOption(item.Id)" class="bi bi-three-dots-vertical cursor hover"></i>
                                             @if (SelectedRow == item.Id)
@@ -196,15 +198,15 @@
         <!--View Group Panel-->
         <div class="groupPanel @(isViewPanel ? "grows" : "")">
             <div>
-                <div class="d-flex gap-3 w-auto align-items-start">
+                @* <div class="d-flex gap-3 w-auto align-items-start">
                     <h4 class="m-0 fw-bold mb-3">@groupName</h4>
-                </div>
+                </div> *@
                 
                 <!--Search Section-->
                 <div class="d-flex gap-2">
                     <div class="position-relative w-100">
                         <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                        <input @bind="existingMemberSearch" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search group..." />
+                        <input @bind="existingMemberSearch" @bind:event="oninput" type="text" class="form-control border search" placeholder="Search member..." />
                     </div>
                 </div>
 
@@ -276,6 +278,7 @@
     private string existingMemberSearch = string.Empty;
     private bool isOptionVisible = false;
     private bool isRenameVisible = false;
+    private string GroupName = string.Empty;
 
     private IEnumerable<GroupMemberSelection> filteredMember => groupMemberSelectionList.Where(u => string.IsNullOrWhiteSpace(memberSearch) || u.Member.GetFullName().Contains(memberSearch, StringComparison.OrdinalIgnoreCase));
     private IEnumerable<Attendance> filteredList => attendancesList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Date.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -295,6 +298,11 @@
     protected override async Task OnInitializedAsync()
     {
         await GetAllGroups();
+    }
+
+    private void NavigateMembers(string name)
+    {
+        GroupName = name;
     }
 
     //show all members

@@ -175,7 +175,7 @@
 
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-column mb-4">
-        <div class="d-flex justify-content-between">
+        <div class="d-flex justify-content-between mb-4">
             <div>
                 <h4 class="m-0 fw-bold">Member Management</h4>
                 <p class="m-0 c2" style="font-size: 14px">Add, update, and manage church members.</p>
@@ -188,7 +188,7 @@
         
 
         <!--Quick Stats Section-->
-        <div class="d-flex flex-column mt-4">
+        <div class="d-flex flex-column mb-2">
             <div class="d-md-flex d-block justify-content-evenly gap-4">
                 <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                     <p class="c2 mb-2" style="font-size:14px;">Total Members</p>
@@ -239,17 +239,8 @@
                             <td class="table-cell c2">@items.Status</td>
 
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
-                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(() => ToggleViewModal(items.Id))"><span><i class="bi bi-info-circle"></i></span> View</button>
-                                </div>
-                                <!--Edit-->
-                                <div class="d-flex align-items-center justify-content-center gap-1w-auto border" style="border-radius: 10px; padding: 5px 12px;">
-                                    <button class="btn btn-outline-light px-1 py-1" style="font-size: 13px;" @onclick="@(() => ToggleUpdateModal(items.Id))"><span><i class="bi bi-pencil-square"></i></span> Update</button>
-                                    @* <a href="" class="text-decoration-none" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Edit</a> *@
-                                </div>
-
-                                <!--Delete-->
-                                @* <button @onclick="(() => DeleteMember(items.Id))" class="btn btn-danger text-white" style="border-radius: 10px; padding: 5px 12px; font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button> *@
+                                <button class="btn p-2 px-4" @onclick="@(() => ToggleViewModal(items.Id))" style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-info-circle"></i> View</button>
+                                <button class="btn p-2 px-4" @onclick="@(() => ToggleUpdateModal(items.Id))" style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-pencil-square"></i> Update</button>
                             </td>
                         </tr>
                     }
