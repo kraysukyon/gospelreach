@@ -3,10 +3,10 @@ using Microsoft.JSInterop;
 
 namespace GospelReachCapstone.Services
 {
-    public class AccountsService
+    public class UserService
     {
         private readonly IJSRuntime _js;
-        public AccountsService(IJSRuntime js)
+        public UserService(IJSRuntime js)
         {
             _js = js;
         }

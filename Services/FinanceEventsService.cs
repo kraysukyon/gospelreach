@@ -12,7 +12,7 @@ namespace GospelReachCapstone.Services
         }
 
         //Add Finance Event
-        public async Task<FinanceEventResult> AddFinanceEventsAsync(FinanceEvents financeEvents)
+        public async Task<FinanceEventResult> AddFinanceEventsAsync(FinanceSchedule financeEvents)
         {
             try
             {
@@ -104,7 +104,7 @@ namespace GospelReachCapstone.Services
         public class FinanceEventResult
         {
             public bool Success { get; set; }
-            public List<FinanceEvents> Data { get; set; }
+            public List<FinanceSchedule> Data { get; set; }
             public string Error { get; set; }
         }
     }

@@ -6,7 +6,6 @@
         public string Title { get; set; }
         public string CategoryId { get; set; }
         public string DepartmentId { get; set; }
-        public string DivisionId { get; set; }
         public DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public string StartTime { get; set; }
@@ -15,10 +14,7 @@
         public string Location { get; set; }
         public string Description { get; set; }
         public bool HasAttendee { get; set; } = false;
-        public string AttendeeType { get; set; }
         public string GroupId { get; set; }
-        public string Status { get; set; }
-        public bool isPublic { get; set; }
         public bool hasAttendance { get; set; } = false;
         public bool hasFinance { get; set; } = false;
     }

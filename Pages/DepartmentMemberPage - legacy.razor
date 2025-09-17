@@ -3,7 +3,6 @@
 @using GospelReachCapstone.Models
 @inject GospelReachCapstone.Services.DepartmentMemberService _departmentMemberService
 @inject GospelReachCapstone.Services.MemberService _memberService
-@inject GospelReachCapstone.Services.SubDepartmentService _subDepartmentService
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.AppState _appState
 
@@ -77,7 +76,6 @@
     private List<Member> allMembers = new();
     private IEnumerable<Member> filteredList => members.Where(u => string.IsNullOrWhiteSpace(searchString) || u.GetFullName().Contains(searchString,StringComparison.OrdinalIgnoreCase)).ToList();
     private IEnumerable<Member> filteredMusicMember => allMembers.Where(u => string.IsNullOrWhiteSpace(searchMusicMember) || u.GetFullName().Contains(searchMusicMember, StringComparison.OrdinalIgnoreCase)).ToList();
-    private List<SubDepartment> subDepartmentsList = new();
 
 
     //Load List during page initialization

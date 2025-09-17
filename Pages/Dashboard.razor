@@ -6,7 +6,6 @@
 @inject GospelReachCapstone.Services.AuthState Auths
 @inject GospelReachCapstone.Services.ScheduleService _scheduleService
 @inject IJSRuntime _js
-@using GospelReachCapstone.Models
 
 <PageTitle>Home</PageTitle>
 
@@ -134,10 +133,11 @@
             if (result.Data != null)
             {
                 var list = result.Data;
-   
+
                 DateOnly today = DateOnly.FromDateTime(DateTime.Now);
                 var eventThisMonth = result.Data.Where(u => u.StartDate.Month == DateOnly.FromDateTime(DateTime.Now).Month);
-                upcomingEvents = result.Data.Where(u => u.StartDate.Month == DateOnly.FromDateTime(DateTime.Now).Month).OrderByDescending(u => u.StartDate).Take(5).ToList();
+
+                upcomingEvents = eventThisMonth.Where(u => u.EndDate > today).OrderBy(u => u.StartDate).Take(5).ToList();
                 todaysEvent = eventThisMonth.Where(u => today >= u.StartDate && today <= u.EndDate).OrderByDescending(u => u.StartDate).Take(5).ToList();
 
             }

@@ -1,6 +1,6 @@
 ﻿namespace GospelReachCapstone.Models
 {
-    public class FinanceEvents
+    public class FinanceSchedule
     {
         public string Id { get; set; }
         public string DepartmentId { get; set; }

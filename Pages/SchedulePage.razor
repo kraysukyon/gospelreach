@@ -5,7 +5,6 @@
 @inject GospelReachCapstone.Services.GroupService _group
 @inject GospelReachCapstone.Services.GroupMemberService _groupMemberService
 @inject GospelReachCapstone.Services.MemberService _memberService
-@inject GospelReachCapstone.Services.SubCategoryService _subCategoryService
 @inject GospelReachCapstone.Services.NotificationService _notificationService
 @inject GospelReachCapstone.Services.AttendanceMemberRecordService _attenanceMemberRecordService
 @inject GospelReachCapstone.Services.AttendanceVisitorRecordService _attendanceVisitorRecordService
@@ -1189,7 +1188,6 @@
 @code {
     private List<Schedule> schedulesList = new();
     private List<Schedule> schedulesListView = new();
-    private List<SubCategory> subCategorieList = new();
     ElementReference textarea;
     private bool isView = false;
     private string title = "New Schedule";
@@ -1341,8 +1339,6 @@
             SubCategories = cat.SubCategories;
         }
         await getScheduleList();
-        // await GetAttendanceList();
-        await GetSubCategoriesList();
         at = "1234";
         
     }
@@ -1371,7 +1367,7 @@
             for (int i = 0; i < Days; i++)
             {
                 DateOnly date = serviceSchedule.StartDate.AddDays(i);
-                var financeToAdd = new FinanceEvents
+                var financeToAdd = new FinanceSchedule
                 {
                     DepartmentId = serviceSchedule.DepartmentId,
                     isCompleted = false,
@@ -1485,7 +1481,7 @@
                     for (int i = 0; i < Days; i++)
                     {
                         DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
-                        var financeToAdd = new FinanceEvents
+                        var financeToAdd = new FinanceSchedule
                         {
                             DepartmentId = updateServiceSchedule.DepartmentId,
                             isCompleted = false,
@@ -1763,21 +1759,7 @@
 
     }
 
-    //Get subcategories
-    private async Task GetSubCategoriesList()
-    {
-        var result = await _subCategoryService.GetSubCategories();
-
-        if(result.Success)
-        {
-            subCategorieList = result.Data;
-        }
-        else
-        {
-            await _js.InvokeVoidAsync("alert", result.Error);
-        }
-    }
-
+   
     //set the date to default today
     private void setDateToday()
     {

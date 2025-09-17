@@ -701,7 +701,6 @@
                 title: schedule.title,
                 categoryId: schedule.categoryId,
                 departmentId: schedule.departmentId,
-                divisionId: schedule.divisionId,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
                 startTime: schedule.startTime,
@@ -710,9 +709,7 @@
                 location: schedule.location,
                 description: schedule.description,
                 hasAttendee: schedule.hasAttendee,
-                attendeeType: schedule.attendeeType,
                 groupId: schedule.groupId,
-                status: schedule.status,
                 hasAttendance: schedule.hasAttendance,
                 hasFinance: schedule.hasFinance,
             });
@@ -939,7 +936,6 @@
                 title: schedule.title,
                 categoryId: schedule.categoryId,
                 departmentId: schedule.departmentId,
-                divisionId: schedule.divisionId,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
                 startTime: schedule.startTime,
@@ -948,9 +944,7 @@
                 location: schedule.location,
                 description: schedule.description,
                 hasAttendee: schedule.hasAttendee,
-                attendeeType: schedule.attendeeType,
                 groupId: schedule.groupId,
-                status: schedule.status
             });
             return { success: true }
         } catch (error) {
