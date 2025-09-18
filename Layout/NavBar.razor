@@ -1,7 +1,6 @@
 ﻿@inject IJSRuntime JS;
 @inject NavigationManager Navs
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService AuthService
-@inject GospelReachCapstone.Services.AppState _appState
 @inject AuthState auth
 @inherits ProtectedPageBase
 
@@ -257,9 +256,9 @@
         Navs.NavigateTo("/");
     }
 
-    private void GoToDepartmentPage(string name)
-    {
-        _appState.SelectedDepartmentName = name;
-        Navs.NavigateTo($"departments/{name}");
-    }
+    // private void GoToDepartmentPage(string name)
+    // {
+    //     _appState.SelectedDepartmentName = name;
+    //     Navs.NavigateTo($"departments/{name}");
+    // }
 }

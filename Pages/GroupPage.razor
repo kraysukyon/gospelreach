@@ -5,7 +5,6 @@
 @inject GospelReachCapstone.Services.AttendanceService _attendance
 @inject IJSRuntime _js
 @inject NavigationManager _nav
-@inject GospelReachCapstone.Services.AppState _appState
 @inject GospelReachCapstone.Services.GroupService _groupService
 @inject GospelReachCapstone.Services.GroupMemberService _groupMemberService
 @inject HttpClient Http
@@ -168,27 +167,36 @@
                         </thead>
 
                         <tbody>
-                            <tr class="table-row">
-                                <td @onclick="ShowAllmembers" class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">All Members</p></td>
-                            </tr>
-                            @foreach (var item in filteredGroupList)
+                            @if (groupList != null)
                             {
-                                <tr class="table-row">
-                                    <td @onclick:stopPropagation class="table-cell" style="width: 100%; font-weight: 500;" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))"><p class="link">@item.Name</p></td>
-                                    <td @onclick:stopPropagation class="table=cell">
-                                        <div @onclick:stopPropagation class="optionDot">
-                                            <i @onclick="() => ToggleOption(item.Id)" class="bi bi-three-dots-vertical cursor hover"></i>
-                                            @if (SelectedRow == item.Id)
-                                            {
-                                                <div class="optionDotChild">
-                                                    <p @onclick="() => RenameGroupModal(item.Id, item.Name)">Rename</p>
-                                                    <p @onclick="() => DeleteGroup(item.Id)">Delete</p>
-                                                </div>
-                                            }
-                                        </div>
-                                    </td>
-                                </tr>
+                                @foreach (var item in filteredGroupList)
+                                {
+                                    <tr class="table-row">
+                                        @if(item.Id == "All")
+                                        {
+                                            <td @onclick:stopPropagation @onclick="ShowAllmembers" class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">All Members</p></td>
+                                        }
+                                        else
+                                        {
+                                            <td @onclick:stopPropagation class="table-cell" style="width: 100%; font-weight: 500;" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))"><p class="link">@item.Name</p></td>
+                                        }
+                                        
+                                        <td @onclick:stopPropagation class="table=cell">
+                                            <div @onclick:stopPropagation class="optionDot">
+                                                <i @onclick="() => ToggleOption(item.Id)" class="bi bi-three-dots-vertical cursor hover"></i>
+                                                @if (SelectedRow == item.Id)
+                                                {
+                                                    <div class="optionDotChild">
+                                                        <p @onclick="() => RenameGroupModal(item.Id, item.Name)">Rename</p>
+                                                        <p @onclick="() => DeleteGroup(item.Id)">Delete</p>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
                             }
+                            
                         </tbody>
                     </table>
                 </div>
@@ -586,18 +594,25 @@
     private async Task GetAllGroups()
     {
         groupMessage = "Fetching data, please wait...";
+        groupList.Clear();
         var result = await _groupService.GetGroupsAsync();
 
         if (result.Success)
         {
             groupList = result.Data;
+            var all = new Group { Id = "All", Name = "All Members" };
+            groupList.Add(all);
+
+            groupList = groupList.OrderByDescending(u => u.Id == "All").ThenBy(u => u.Name).ToList();
 
             if (groupList == null || groupList.Count == 0)
             {
                 groupMessage = "No records found";
             }
-
-            groupMessage = string.Empty;
+            else
+            {
+                groupMessage = string.Empty;
+            }
         }
         else
         {
@@ -751,7 +766,7 @@
         isToggleGroup = !isToggleGroup; 
     }
 
-    public class GroupMemberSelection
+    private class GroupMemberSelection
     {
         public bool isSelected { get; set; }
         public Member Member { get; set; }

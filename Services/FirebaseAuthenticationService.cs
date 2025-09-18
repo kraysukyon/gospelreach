@@ -16,20 +16,20 @@ namespace GospelReachCapstone.Services
         }
         public async Task<(bool Success, string Message)> RegisterAsync(User user)
         {
-            var result = await _jsRuntime.InvokeAsync<RegisterResult>("firebaseAuth.register", user);
+            var result = await _jsRuntime.InvokeAsync<FirebaseResult>("firebaseAuth.register", user);
             return result.Success ? (true, "Account Added Successful") : (false, result.Error);
         }
 
-        public async Task<LoginResult> LoginAsync(string email, string password)
+        public async Task<FirebaseResult> LoginAsync(string email, string password)
         {
             try
             {
-                var result = await _jsRuntime.InvokeAsync<LoginResult>("firebaseAuth.login", email, password);
+                var result = await _jsRuntime.InvokeAsync<FirebaseResult>("firebaseAuth.login", email, password);
                 return result;
             }
             catch (JSException ex)
             {
-                return new LoginResult
+                return new FirebaseResult
                 {
                     Success = false,
                     Error = ex.Message
@@ -37,43 +37,12 @@ namespace GospelReachCapstone.Services
             }
             catch (Exception ex)
             {
-                return new LoginResult
+                return new FirebaseResult
                 {
                     Success = false,
                     Error = ex.Message
                 };
             }
-
-            //if (result.Success)
-            //{
-            //    //List<Accounts> acc = await _firestore.GetAccountAsync();
-            //    //List<Member> mem = await _firestore.GetMembersAsync();
-
-            //    //var joinedList = acc.Join(mem, a => a.memberId, b => b.Id, (a,b) => new AccountsDTO
-            //    //{
-            //    //    Id = a.id,
-            //    //    MemberId = a.memberId,
-            //    //    FirstName = b.FirstName,
-            //    //    Role = a.role,
-            //    //    Status = a.status,
-            //    //    Email = b.Email,
-            //    //}).ToList();
-
-            //    //var user = joinedList.FirstOrDefault(a => a.Email == email);
-
-            //    //if (user.Status != "Active")
-            //    //{
-            //    //    return (false,"Login failed: Your account is disabled, Please contact administrator.");
-            //    //}
-
-            //    //_authState.IsLoggedIn = true;
-            //    //_authState.UserId = result.Uid;
-            //    //_authState.Email = email;
-            //    //_authState.DisplayName = user?.FirstName ?? "User";
-            //    //_authState.Role = user?.Role ?? "User";
-            //    return (true, $"Login successful");
-            //}
-            //return (false, result.Error ?? "Login failed");
         }
 
         public async Task LogoutAsync()
@@ -98,7 +67,7 @@ namespace GospelReachCapstone.Services
         {
             try
             {
-                var result = await _jsRuntime.InvokeAsync<ResetResult>("firebaseAuth.resetPassword", email);
+                var result = await _jsRuntime.InvokeAsync<FirebaseResult>("firebaseAuth.resetPassword", email);
                 return result.Success
                     ? (true, "A password reset link has been sent to your email.")
                     : (false, result.Error ?? "Password reset failed.");
@@ -140,20 +109,7 @@ namespace GospelReachCapstone.Services
             return new string(chars.OrderBy(_ => random.Next()).ToArray());
         }
 
-        private class ResetResult
-        {
-            public bool Success { get; set; }
-            public string Error { get; set; }
-        }
-
-        public class RegisterResult
-        {
-            public bool Success { get; set; }
-            public string Uid { get; set; }
-            public string Error { get; set; }
-        }
-
-        public class LoginResult
+        public class FirebaseResult
         {
             public bool Success { get; set; }
             public string Uid { get; set; }

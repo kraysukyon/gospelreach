@@ -1,11 +1,13 @@
 ﻿@page "/dashboard"
 @using GospelReachCapstone.Models
 @layout LandingLayout
-@inject NavigationManager Navs
-@inject IJSRuntime JS
+@inject NavigationManager _nav
 @inject GospelReachCapstone.Services.AuthState Auths
 @inject GospelReachCapstone.Services.ScheduleService _scheduleService
+@inject GospelReachCapstone.Services.MemberService _memberService
+@inject GospelReachCapstone.Services.AttendanceService _attendanceService
 @inject IJSRuntime _js
+
 
 <PageTitle>Home</PageTitle>
 
@@ -26,17 +28,17 @@
         <div class="d-flex justify-content-evenly gap-4 stats">
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">Total Members</p>
-                <h3 class="m-0 c2 text-primary fw-bold">245</h3>
+                <h3 class="m-0 c2 text-primary fw-bold">@totalMembers</h3>
             </div>
 
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">Last Sunday Attendance</p>
-                <h3 class="m-0 c2 text-primary fw-bold">178</h3>
+                <h3 class="m-0 c2 text-primary fw-bold">@lastSundayAttendance</h3>
             </div>
 
             <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
                 <p class="c2 mb-2" style="font-size:14px;">Upcoming Events</p>
-                <h3 class="m-0 c2 text-primary fw-bold">3</h3>
+                <h3 class="m-0 c2 text-primary fw-bold">@upcomingEventsCount</h3>
             </div>
         </div>
     </div>
@@ -116,15 +118,22 @@
 </div>
 
 @code{
-    //Variables
+    //List
     private List<Schedule> todaysEvent = new();
     private List<Schedule> upcomingEvents = new();
 
+    //Data
+    int totalMembers = 0;
+    int lastSundayAttendance = 0;
+    int upcomingEventsCount = 0;
+
     protected override async Task OnInitializedAsync()
     {
+        await GetStats();
         await GetEvents();
     }
 
+    //Get events
     private async Task GetEvents()
     {
         var result = await _scheduleService.GetScheduleAsync();
@@ -135,10 +144,43 @@
                 var list = result.Data;
 
                 DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+                upcomingEventsCount = list.Where(u => u.EndDate > today).Count();
+
                 var eventThisMonth = result.Data.Where(u => u.StartDate.Month == DateOnly.FromDateTime(DateTime.Now).Month);
 
-                upcomingEvents = eventThisMonth.Where(u => u.EndDate > today).OrderBy(u => u.StartDate).Take(5).ToList();
-                todaysEvent = eventThisMonth.Where(u => today >= u.StartDate && today <= u.EndDate).OrderByDescending(u => u.StartDate).Take(5).ToList();
+                if (eventThisMonth != null)
+                {
+                    upcomingEvents = eventThisMonth.Where(u => u.EndDate > today).OrderBy(u => u.StartDate).Take(5).ToList();
+                    todaysEvent = eventThisMonth.Where(u => today >= u.StartDate && today <= u.EndDate).OrderByDescending(u => u.StartDate).Take(5).ToList();
+
+                    int daysAfterSunday = (int)today.DayOfWeek;
+                    DateOnly lastSundayDate = today.AddDays(-daysAfterSunday);
+
+                    var sundayDate = eventThisMonth.FirstOrDefault(u => u.DepartmentId == "Senior" && u.Title == "Holiness Meeting" && u.StartDate == lastSundayDate);
+
+                    if (sundayDate != null)
+                    {
+                        var attRes = await _attendanceService.GetAttendanceByScheduleId(sundayDate.Id);
+                        if (attRes.Success)
+                        {
+                            if (attRes.Data != null)
+                            {
+                                var sun = attRes.Data.FirstOrDefault(u => u.Date == lastSundayDate);
+                                if (sun != null)
+                                {
+                                    lastSundayAttendance = sun.TotalAttendee;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            await _js.InvokeVoidAsync("alert", "Failed to get last sunday attendance");
+                        }
+                    }
+                }
+                
+
+
 
             }
         }
@@ -147,4 +189,23 @@
             await _js.InvokeVoidAsync("await", result.Error);
         }
     }
+
+    //Get stats
+    private async Task GetStats()
+    {
+        var membersRes = await _memberService.GetMembersAsync();
+
+        if (membersRes.Success)
+        {
+            if (membersRes.Data != null)
+            {
+                totalMembers = membersRes.Data.Count();
+            }
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "Failed to get data");
+        }
+    }
+
 }

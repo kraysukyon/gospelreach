@@ -24,7 +24,6 @@ builder.Services.AddScoped<AuthState>();
 builder.Services.AddScoped<DepartmentMemberService>();
 builder.Services.AddScoped<ChordsFormatterService>();
 builder.Services.AddScoped<GeneralFunctions>();
-builder.Services.AddScoped<AppState>();
 builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<GroupMemberService>();
 builder.Services.AddScoped<MemberService>();
@@ -38,7 +37,7 @@ builder.Services.AddScoped<AttendanceMemberRecordService>();
 builder.Services.AddScoped<VisitorService>();
 builder.Services.AddScoped<AttendanceVisitorRecordService>();
 builder.Services.AddScoped<FinancialRecordService>();
-builder.Services.AddScoped<FinanceEventsService>();
+builder.Services.AddScoped<FinanceScheduleService>();
 builder.Services.AddScoped<ToastService>();
 
 await builder.Build().RunAsync();
