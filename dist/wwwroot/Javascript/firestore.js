@@ -14,13 +14,18 @@
         }
     },
     //Update Account
-    async updateAccount(docId, newRole) {
+    async updateAccount(docId, user) {
         try {
             await db.collection("Users").doc(docId).update({
-                role: newRole
+                firstName: user.firstName,     
+                middleName: user.middleName,     
+                lastName: user.lastName,     
+                role: user.role
             });
+
+            return { success: true };
         } catch (error) {
-            alert(error)
+            return { success: false, error: error };
         }
     },
 
@@ -38,6 +43,21 @@
             await db.collection("Users").doc(docId).update({ status: "Active" });
         } catch (error) {
             alert(error)
+        }
+    },
+
+    //Get Account By Id
+    async getAccountById(docId) {
+        try {
+            const docRef = await db.collection("Users").doc(docId).get();
+            if (!docRef.exists) {
+                return { success: false, error: "Account does not exist" };
+            }
+            const doc = {id: docRef.id, ...docRef.data()}
+            return { success: true, user: doc }
+        }
+        catch (error) {
+            return { success: false, error: error };
         }
     },
 

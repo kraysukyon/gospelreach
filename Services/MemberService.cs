@@ -31,16 +31,20 @@ namespace GospelReachCapstone.Services
             }
         }
 
-        public async Task<bool> AddMemberAsync(Member member)
+        public async Task<MembersResult> AddMemberAsync(Member member)
         {
             try
             {
-                var result = await _js.InvokeAsync<JsonElement>("firestoreFunctions.addMember", member);
-                return result.GetProperty("success").GetBoolean();
+                var result = await _js.InvokeAsync<MembersResult>("firestoreFunctions.addMember", member);
+                return result;
             }
-            catch
+            catch (JSException ex)
             {
-                return false;
+                return new MembersResult { Success = false, Error = ex.Message};
+            }
+            catch (Exception ex)
+            {
+                return new MembersResult { Success = false, Error = ex.Message };
             }
         }
 

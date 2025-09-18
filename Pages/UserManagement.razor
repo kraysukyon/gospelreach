@@ -4,7 +4,8 @@
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService Authentication
 @inject GospelReachCapstone.Services.UserService _accountsServices
 @inject IJSRuntime _js
-
+@using System.Text.RegularExpressions
+@using System.Globalization
 
 
 <PageTitle>Admin</PageTitle>
@@ -25,7 +26,7 @@
                 <div class="input mt-3">
                     <p>Email</p>
                     <div class="pword mt-2">
-                        <input @bind="user.Email" type="email" placeholder="Email" />
+                        <input @bind="user.Email" spellcheck="false" type="email" placeholder="Email" />
                     </div>
                 </div>
             }
@@ -33,47 +34,54 @@
             <div class="input mt-3">
                 <p>First Name</p>
                 <div class="pword mt-2">
-                    <input @bind="user.FirstName" type="text" placeholder="First Name" />
+                    <input @bind="user.FirstName" spellcheck="false" type="text" placeholder="First Name" />
                 </div>
             </div>
 
             <div class="input mt-3">
                 <p>Middle Name</p>
                 <div class="pword mt-2">
-                    <input @bind="user.MiddleName" type="text" placeholder="Middle Name" />
+                    <input @bind="user.MiddleName" spellcheck="false" type="text" placeholder="Middle Name" />
                 </div>
             </div>
 
             <div class="input mt-3">
                 <p>Last Name</p>
                 <div class="pword mt-2">
-                    <input @bind="user.LastName" type="text" placeholder="Last Name" />
+                    <input @bind="user.LastName" spellcheck="false" type="text" placeholder="Last Name" />
                 </div>
             </div>
             
-
-            @* @if (title == "Add User")
-            {
-                <div class="input mt-3">
-                    <p>Password</p>
-                    <div class="pword mt-2">
-                        <input @bind="user.Password" type="@(isPasswordShow ? "text" : "password")" placeholder="Password" />
-                        <i @onclick="TogglePassword" class="@(isPasswordShow ? "bi bi-eye-slash" : "bi bi-eye")" style="cursor:pointer"></i>
-                    </div>
-                </div>
-            } *@
-
             <div class="input mt-3">
                 <p>Role</p>
                 <select @bind="role" class="form-select p-2 mt-2">
                     <option value="Administrator">Administrator</option>
                     <option value="Pastor">Pastor</option>
-                    <option value="Music Head">Music Head</option>
+                    <option value="Department Head - Senior">Department Head - Senior</option>
+                    <option value="Department Head - Womens">Department Head - Womens</option>
                     <option value="Department Head - Mens">Department Head - Mens</option>
-                    <option value="Department Head - Homeleague">Department Head - Homeleague</option>
                     <option value="Department Head - Youth">Department Head - Youth</option>
-                    <option value="Department Head - Finance">Department Head - Finance</option>
+                    <option value="Music Head">Music Head</option>
+                    
                 </select>
+            </div>
+
+            @if (validation.Any())
+            {
+                <div class="d-flex flex-column justify-content-between mt-3">
+                    @foreach (string a in validation)
+                    {
+                        <p class="text-danger">@a</p>
+                    }
+                </div>
+            }
+            <div class="mt-3 @(isAdding ? "d-flex" : "d-none") align-items-center justify-content-center">
+                <p>Saving record.Please wait...</p>
+
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
+                    <img src="/img/loading.svg" style="height:50px; width: 50px;" />
+                </div>
             </div>
 
             @if (title == "Add User")
@@ -138,7 +146,7 @@
                             <td class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
                                 <!--Edit-->
                                 <div class="d-flex align-items-center justify-content-center gap-1w-auto">
-                                    <button class="btn p-2 px-4" @onclick="@(() => ToggleUpdateModal(items.Id, items.Role))" style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-pencil-square"></i> Update</button>
+                                    <button class="btn p-2 px-4" @onclick="@(() => ToggleUpdateModal(items.Id))" style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-pencil-square"></i> Update</button>
                                     @* <button class="btn btn-outline-light p-2 px-4" style="font-size: 13px;" ><span><i class="bi bi-pencil-square"></i></span> Update</button> *@
                                 </div>
 
@@ -167,11 +175,15 @@
 </div>
 
 @code{
+    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+    private List<string> validation = new();
+    string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
     private string load = "Fetching Files...";
     private bool isLoad = false;
     private bool isValid = false;
     private bool isPasswordShow = false;
     private bool isAddUserModalVisible = false;
+    private bool isAdding = false;
     private string title = "Add User";
     private User user = new();
     private List<User> accounts = new();
@@ -212,17 +224,28 @@
         isPasswordShow = !isPasswordShow;
     }
 
-    protected async Task OpenModal()
+    private void OpenModal()
     {
         ToggleAddUserModal();
     }
 
-    private async Task ToggleUpdateModal(string docId, string roles)
+    private async Task ToggleUpdateModal(string docId)
     {
-        isAddUserModalVisible = !isAddUserModalVisible;
-        role = roles;
-        memberId = docId;
-        title = "Update User";
+        var userRes = await _accountsServices.GetUserById(docId);
+        if (userRes.Success)
+        {
+            var users = userRes.User;
+            user = new();
+            user = users;
+            title = "Update User";
+            role = users.Role;
+            isAddUserModalVisible = !isAddUserModalVisible;
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "An error occured");
+        }
+
     }
 
 
@@ -235,9 +258,76 @@
         role = "Administrator";
     }
 
+    private bool IsValidEmail(string email)
+    {
+        return Regex.IsMatch(email, pattern);
+    }
+
+
     private async Task AddUser()
     {
+        validation.Clear();
+        isAdding = true;
+        if (string.IsNullOrEmpty(user.Email))
+        {
+            validation.Add("-Email is required");
+        }
+        else
+        {
+            if (!IsValidEmail(user.Email))
+            {
+                validation.Add("-Invalid Email");
+            }
+        }
+
+
+        if (string.IsNullOrEmpty(user.FirstName))
+        {
+            validation.Add("-First Name is required");
+        }
+
+        if (string.IsNullOrEmpty(user.FirstName))
+        {
+            validation.Add("-Last Name is required");
+        }
+
+        if (validation.Any())
+        {
+            isAdding = false;
+            return;
+        }
+
+        var checkUser = await _accountsServices.GetUserAccountsAsync();
+        if (checkUser.Success)
+        {
+            if (checkUser.Data != null)
+            {
+                var check = checkUser.Data.FirstOrDefault(u => u.Email == user.Email);
+                if (check != null)
+                {
+                    validation.Add("-Email already exist");
+                    isAdding = false;
+                    return;
+                }
+            }
+
+        }
+        else
+        {
+            await _js.InvokeVoidAsync("alert", "An error occured. Please try again later.");
+            ToggleAddUserModal();
+            return;
+        }
+
+
+        user.FirstName = textInfo.ToTitleCase(user.FirstName);
         user.Role = role;
+        if (user.MiddleName != null)
+        {
+            user.MiddleName = textInfo.ToTitleCase(user.MiddleName);
+        }
+
+        user.LastName = textInfo.ToTitleCase(user.LastName);
         user.Password = Authentication.GeneratePassword();
         var result = await Authentication.RegisterAsync(user);
 
@@ -246,6 +336,7 @@
 
             await OnResetPassword(user.Email); // Send reset password email
             await _js.InvokeVoidAsync("alert", "Account Successfully Created.\nA Password reset link has been sent to the email.");
+            isAdding = false;
             user = new();
             memberId = string.Empty;
             accounts = new();
@@ -255,6 +346,7 @@
         }
         else
         {
+            isAdding = false;
             await _js.InvokeVoidAsync("alert", result.Message);
         }
     }
@@ -300,10 +392,33 @@
 
     private async Task UpdateUser()
     {
-        try
+        isAdding = true;
+        if (string.IsNullOrEmpty(user.FirstName))
         {
-            await _accountsServices.UpdateAccountAsync(memberId, role);
+            validation.Add("-First Name is required");
+        }
+
+        if (string.IsNullOrEmpty(user.FirstName))
+        {
+            validation.Add("-Last Name is required");
+        }
+
+        if (validation.Any())
+        {
+            isAdding = false;
+            return;
+        }
+        user.FirstName = textInfo.ToTitleCase(user.FirstName);
+        if (user.MiddleName != null)
+        {
+            user.MiddleName = textInfo.ToTitleCase(user.MiddleName);
+        }
+        user.LastName = textInfo.ToTitleCase(user.LastName);
+        var updateRes = await _accountsServices.UpdateAccountAsync(user.Id, user);
+        if (updateRes.Success)
+        {
             isAddUserModalVisible = false; // Hide the modal after update
+            isAdding = false;
             user = new();
             memberId = string.Empty;
             accounts = new();
@@ -311,15 +426,20 @@
             await GetUsers();
             await _js.InvokeVoidAsync("alert", "User updated successfully");
         }
-        catch (Exception ex)
+        else
         {
-            await _js.InvokeVoidAsync("alert", $"Error updating user: {ex.Message}");
+            isAdding = false;
+            await _js.InvokeVoidAsync("alert", updateRes.Error);
             return;
         }
     }
 
     private async Task DisableUser(string docId)
     {
+        bool confirm = await _js.InvokeAsync<bool>("confirm", "Confirm Changes?");
+
+        if (!confirm) return;
+
         try
         {
             await _accountsServices.DisableAccountAsync(docId);

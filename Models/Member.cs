@@ -7,7 +7,7 @@
         public string FirstName { get; set; }
         public string? MiddleName { get; set; }
         public string LastName { get; set; }
-        public string? Email { get; set; } 
+        public string Email { get; set; } 
         public string Contact { get; set; }
         public string Gender { get; set; } = "Male"; //Default Gender
         public DateOnly Birthdate { get; set; } = DateOnly.FromDateTime(DateTime.Now); // Default to today's date

@@ -1,5 +1,6 @@
 ﻿using GospelReachCapstone.Models;
 using Microsoft.JSInterop;
+using System.Data;
 
 namespace GospelReachCapstone.Services
 {
@@ -56,9 +57,22 @@ namespace GospelReachCapstone.Services
         }
 
         //Update Accounts
-        public async Task UpdateAccountAsync(string docId, string role)
+        public async Task<UserResult> UpdateAccountAsync(string Id, User user)
         {
-            await _js.InvokeVoidAsync("firestoreFunctions.updateAccount", docId, role);
+            try
+            {
+                var result = await _js.InvokeAsync<UserResult>("firestoreFunctions.updateAccount", Id, user);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new UserResult { Success = false, Error = ex.Message };
+            }
+            catch (Exception ex)
+            {
+                return new UserResult { Success = false, Error = ex.Message };
+            }
+            
         }
 
         //Disable Account for logging in
@@ -73,6 +87,32 @@ namespace GospelReachCapstone.Services
             await _js.InvokeVoidAsync("firestoreFunctions.enableAccount", docId);
         }
 
+
+        //Get User By Id
+        public async Task<UserResult> GetUserById(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<UserResult>("firestoreFunctions.getAccountById", Id);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new UserResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new UserResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
     }
 
     public class UserResult
@@ -80,5 +120,6 @@ namespace GospelReachCapstone.Services
         public bool Success { get; set; }
         public List<User> Data { get; set; }
         public string Error { get; set; }
+        public User User { get; set; }
     }
 }
