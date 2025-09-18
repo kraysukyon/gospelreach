@@ -33,7 +33,12 @@
 
                 </div>
                 @* <a href="" class="text-decoration-none text-primary text-end">Forgot your password?</a> *@
-                <button disabled="@isLogginIn" class="btn btn-primary w-100 py-2 mt-3" @onclick="ValidateLogin">Login</button>
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                    <button disabled="@isLogginIn" class="btn btn-primary w-100 py-2 mt-3 mb-2" @onclick="ValidateLogin">Login</button>
+                    <p>or</p>
+                    <button disabled="@isLogginIn" class="btn border border-1 w-100 py-2 mt-2" @onclick="ContinueAsGuest">Continue As Guest</button>
+                </div>
+                
             </div>
         </div>
     </div>
@@ -48,7 +53,7 @@
             </div>
 
             <div class="op">
-                <a href="" class="text-decoration-none text-white">About Us</a>
+                <a @onclick='() => ScrollToSection("aboutUs")' class="text-decoration-none text-white cursor">About Us</a>
             </div>
 
             <button class="btn btn-primary px-4 py-1" @onclick="showLogin">Login</button>
@@ -80,7 +85,7 @@
     </div>
 
     <!--Content2-->
-    <div class="content2">
+    <div id="aboutUs" class="content2">
         <div class="first">
             <div class="d-flex align-items-center justify-content-start">
                 <div class="c1">
@@ -281,9 +286,9 @@
             await JSRuntime.InvokeVoidAsync("alert", results.Error);
         }
 
-        
 
-        
+
+
 
         // try
         // {
@@ -307,6 +312,21 @@
         // }
         isLogginIn = !isLogginIn;
 
+    }
+
+    //scroll to id
+    private async Task ScrollToSection(string id)
+    {
+        await JSRuntime.InvokeVoidAsync("scrollToSection", id);
+    }
+
+    //Login as Guest
+    private void ContinueAsGuest()
+    {
+        Auth.IsLoggedIn = true;
+        Auth.Role = "Guest";
+        Auth.DisplayName = textInfo.ToTitleCase("Guest");
+        NavigationManager.NavigateTo("dashboard");
     }
 
 }

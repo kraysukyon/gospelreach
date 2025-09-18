@@ -6,6 +6,7 @@
 @inject GospelReachCapstone.Services.ScheduleService _scheduleService
 @inject GospelReachCapstone.Services.MemberService _memberService
 @inject GospelReachCapstone.Services.AttendanceService _attendanceService
+@inject GospelReachCapstone.Services.ToastService _toast
 @inject IJSRuntime _js
 
 
@@ -19,10 +20,12 @@
             <h3 class="m-0 fw-bold">Welcome, @Auths.DisplayName</h3>
             <p class="m-0 c2" style="font-size: 14px">Here's what's happening at TSA Mandaue today</p>
         </div>
+
+        @* <button @onclick="Notify">test</button> *@
     </div>
 
     <!--Quick Stats Section-->
-    <div class="d-flex flex-column mb-2">
+    <div class="d-flex flex-column mb-2 @(Auths.Role == "Guest" ? "d-none" : "")">
         <h5 class="fw-bold m-0 mb-4">Quick Stats</h5>
 
         <div class="d-flex justify-content-evenly gap-4 stats">
@@ -206,6 +209,12 @@
         {
             await _js.InvokeVoidAsync("alert", "Failed to get data");
         }
+    }
+
+    //show notifications
+    private void Notify()
+    {
+        _toast.AddNotification("This is a test notification", "success", 3000);
     }
 
 }

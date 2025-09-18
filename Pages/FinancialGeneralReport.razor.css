@@ -53,3 +53,20 @@
         flex-direction: column;
     }
 }
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #reportDiv, #reportDiv * {
+        visibility: visible;
+    }
+
+    #reportDiv {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}

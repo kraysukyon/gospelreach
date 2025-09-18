@@ -27,6 +27,10 @@ a, p {
     display: none;
 }
 
+.cursor{
+    cursor: pointer;
+}
+
 .open {
     display: flex;
     flex-direction: column;

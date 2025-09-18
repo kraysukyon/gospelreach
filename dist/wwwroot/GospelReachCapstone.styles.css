@@ -538,6 +538,87 @@ a[b-x557bg4nos] {
     padding: 32px;
 }
 
+.notificationModal[b-x557bg4nos] {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
+    align-items: flex-end;
+    margin-right: 1rem;
+    margin-bottom: .5rem;
+    /*    height: 100px;
+    width: 300px;
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08)*/
+}
+
+/*    .notificationModal:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+    }*/
+
+.toast-notification[b-x557bg4nos] {
+    background-color: red;
+    color: #fff;
+    padding: 1rem;
+    border-radius: 5px;
+    min-width: 250px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: fadein-b-x557bg4nos 0.3s;
+}
+
+    .toast-notification.success[b-x557bg4nos] {
+        background: #28a745;
+    }
+
+    .toast-notification.error[b-x557bg4nos] {
+        background: #dc3545;
+    }
+
+    .toast-notification.info[b-x557bg4nos] {
+        background: #17a2b8;
+    }
+
+.btn-close[b-x557bg4nos] {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* optional animations */
+@keyframes fadein-b-x557bg4nos {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeout-b-x557bg4nos {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
 
 
 
@@ -787,6 +868,7 @@ a[b-x557bg4nos] {
         flex-shrink: 0;
     }
 }
+/* /Layout/Toast.razor.rz.scp.css */
 /* /Pages/AddSong.razor.rz.scp.css */
 *[b-b4v8oy0z24] {
     padding: 0;
@@ -3791,6 +3873,23 @@ a[b-wf2niajy5v] {
         flex-direction: column;
     }
 }
+
+@media print {
+    body *[b-y7i1vzfacx] {
+        visibility: hidden;
+    }
+
+    #reportDiv[b-y7i1vzfacx], #reportDiv *[b-y7i1vzfacx] {
+        visibility: visible;
+    }
+
+    #reportDiv[b-y7i1vzfacx] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}
 /* /Pages/FinancialReport.razor.rz.scp.css */
 *[b-6c5u226dyc] {
     padding: 0;
@@ -4191,6 +4290,10 @@ a[b-rq2rp0hc2b], p[b-rq2rp0hc2b] {
     height: 100%;
     background-color: rgba(0,0,0,0.5);
     display: none;
+}
+
+.cursor[b-rq2rp0hc2b]{
+    cursor: pointer;
 }
 
 .open[b-rq2rp0hc2b] {
@@ -5082,16 +5185,23 @@ a[b-7a688qs3l3] {
     border: none;
 }
 
+.tbody[b-7a688qs3l3]{
+    table-layout: fixed;
+}
+
 .table-row[b-7a688qs3l3] {
     border-bottom-width: 1px;
     border-color: rgb(229,231,235);
+    display: flex;
+    align-items:center;
 }
 
 .table-cell[b-7a688qs3l3] {
     white-space: nowrap;
-    padding: 30px 24px 20px 24px;
+    padding: 20px 24px;
     font-size: .875rem;
     line-height: 1.25rem;
+    align-content:center;
 }
 
 .playlist[b-7a688qs3l3]{

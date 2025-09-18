@@ -1,27 +1,28 @@
 ﻿@inject ToastService ToastService
 
-<div class="toast-container">
-    @foreach (var toast in toasts)
+<div class="notificationModal">
+    @foreach (var n in ToastService.Notifications)
     {
-        <div class="toast-message">@toast</div>
+        <div class="toast-notification @n.Type">
+            <span>@n.Message</span>
+            <button class="btn-close" @onclick="@(() => Remove(n.Id))">×</button>
+        </div>
     }
 </div>
 
 @code {
-    private List<string> toasts = new();
-
     protected override void OnInitialized()
     {
-        ToastService.OnShow += ShowToast;
+        ToastService.OnChange += StateHasChanged;
     }
 
-    private async void ShowToast(string message)
+    private void Remove(Guid id)
     {
-        toasts.Add(message);
-        StateHasChanged();
+        ToastService.RemoveNotification(id);
+    }
 
-        await Task.Delay(3000); // auto remove after 3 seconds
-        toasts.Remove(message);
-        await InvokeAsync(StateHasChanged);
+    public void Dispose()
+    {
+        ToastService.OnChange -= StateHasChanged;
     }
 }

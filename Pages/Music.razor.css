@@ -70,16 +70,23 @@ a {
     border: none;
 }
 
+.tbody{
+    table-layout: fixed;
+}
+
 .table-row {
     border-bottom-width: 1px;
     border-color: rgb(229,231,235);
+    display: flex;
+    align-items:center;
 }
 
 .table-cell {
     white-space: nowrap;
-    padding: 30px 24px 20px 24px;
+    padding: 20px 24px;
     font-size: .875rem;
     line-height: 1.25rem;
+    align-content:center;
 }
 
 .playlist{

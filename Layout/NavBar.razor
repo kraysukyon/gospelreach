@@ -43,7 +43,7 @@
                 </div>
             </div>
             
-            <div hidden="@(auth.Role != "Administrator" && auth.Role != "Pastor" && auth.Role != "Music Head")">
+            <div hidden="@(auth.Role != "Administrator" && auth.Role != "Pastor" && auth.Role != "Music Head" && auth.Role != "Guest")">
                 <!--Content-->
                 <h3 class="sidebar-heading">CONTENT</h3>
 
@@ -66,7 +66,7 @@
             
 
             <!--Planning-->
-            <h3 class="sidebar-heading">PLANNING</h3>
+            <h3 hidden="@(auth.Role == "Guest")" class="sidebar-heading">PLANNING</h3>
 
             <!--Events-->
             @* <div class="@GetClass(8, "link")" @onclick="() => SetActive(8)">
@@ -92,24 +92,27 @@
                 <a href="schedules" class="text-decoration-none c2">Schedules</a>
             </div>
 
-            <!--Tracking-->
-            <h3 class="sidebar-heading">TRACKING</h3>
+            <div hidden="@(auth.Role == "Guest")">
+                <!--Tracking-->
+                <h3 class="sidebar-heading">TRACKING</h3>
 
-            <!--Attendance-->
-            <div class="@GetClass(5, "link")" @onclick="() => SetActive(5)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-bar-chart"></i>
+                <!--Attendance-->
+                <div class="@GetClass(5, "link")" @onclick="() => SetActive(5)">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-bar-chart"></i>
+                    </div>
+                    <a @onclick="() => SetActive(5)" class="text-decoration-none c2">Attendance</a>
                 </div>
-                <a @onclick="() => SetActive(5)" class="text-decoration-none c2">Attendance</a>
-            </div>
 
-            <!--Finance-->
-            <div class="@GetClass(6, "link")" @onclick="() => SetActive(6)">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-piggy-bank"></i>
+                <!--Finance-->
+                <div class="@GetClass(6, "link")" @onclick="() => SetActive(6)">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-piggy-bank"></i>
+                    </div>
+                    <a @onclick="() => SetActive(6)" class="text-decoration-none c2">Finance</a>
                 </div>
-                <a @onclick="() => SetActive(6)" class="text-decoration-none c2">Finance</a>
             </div>
+            
         </nav>
     </div>
 

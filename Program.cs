@@ -38,6 +38,6 @@ builder.Services.AddScoped<VisitorService>();
 builder.Services.AddScoped<AttendanceVisitorRecordService>();
 builder.Services.AddScoped<FinancialRecordService>();
 builder.Services.AddScoped<FinanceScheduleService>();
-builder.Services.AddScoped<ToastService>();
+builder.Services.AddSingleton<ToastService>();
 
 await builder.Build().RunAsync();

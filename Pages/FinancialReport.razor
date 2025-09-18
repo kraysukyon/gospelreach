@@ -22,154 +22,158 @@
             <p class="m-0 c2" style="font-size: 14px">Generate an updated report</p>
         </div>
 
-        <div>
+        <div class="d-flex gap-2">
             @* <button class="btn btn-primary py-1 px-4 text-white"><i class="bi bi-printer text-white fs-5 me-1"></i> Print Report</button> *@
             <button @onclick="ReturnToMensPage" class="btn btn-danger py-1 px-4 text-white">Return</button>
+            <button class="btn p-2 px-4" @onclick:stopPropagation @onclick="GeneratePdf" style="font-size: 13px; border: 1px solid #dee2e6;" title="Download"><i class="bi bi-download fs-6"></i></button>
 
         </div>
     </div>
 
-    <!--Sub Header-->
-    <div class="mb-4">
+    <div id="reportDiv">
+        <!--Sub Header-->
         <div class="mb-4">
-            <h5 class="m-0 fw-bold">The Salvation Army Mandaue Outpost</h5>
-            <p>Financial Report — @DepName Department</p>
-            <p>@fromDate.ToString("MMMM dd, yyyy") - @toDate.ToString("MMMM dd, yyyy")</p>
+            <div class="mb-4">
+                <h5 class="m-0 fw-bold">The Salvation Army Mandaue Outpost</h5>
+                <p>Financial Report — @DepName Department</p>
+                <p>@fromDate.ToString("MMMM dd, yyyy") - @toDate.ToString("MMMM dd, yyyy")</p>
+            </div>
+
+            <p>Date Generated: @dateNow.ToString("MMMM dd, yyyy")</p>
         </div>
 
-        <p>Date Generated: @dateNow.ToString("MMMM dd, yyyy")</p>
+        <!--Table Section-->
+        <div class="mb-4">
+            <!--Summary-->
+            <div class="mb-2">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="text-center" style="background-color: #385494;">
+                            <th colspan="2" class="text-white fs-5">Summary Section</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-center">
+                            <td>Total Income</td>
+                            <td>Php @totalIncome.ToString("N2")</td>
+                        </tr>
+
+                        <tr class="text-center">
+                            <td>Total Expense</td>
+                            <td>Php @totalExpense.ToString("N2")</td>
+                        </tr>
+
+                        <tr class="text-center" style="background-color: #bfbfbf;">
+                            <td class="fw-bold">Net Balance</td>
+                            <td class="fw-bold">Php @currentBalance.ToString("N2")</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!--Income Breakdown-->
+            <div class="mb-2">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="text-center" style="background-color: #385494;">
+                            <th colspan="5" class="text-white fs-6">Income Breakdown</th>
+                        </tr>
+                        <tr class="fw-bold text-center">
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Donator Name</th>
+                            <th>Invoice #</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in filteredIncomeList)
+                        {
+                            <tr class="text-center">
+                                <td>@item.Date.ToString("MMMM dd, yyyy")</td>
+                                <td>@item.Category</td>
+                                <td>@item.DonatorName</td>
+                                <td>@item.InvoiceNumber</td>
+                                <td>Php @item.Amount.ToString("N2")</td>
+                            </tr>
+                        }
+                        <tr class="text-center" style="background-color: #bfbfbf;">
+                            <td class="fw-bold">Total</td>
+                            <td class="fw-bold"></td>
+                            <td class="fw-bold"></td>
+                            <td class="fw-bold"></td>
+                            <td class="fw-bold">Php @totalIncome.ToString("N2")</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!--Expense Breakdown-->
+            <div class="mb-2">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="text-center" style="background-color: #385494;">
+                            <th colspan="4" class="text-white fs-6">Expense Breakdown</th>
+                        </tr>
+                        <tr class="fw-bold text-center">
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Voucher #</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in filteredExpenseList)
+                        {
+                            <tr class="text-center">
+                                <td>@item.Date.ToString("MMMM dd, yyyy")</td>
+                                <td>@item.Category</td>
+                                <td>@item.VoucherNumber</td>
+                                <td>Php @item.Amount.ToString("N2")</td>
+                            </tr>
+                        }
+                        <tr class="text-center" style="background-color: #bfbfbf;">
+                            <td class="fw-bold">Total</td>
+                            <td class="fw-bold"></td>
+                            <td class="fw-bold"></td>
+                            <td class="fw-bold">Php @totalExpense.ToString("N2")</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        <!--Graphs and Visualization-->
+        <div>
+            <h5 class="m-0 fw-bold">Graphs and Visualizations</h5>
+
+            <div class="chart">
+                <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                    <h5 class="fw-bold mb-4">Income Sources</h5>
+                    <div class="p-4">
+                        <canvas id="incomeBreakdown" width="300" height="300"></canvas>
+                    </div>
+
+                </div>
+
+                <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                    <h5 class="fw-bold mb-4">Expense Sources</h5>
+                    <div class="p-4">
+                        <canvas id="expenseBreakdown" width="300" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-none">
+                <canvas id="incomeExpenseChart" width="400" height="200"></canvas>
+            </div>
+
+        </div>
     </div>
     
-    <!--Table Section-->
-    <div class="mb-4">
-        <!--Summary-->
-        <div class="mb-2">
-            <table class="table table-bordered">
-                <thead>
-                    <tr class="text-center" style="background-color: #385494;">
-                        <th colspan="2" class="text-white fs-5">Summary Section</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="text-center">
-                        <td>Total Income</td>
-                        <td>Php @totalIncome.ToString("N2")</td>
-                    </tr>
-
-                    <tr class="text-center">
-                        <td>Total Expense</td>
-                        <td>Php @totalExpense.ToString("N2")</td>
-                    </tr>
-
-                    <tr class="text-center" style="background-color: #bfbfbf;">
-                        <td class="fw-bold">Net Balance</td>
-                        <td class="fw-bold">Php @currentBalance.ToString("N2")</td>
-                    </tr>
-                </tbody>
-               
-            </table>
-        </div>
-
-        <!--Income Breakdown-->
-        <div class="mb-2">
-            <table class="table table-bordered">
-                <thead>
-                    <tr class="text-center" style="background-color: #385494;">
-                        <th colspan="5" class="text-white fs-6">Income Breakdown</th>
-                    </tr>
-                    <tr class="fw-bold text-center">
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Donator Name</th>
-                        <th>Invoice #</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in filteredIncomeList)
-                    {
-                        <tr class="text-center">
-                            <td>@item.Date.ToString("MMMM dd, yyyy")</td>
-                            <td>@item.Category</td>
-                            <td>@item.DonatorName</td>
-                            <td>@item.InvoiceNumber</td>
-                            <td>Php @item.Amount.ToString("N2")</td>
-                        </tr>
-                    }
-                    <tr class="text-center" style="background-color: #bfbfbf;">
-                        <td class="fw-bold">Total</td>
-                        <td class="fw-bold"></td>
-                        <td class="fw-bold"></td>
-                        <td class="fw-bold"></td>
-                        <td class="fw-bold">Php @totalIncome.ToString("N2")</td>
-                    </tr>
-                </tbody>
-
-            </table>
-        </div>
-
-        <!--Expense Breakdown-->
-        <div class="mb-2">
-            <table class="table table-bordered">
-                <thead>
-                    <tr class="text-center" style="background-color: #385494;">
-                        <th colspan="4" class="text-white fs-6">Expense Breakdown</th>
-                    </tr>
-                    <tr class="fw-bold text-center">
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Voucher #</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in filteredExpenseList)
-                    {
-                        <tr class="text-center">
-                            <td>@item.Date.ToString("MMMM dd, yyyy")</td>
-                            <td>@item.Category</td>
-                            <td>@item.VoucherNumber</td>
-                            <td>Php @item.Amount.ToString("N2")</td>
-                        </tr>
-                    }
-                    <tr class="text-center" style="background-color: #bfbfbf;">
-                        <td class="fw-bold">Total</td>
-                        <td class="fw-bold"></td>
-                        <td class="fw-bold"></td>
-                        <td class="fw-bold">Php @totalExpense.ToString("N2")</td>
-                    </tr>
-                </tbody>
-
-            </table>
-        </div>
-    </div>
-
-    <!--Graphs and Visualization-->
-    <div>
-        <h5 class="m-0 fw-bold">Graphs and Visualizations</h5>
-
-        <div class="chart">
-            <div class="d-flex flex-column align-items-center justify-content-center mb-4">
-                <h5 class="fw-bold mb-4">Income Sources</h5>
-                <div class="p-4">
-                    <canvas id="incomeBreakdown" width="300" height="300"></canvas>
-                </div>
-                
-            </div>
-
-            <div class="d-flex flex-column align-items-center justify-content-center mb-4">
-                <h5 class="fw-bold mb-4">Expense Sources</h5>
-                <div class="p-4">
-                    <canvas id="expenseBreakdown" width="300" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-none">
-            <canvas id="incomeExpenseChart" width="400" height="200"></canvas>
-        </div>
-        
-    </div>
 </div>
 
 
@@ -216,6 +220,7 @@
         await GetDataByYear();
     }
 
+    //Back to finance page
     private void ReturnToMensPage()
     {
         _nav.NavigateTo("/finance/department");
@@ -346,5 +351,15 @@
         isBackgroundVisible = !isBackgroundVisible;
     }
 
-    
+    //method for print
+    private async Task PrintReport(string divId)
+    {
+        await _js.InvokeVoidAsync("printDiv", divId);
+    }
+
+    private async Task GeneratePdf()
+    {
+        DateTime now = DateTime.Now;
+        await _js.InvokeVoidAsync("saveDivAsPdf", "reportDiv", $"{DepName}FinancialReport_{now.ToString("d")}");
+    }
 }
