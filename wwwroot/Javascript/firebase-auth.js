@@ -39,7 +39,7 @@
             const idToken = await userCredential.user.getIdToken(true);
             return { success: true, uid: userCredential.user.uid, idToken: idToken }
         } catch (error) {
-            return { success: false, error: error.message}
+            return { success: false, errorCode: error.code, error: error.message}
         }
     },
 

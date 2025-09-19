@@ -9,6 +9,8 @@
         public string LastName { get; set; }
         public string Password { get; set; }
         public string Role { get; set; } = "Administrator";
+        public int Attempts { get; set; } = 5;
+        public string LockUntil { get; set; }
         public string Status { get; set; } = "Active";
     }
 }

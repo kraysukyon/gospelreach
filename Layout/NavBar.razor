@@ -14,12 +14,12 @@
                 <a href="dashboard" class="text-decoration-none c2">Dashboard</a>
             </div>
 
-            <div hidden="@(auth.Role != "Administrator" && auth.Role != "Pastor")">
+            <div hidden="@(auth.Role == "Music Head" || auth.Role == "Guest")">
                 <!--Management-->
                 <h3 class="sidebar-heading">MANAGEMENT</h3>
 
                 <!--Admin-->
-                <div hidden="@(auth.Role == "Pastor")" class="@GetClass(1, "link")" @onclick="() => SetActive(1)">
+                <div hidden="@(auth.Role != "Administrator")" class="@GetClass(1, "link")" @onclick="() => SetActive(1)">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-person"></i>
                     </div>
@@ -27,7 +27,7 @@
                 </div>
 
                 <!--Member Management-->
-                <div class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
+                <div hidden="@(auth.Role != "Administrator" || auth.Role != "Pastor")" class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-people"></i>
                     </div>
@@ -35,7 +35,7 @@
                 </div>
 
                 <!--Departments-->
-                <div class="@GetClass(2, "link")" @onclick="() => SetActive(2)">
+                <div  class="@GetClass(2, "link")" @onclick="() => SetActive(2)">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-building"></i>
                     </div>

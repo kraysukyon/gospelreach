@@ -3167,6 +3167,15 @@ a[b-rzagcvll6u] {
     padding: 24px;
 }
 
+.grows1[b-rzagcvll6u] {
+    opacity: 1;
+    transition: display .3s ease-in, width .3s ease, opacity 0.3s ease-in;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    padding: 24px;
+}
+
 .search[b-rzagcvll6u] {
     padding: .5rem .75rem;
     padding-left: 2.5rem;

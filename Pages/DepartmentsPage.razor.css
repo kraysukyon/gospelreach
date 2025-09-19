@@ -219,6 +219,15 @@ a {
     padding: 24px;
 }
 
+.grows1 {
+    opacity: 1;
+    transition: display .3s ease-in, width .3s ease, opacity 0.3s ease-in;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    padding: 24px;
+}
+
 .search {
     padding: .5rem .75rem;
     padding-left: 2.5rem;

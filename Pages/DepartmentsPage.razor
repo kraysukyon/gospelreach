@@ -3,6 +3,8 @@
 @using GospelReachCapstone.Models
 @inject IJSRuntime _js
 @inject GospelReachCapstone.Services.MemberService _memberService
+@inject GospelReachCapstone.Services.AuthState _auth
+@inject NavigationManager _nav
 
 <PageTitle>Notification Management</PageTitle>
 
@@ -12,13 +14,13 @@
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-3">
         <div>
-            <h4 class="m-0 fw-bold">Departments</h4>
+            <h4 class="m-0 fw-bold">@depName Department</h4>
             <p class="m-0 c2" style="font-size: 14px">View departments and its members</p>
         </div>
     </div>
 
     <div class="groupAndMembers">
-        <div class="d-flex flex-grow-1 ">
+        <div class="@(_auth.Role != "Administrator" ? "d-none" : "d-flex flex-grow-1")">
             <!--Group Section=========================-->
             <div class="cardss w-100 mb-3 cardss">
                 <p class="mb-2 mt-2 ms-2"><em>@message</em></p>
@@ -33,15 +35,15 @@
 
                         <tbody>
                             <tr class="table-row">
-                                <td @onclick='() => GetAllMembers("Senior")' class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">Senior</p></td>
+                                <td hidden="@(depName != "Senior" && _auth.Role != "Administrator")" @onclick='() => GetAllMembers("Senior")' class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">Senior</p></td>
                             </tr>
-                            <tr class="table-row">
+                            <tr hidden="@(depName != "Womens" && _auth.Role != "Administrator")" class="table-row">
                                 <td @onclick='() => GetAllMembers("Womens")' class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">Womens</p></td>
                             </tr>
-                            <tr class="table-row">
+                            <tr hidden="@(depName != "Mens" && _auth.Role != "Administrator")" class="table-row">
                                 <td @onclick='() => GetAllMembers("Mens")' class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">Mens</p></td>
                             </tr>
-                            <tr class="table-row">
+                            <tr hidden="@(depName != "Youth" && _auth.Role != "Administrator")" class="table-row">
                                 <td @onclick='() => GetAllMembers("Youth")' class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">Youth</p></td>
                             </tr>
                         </tbody>
@@ -51,7 +53,7 @@
         </div>
 
         <!--View Members Panel-->
-        <div class="groupPanel grows">
+        <div class="groupPanel @(_auth.Role != "Administrator" ? "grows1" : "grows")">
             <div>
                 <div class="d-flex gap-3 w-auto align-items-start">
                     <h4 class="m-0 fw-bold mb-3">Members</h4>
@@ -74,6 +76,7 @@
                     <thead>
                         <tr>
                             <th class="thead">Name</th>
+                            <th class="thead">Status</th>
                         </tr>
                     </thead>
 
@@ -82,6 +85,7 @@
                         {
                             <tr class="table-row">
                                 <td class="table-cell" style="font-weight:500;"><p class="link">@item.GetFullName()</p></td>
+                                <td class="table-cell fw-bold @(_auth.Role != "Administrator" ? "" : "d-none")" style="font-weight:500;"><p class="link @(item.Status == "Active" ? "text-success" : "text-danger")">@item.Status</p></td>
                             </tr>
                         }
                     </tbody>
@@ -99,10 +103,29 @@
     private IEnumerable<Member> filteredMemberList => memberList.Where(u => string.IsNullOrWhiteSpace(memberSearch) || u.GetFullName().Contains(memberSearch, StringComparison.OrdinalIgnoreCase));
     private string memberSearch = string.Empty;
     private string memberMessage = string.Empty;
+    private string depName = "Senior";
 
     protected override async Task OnInitializedAsync()
     {
-        await GetAllMembers("Senior");
+        if (!_auth.IsLoggedIn)
+        {
+            _nav.NavigateTo("");
+        }
+        else
+        {
+            if (_auth.Role == "Administrator" || _auth.Role == "Pastor")
+            {
+                depName = "All";
+                await GetAllMembers("Senior");
+            }
+            else
+            {
+                depName = _auth.Department!;
+                await GetAllMembers(depName);
+            }
+
+        }
+        
     }
 
     //Get Members

@@ -61,6 +61,46 @@
         }
     },
 
+    // getAccount by email (no update)
+    async getAccountByEmail(email) {
+        try {
+            const snapshot = await db.collection("Users").where("email", "==", email).get();
+
+            if (snapshot.empty) {
+                // No user found
+                return { success: false, error: "Account does not exist" };
+            }
+
+            // Get the first matching document
+            const doc = snapshot.docs[0];
+
+            // Return the doc data without updating
+            return {
+                success: true,
+                user: {
+                    id: doc.id,
+                    ...doc.data()
+                }
+            };
+        } catch (error) {
+            return { success: false, error: error.message || error.toString() };
+        }
+    },
+
+    // getAccount by email (no update)
+    async updateAttempt(user) {
+        try {
+            await db.collection("Users").doc(user.id).update({
+                attempts: user.attempts,
+                lockUntil: user.lockUntil
+            });
+
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message || error.toString() };
+        }
+    },
+
     //============================================Attendance Section============================================//
 
     //Getting Attendance

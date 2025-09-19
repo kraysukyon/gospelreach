@@ -113,6 +113,58 @@ namespace GospelReachCapstone.Services
                 };
             }
         }
+
+        //Get User By Id
+        public async Task<UserResult> GetUserByEmail(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<UserResult>("firestoreFunctions.getAccountByEmail", Id);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new UserResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new UserResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Get User By Id
+        public async Task<UserResult> UpdateAttempt(User user)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<UserResult>("firestoreFunctions.updateAttempt", user);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new UserResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new UserResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
     }
 
     public class UserResult

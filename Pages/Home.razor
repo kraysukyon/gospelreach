@@ -16,7 +16,7 @@
         <div class="login" @onclick:stopPropagation>
             <img src="/img/tsalogo.png" style="width:50px;" alt="logo" />
             <h3 class="fw-bold">
-                Welcome Back
+                Access Control
             </h3>
             <p>Please enter credentials</p>
 
@@ -49,7 +49,7 @@
         <img src="/img/tsalogo.png" style="width:40px;" alt="tsa logo" class="logo" />
         <div class="menu @(isSidebarVisible ? "show" : "")">
             <div class="op">
-                <a href="" class="text-decoration-none text-white">Events</a>
+                <a @onclick='() => ScrollToSection("contactUs")' class="text-decoration-none text-white cursor">Events</a>
             </div>
 
             <div class="op">
@@ -117,7 +117,7 @@
             </div>
         </div>
 
-        <div class="endContainer">
+        <div id="contactUs" class="endContainer">
             <div class="end1">
                 <div class="w-auto">
                     <div class="d-flex gap-4 align-items-center justify-content-center">
@@ -228,47 +228,112 @@
 
                     if (user != null)
                     {
-                        if (user.Status != "Disabled")
+                        if (!string.IsNullOrEmpty(user.LockUntil))
                         {
-                            Auth.IsLoggedIn = true;
-                            Auth.Role = user.Role;
-                            Auth.DisplayName = textInfo.ToTitleCase(user.FirstName);
-                            Auth.UserId = user.Id;
-                            switch (Auth.Role)
+                            if (DateTime.UtcNow >= DateTime.Parse(user.LockUntil))
                             {
-                                case "Department Head - Senior":
-                                    Auth.Department = "Senior";
-                                    break;
+                                if (user.Status != "Disabled")
+                                {
+                                    user.LockUntil = string.Empty;
+                                    user.Attempts = 5;
+                                    var reset = await _accountService.UpdateAttempt(user);
+                                    Auth.IsLoggedIn = true;
+                                    Auth.Role = user.Role;
+                                    Auth.DisplayName = textInfo.ToTitleCase(user.FirstName);
+                                    Auth.UserId = user.Id;
+                                    switch (Auth.Role)
+                                    {
+                                        case "Department Head - Senior":
+                                            Auth.Department = "Senior";
+                                            break;
 
-                                case "Department Head - Womens":
-                                    Auth.Department = "Womens";
-                                    break;
+                                        case "Department Head - Womens":
+                                            Auth.Department = "Womens";
+                                            break;
 
-                                case "Department Head - Mens":
-                                    Auth.Department = "Mens";
-                                    break;
+                                        case "Department Head - Mens":
+                                            Auth.Department = "Mens";
+                                            break;
 
-                                case "Department Head - Youth":
-                                    Auth.Department = "Youth";
+                                        case "Department Head - Youth":
+                                            Auth.Department = "Youth";
 
-                                    break;
+                                            break;
 
-                                default:
-                                    Auth.Department = "Administrator";
-                                    break;
+                                        default:
+                                            Auth.Department = "Administrator";
+                                            break;
 
+                                    }
+                                    await JSRuntime.InvokeVoidAsync("alert", "Login Success");
+                                    NavigationManager.NavigateTo("dashboard");
+                                }
+                                else
+                                {
+                                    await JSRuntime.InvokeVoidAsync("alert", "The account is disabled. Please contact administrator");
+                                }
                             }
-                            await JSRuntime.InvokeVoidAsync("alert", "Login Success");
-                            NavigationManager.NavigateTo("dashboard");
+                            else
+                            {
+                                await JSRuntime.InvokeVoidAsync("alert", "Too many login attempts. Try again later.");
+                                return;
+                            }
+                        }
+
+                        if (user.Attempts > 0)
+                        {
+                            if (user.Status != "Disabled")
+                            {
+                                user.LockUntil = string.Empty;
+                                user.Attempts = 5;
+                                var reset = await _accountService.UpdateAttempt(user);
+                                Auth.IsLoggedIn = true;
+                                Auth.Role = user.Role;
+                                Auth.DisplayName = textInfo.ToTitleCase(user.FirstName);
+                                Auth.UserId = user.Id;
+                                switch (Auth.Role)
+                                {
+                                    case "Department Head - Senior":
+                                        Auth.Department = "Senior";
+                                        break;
+
+                                    case "Department Head - Womens":
+                                        Auth.Department = "Womens";
+                                        break;
+
+                                    case "Department Head - Mens":
+                                        Auth.Department = "Mens";
+                                        break;
+
+                                    case "Department Head - Youth":
+                                        Auth.Department = "Youth";
+
+                                        break;
+
+                                    default:
+                                        Auth.Department = "Administrator";
+                                        break;
+
+                                }
+                                await JSRuntime.InvokeVoidAsync("alert", "Login Success");
+                                NavigationManager.NavigateTo("dashboard");
+                            }
+                            else
+                            {
+                                await JSRuntime.InvokeVoidAsync("alert", "The account is disabled. Please contact administrator");
+                                return;
+                            }
                         }
                         else
                         {
-                            await JSRuntime.InvokeVoidAsync("alert", "The account is disabled. Please contact administrator");
+                            await JSRuntime.InvokeVoidAsync("alert", "Too many attempts. Please try again later.");
+                            return;
                         }
                     }
                     else
                     {
                         await JSRuntime.InvokeVoidAsync("alert", "Invalid email or password");
+                        return;
                     }
                 }
                 else
@@ -283,35 +348,62 @@
         }
         else
         {
-            await JSRuntime.InvokeVoidAsync("alert", results.Error);
+
+            switch (results.ErrorCode)
+            {
+                case "auth/user-not-found":
+                    await JSRuntime.InvokeVoidAsync("alert", "No user found with this email.");
+                    break;
+                case "auth/invalid-login-credentials":
+                    var accRes = await _accountService.GetUserByEmail(email);
+                    if (accRes.Success && accRes.User != null)
+                    {
+                        if (!string.IsNullOrEmpty(accRes.User.LockUntil))
+                        {
+                            if (DateTime.UtcNow >= DateTime.Parse(accRes.User.LockUntil))
+                            {
+                                accRes.User.Attempts = 5;
+                                accRes.User.LockUntil = string.Empty;
+                                var updateRes = await _accountService.UpdateAttempt(accRes.User);
+                            }
+                        }
+
+
+                        int attempt = accRes.User.Attempts;
+                        if (attempt > 1)
+                        {
+                            accRes.User.Attempts = attempt - 1;
+                            var updateRes = await _accountService.UpdateAttempt(accRes.User);
+                        }
+                        else
+                        {   
+                            if (string.IsNullOrEmpty(accRes.User.LockUntil))
+                            {
+                                accRes.User.Attempts = 0;
+                                accRes.User.LockUntil = DateTime.UtcNow.ToString();
+                                var res = await _accountService.UpdateAttempt(accRes.User);
+                            }
+                            
+                            await JSRuntime.InvokeVoidAsync("alert", "Too many login attempts. Try again later");
+                        }
+                    }
+                    else
+                    {
+                        await JSRuntime.InvokeVoidAsync("alert", "Invalid Credentials.");
+                    }
+                    
+
+                    break;
+                case "auth/too-many-requests":
+                    await JSRuntime.InvokeVoidAsync("alert", "Too many attempts. Please try again later.");
+                    break;
+                default:
+                    await JSRuntime.InvokeVoidAsync("alert", results.Error); // fallback to Firebase message
+                    break;
+            }
+            
         }
-
-
-
-
-
-        // try
-        // {
-        //     var res
-
-
-        //     var result = await FirebaseAuthService.LoginAsync(email, password);
-        //     if (result.Success)
-        //     {
-        //         await JSRuntime.InvokeVoidAsync("alert", result.Message);
-        //         NavigationManager.NavigateTo("dashboard"); 
-        //     }
-        //     else
-        //     {
-        //         await JSRuntime.InvokeVoidAsync("alert", result.Message); 
-        //     }
-        // }
-        // catch (Exception ex)
-        // {
-        //     await JSRuntime.InvokeVoidAsync("alert", $"An error occurred: {ex.Message}"); 
-        // }
         isLogginIn = !isLogginIn;
-
     }
 
     //scroll to id
