@@ -555,7 +555,7 @@
 
             return { success: true };
         } catch (error) {
-            return { success: false };
+            return { success: false, error: error };
             alert(error);
         }
     },

@@ -239,7 +239,7 @@
         </div>
         <p class="mb-4 ms-1 @(isLoad ? "" : "d-none")"><em>@load</em></p>
 
-        <div class="table-container mt-4">
+        <div class="table-container mt-4" style="table-layout: fixed;">
             <table class="table">
                 <thead>
                     <tr>
@@ -367,9 +367,9 @@
         }
 
 
-        if (member.Birthdate > DateOnly.FromDateTime(DateTime.Now).AddYears(-9))
+        if (member.Birthdate > DateOnly.FromDateTime(DateTime.Now).AddYears(-12))
         {
-            validation.Add("-Member must be at least 9 years old");
+            validation.Add("-Member must be at least 12 years old");
         }
 
         if (validation.Any())
@@ -463,6 +463,53 @@
 
     private async Task UpdateMember()
     {
+        isAdding = true;
+        validation.Clear();
+        if (string.IsNullOrEmpty(member.FirstName))
+        {
+            validation.Add("-First Name is required");
+        }
+
+        if (string.IsNullOrEmpty(member.LastName))
+        {
+            validation.Add("-Last Name is required");
+        }
+
+        if (!string.IsNullOrEmpty(member.Email))
+        {
+            if (!IsValidEmail(member.Email))
+            {
+                validation.Add("-Invalid Email");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(member.Contact))
+        {
+            if (!IsValidContact(member.Contact))
+            {
+                validation.Add("-Contact number must be 11 digits");
+            }
+        }
+
+
+        if (member.Birthdate > DateOnly.FromDateTime(DateTime.Now).AddYears(-12))
+        {
+            validation.Add("-Member must be at least 12 years old");
+        }
+
+        if (validation.Any())
+        {
+            isAdding = false;
+            return;
+        }
+
+        member.FirstName = textInfo.ToTitleCase(member.FirstName);
+        if (!string.IsNullOrEmpty(member.MiddleName))
+        {
+            member.MiddleName = textInfo.ToTitleCase(member.MiddleName);
+        }
+        member.LastName = textInfo.ToTitleCase(member.LastName);
+
         try
         {
             await _memberService.updateMemberAsync(member.Id, member);
@@ -499,6 +546,7 @@
 
     private void ToggleModal()
     {
+        validation.Clear();
         isAddModalVisible = !isAddModalVisible;
         member = new();
         title = "Add Member";

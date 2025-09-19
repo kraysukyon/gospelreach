@@ -5,6 +5,7 @@
 @inject GospelReachCapstone.Services.ChordsFormatterService _chordsFormatterService
 @using GospelReachCapstone.Models
 @inject NavigationManager _nav
+@using System.Globalization
 
 <div class="sub-page">
     <!--Header Section-->
@@ -19,6 +20,14 @@
         </div>
     </div>
 
+    <div class="mt-3 @(isAdding ? "d-flex" : "d-none") align-items-center justify-content-center">
+        <p>Saving record.Please wait...</p>
+
+
+        <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
+            <img src="/img/loading.svg" style="height:50px; width: 50px;" />
+        </div>
+    </div>
     <!--Music Section-->
     <div class="music">
         <div class="userFields">
@@ -32,12 +41,23 @@
                 <input @bind="song.Artist" type="text" class="form-control p-2 mt-2" placeholder="Artist"/>
             </div>
         </div>
+
+        @if (validation.Any())
+        {
+            <div class="d-flex flex-column justify-content-between mt-3">
+                @foreach (string a in validation)
+                {
+                    <p class="text-danger">@a</p>
+                }
+            </div>
+        }
+
         <div class="input mt-3 @(isTransposeShow ? "hide" : "")">
             <div class="sub-input">
                 <p>Input Lyrics and Chords</p>
 
                 <div class="d-flex gap-2">
-                    <button @onclick="ToggleTransposeView" class="btns">Transpose</button>
+                    <button disabled="@(string.IsNullOrEmpty(lyricsAndChords))" @onclick="ToggleTransposeView" class="btns" style="background-color:  @(string.IsNullOrWhiteSpace(lyricsAndChords) ? "gainsboro" : "")">Transpose</button>
                     <button @onclick="AutoBracket" class="btns">Auto Bracket</button>
                     <button @onclick="RemoveBracket" class="btns">Remove Brackets</button>
                     <button @onclick="SaveToFirestore" class="btns save">Save</button>
@@ -77,6 +97,9 @@
     private string transposedOutput = "";
     private bool isTransposeShow = false;
     private Song song = new();
+    private List<string> validation = new();
+    private bool isAdding = false;
+    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
 
     private void ToggleTransposeView()
     {
@@ -144,9 +167,34 @@
     //Save to Firestore
     private async Task SaveToFirestore()
     {
+        validation.Clear();
+        isAdding = true;
+
+        if (string.IsNullOrEmpty(song.Title))
+        {
+            validation.Add("-Title is required");
+        }
+
+        if (string.IsNullOrEmpty(song.Artist))
+        {
+            song.Artist = "N/A";
+        }
+
+        if (string.IsNullOrEmpty(lyricsAndChords))
+        {
+            validation.Add("-Input is required");
+        }
+
+        if (validation.Any())
+        {
+            isAdding = false;
+            return;
+        }
+
         bool confirm = await _js.InvokeAsync<bool>("confirm", "Save Changes?");
         if (!confirm) return;
 
+        song.Title = textInfo.ToTitleCase(song.Title);
         try
         {
             song.LyricsAndChords = lyricsAndChords;
@@ -163,9 +211,34 @@
 
     private async Task SaveToFirestore2()
     {
+        validation.Clear();
+        isAdding = true;
+
+        if (string.IsNullOrEmpty(song.Title))
+        {
+            validation.Add("-Title is required");
+        }
+
+        if (string.IsNullOrEmpty(song.Artist))
+        {
+            song.Artist = "N/A";
+        }
+
+        if (string.IsNullOrEmpty(lyricsAndChords))
+        {
+            validation.Add("-Input is required");
+        }
+
+        if (validation.Any())
+        {
+            isAdding = false;
+            return;
+        }
+
         bool confirm = await _js.InvokeAsync<bool>("confirm", "Save Changes?");
         if (!confirm) return;
 
+        song.Title = textInfo.ToTitleCase(song.Title);
         try
         {
             song.LyricsAndChords = transposedOutput;

@@ -1017,7 +1017,7 @@
             <!--Description-->
             <div hidden="@(string.IsNullOrEmpty(sched.Description))" class="iconText">
                 <i class="bi bi-list-columns fs"></i>
-                <pre class="form-control border border-0" style="max-height: 200px; overflow-y: auto;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
+                <pre class="form-control border border-0 text-wrap" style="max-height: 200px; overflow-y: auto;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
             </div>
             @* || hasAttendee && attDate <= DateOnly.FromDateTime(DateTime.Now) ? "justify-content-between" : "justify-content-end")" *@
             <div class="mt-5 d-flex gap-2 justify-content-end">

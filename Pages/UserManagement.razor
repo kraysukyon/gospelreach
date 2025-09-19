@@ -54,7 +54,7 @@
             
             <div class="input mt-3">
                 <p>Role</p>
-                <select @bind="role" class="form-select p-2 mt-2">
+                <select @bind="user.Role" class="form-select p-2 mt-2">
                     <option value="Administrator">Administrator</option>
                     <option value="Pastor">Pastor</option>
                     <option value="Department Head - Senior">Department Head - Senior</option>
@@ -321,7 +321,6 @@
 
 
         user.FirstName = textInfo.ToTitleCase(user.FirstName);
-        user.Role = role;
         if (user.MiddleName != null)
         {
             user.MiddleName = textInfo.ToTitleCase(user.MiddleName);

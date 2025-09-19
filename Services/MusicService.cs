@@ -30,17 +30,20 @@ namespace GospelReachCapstone.Services
             }
         }
 
-        public async Task<bool> AddSongAsync(Song song)
+        public async Task<SongResult> AddSongAsync(Song song)
         {
             try
             {
-                var result = await _js.InvokeAsync<JsonElement>("firestoreFunctions.addSong", song);
-                return result.GetProperty("success").GetBoolean();
+                var result = await _js.InvokeAsync<SongResult>("firestoreFunctions.addSong", song);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new SongResult { Success = false, Error = ex.Message };
             }
             catch (Exception ex)
             {
-                await _js.InvokeVoidAsync("alert", ex.Message);
-                return false;
+                return new SongResult { Success = false, Error = ex.Message };
             }
         }
         public async Task UpdateSongAsync(string Id, Song song)
@@ -79,5 +82,13 @@ namespace GospelReachCapstone.Services
                 await _js.InvokeVoidAsync("alert", ex.Message);
             }
         }
+    }
+
+    public class SongResult
+    {
+        public bool Success { get; set; }
+        public List<Song> Data { get; set; }
+        public string Error { get; set; }
+        public Song Song { get; set; }
     }
 }
