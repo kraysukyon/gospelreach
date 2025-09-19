@@ -230,7 +230,7 @@
                     {
                         if (!string.IsNullOrEmpty(user.LockUntil))
                         {
-                            if (DateTime.UtcNow >= DateTime.Parse(user.LockUntil))
+                            if (DateTime.Now >= DateTime.Parse(user.LockUntil))
                             {
                                 if (user.Status != "Disabled")
                                 {
@@ -267,6 +267,7 @@
                                     }
                                     await JSRuntime.InvokeVoidAsync("alert", "Login Success");
                                     NavigationManager.NavigateTo("dashboard");
+                                    return;
                                 }
                                 else
                                 {
@@ -317,6 +318,7 @@
                                 }
                                 await JSRuntime.InvokeVoidAsync("alert", "Login Success");
                                 NavigationManager.NavigateTo("dashboard");
+                                return;
                             }
                             else
                             {
@@ -360,7 +362,7 @@
                     {
                         if (!string.IsNullOrEmpty(accRes.User.LockUntil))
                         {
-                            if (DateTime.UtcNow >= DateTime.Parse(accRes.User.LockUntil))
+                            if (DateTime.Now >= DateTime.Parse(accRes.User.LockUntil))
                             {
                                 accRes.User.Attempts = 5;
                                 accRes.User.LockUntil = string.Empty;
@@ -374,13 +376,14 @@
                         {
                             accRes.User.Attempts = attempt - 1;
                             var updateRes = await _accountService.UpdateAttempt(accRes.User);
+                            await JSRuntime.InvokeVoidAsync("alert", "Invalid Credentials");
                         }
                         else
                         {   
                             if (string.IsNullOrEmpty(accRes.User.LockUntil))
                             {
                                 accRes.User.Attempts = 0;
-                                accRes.User.LockUntil = DateTime.UtcNow.ToString();
+                                accRes.User.LockUntil = DateTime.Now.AddHours(3).ToString();
                                 var res = await _accountService.UpdateAttempt(accRes.User);
                             }
                             
