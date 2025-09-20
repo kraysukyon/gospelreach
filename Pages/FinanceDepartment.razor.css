@@ -66,18 +66,6 @@ a {
     width: 500px;
 }
 
-.helperModal {
-    border-radius: .75rem;
-    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
-    transition: box-shadow 0.3s ease, filter 0.3s ease;
-    border: solid .3px rgb(128, 128, 128, 0.08);
-    padding: 24px;
-    max-height: calc(100vh - 20vh);
-    background-color: #FFF;
-    overflow-y: auto;
-    width: 400px;
-}
-
     .cards:hover {
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }

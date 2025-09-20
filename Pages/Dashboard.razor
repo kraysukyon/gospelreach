@@ -21,7 +21,7 @@
             <p class="m-0 c2" style="font-size: 14px">Here's what's happening at TSA Mandaue today</p>
         </div>
 
-        @* <button @onclick="Notify">test</button> *@
+        @* <button class="btn btn-primary text-white p-2" @onclick='() => Notify("error", "Something went wrong", "Failed to get event")'>test</button> *@
     </div>
 
     <!--Quick Stats Section-->
@@ -177,19 +177,15 @@
                         }
                         else
                         {
-                            await _js.InvokeVoidAsync("alert", "Failed to get last sunday attendance");
+                            Notify("error", "Something went wrong", "Failed to get attendance");
                         }
                     }
                 }
-                
-
-
-
             }
         }
         else
         {
-            await _js.InvokeVoidAsync("await", result.Error);
+            Notify("error", "Something went wrong", "Failed to get events");
         }
     }
 
@@ -207,14 +203,14 @@
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to get data");
+            Notify("error", "Something went wrong", "Failed to get statistics");
         }
     }
 
     //show notifications
-    private void Notify()
+    private void Notify(string type, string title, string message)
     {
-        _toast.AddNotification("This is a test notification", "success", 3000);
+        _toast.AddNotification(type, title, message, 10000);
     }
 
 }

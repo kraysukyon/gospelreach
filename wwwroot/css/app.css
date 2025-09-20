@@ -1,3 +1,9 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -110,3 +116,195 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+
+.notificationModal {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    margin: 0 1rem .5rem 0;
+}
+/*======================Modal Section========================*/
+.helperModal {
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 2.5rem 2.5rem!important;
+    max-height: calc(100vh - 20vh);
+    background-color: #FFF;
+    overflow-y: auto;
+    width: 420px;
+}
+
+    .helperModal:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .helperModal .confirm {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .helperModal .confirm h1 {
+            padding: 0;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .helperModal .confirm p {
+            padding: 0;
+            margin: 0;
+            font-weight: 400;
+            color: #6B7280;
+        }
+
+        .helperModal .updating {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top:1rem;
+        }
+
+            .helperModal .updating p {
+                color: #6B7280;
+            }
+
+            .dnone{
+                display: none;
+            }
+
+    .helperModal .actions{
+        margin-top:2rem;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .helperModal .actions button{
+        font-size:16px;
+    }
+
+.helperModal .loading {
+    display: flex;
+    flex-direction: column;
+    justify-content:center;
+    align-items:center;
+}
+
+.helperModal .loading img{
+    height:50px;
+    width: 50px;
+}
+
+/*=====================Toast Section==========================*/
+
+.cursor{
+    cursor: pointer;
+}
+
+.toast-notification {
+    background-color: #FFF;
+    border-radius: 12px;
+    min-width: 350px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 1rem;
+    animation: fadein 0.3s;
+    color: #000000;
+    margin-top:.5rem;
+    display: grid;
+    grid-template-columns:auto 1fr auto;
+    gap:.5rem;
+    text-align: start;
+}
+
+    .toast-notification:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .toast-notification .message {
+        margin-top: -2px;
+    }
+    .toast-notification .message p{
+        padding: 0;
+        margin: 0;
+    }
+
+    .toast-notification .message .title{
+        font-size:16px;
+        font-weight: bold;
+    }
+
+    .toast-notification .message .content{
+        font-weight: 400;
+        font-size:13px;
+    }
+
+    .toast-notification .circle {
+        width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        border: solid 3px #28a745;
+        background-color: #FFFFFF;
+    }
+
+.notifClose {
+    margin-top: -12px;
+}
+
+
+
+
+
+.toast-notification.success .circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border: solid 3px #28a745;
+    background-color:#FFFFFF;
+}
+
+.toast-notification.error  {
+    color: #dc3545;
+}
+
+.toast-notification.info {
+    color: #17a2b8;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* optional animations */
+@keyframes fadein {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeout {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+

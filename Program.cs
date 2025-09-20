@@ -21,7 +21,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddSingleton<FirebaseConfigService>();
 builder.Services.AddScoped<FirebaseAuthenticationService>();
 builder.Services.AddScoped<AuthState>();
-builder.Services.AddScoped<DepartmentMemberService>();
 builder.Services.AddScoped<ChordsFormatterService>();
 builder.Services.AddScoped<GeneralFunctions>();
 builder.Services.AddScoped<GroupService>();

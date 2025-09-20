@@ -2,7 +2,6 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService FirebaseAuthService
-@inject GospelReachCapstone.Services.DepartmentMemberService Firestore
 @inject GospelReachCapstone.Services.AuthState Auth
 @inject GospelReachCapstone.Services.UserService _accountService
 @using GospelReachCapstone.Models;
@@ -46,14 +45,18 @@
 
     <!--Header Section-->
     <div class="header d-flex d-md-flex align-items-center justify-content-between py-2">
-        <img src="/img/tsalogo.png" style="width:40px;" alt="tsa logo" class="logo" />
+        <img src="/img/logo_white_bg.png" style="width:40px;" alt="tsa logo" class="logo" />
         <div class="menu @(isSidebarVisible ? "show" : "")">
             <div class="op">
-                <a @onclick='() => ScrollToSection("contactUs")' class="text-decoration-none text-white cursor">Events</a>
+                <a @onclick='() => ScrollToSection("aboutUs")' class="text-decoration-none text-white cursor">About</a>
             </div>
 
             <div class="op">
-                <a @onclick='() => ScrollToSection("aboutUs")' class="text-decoration-none text-white cursor">About Us</a>
+                <a @onclick='() => ScrollToSection("services")' class="text-decoration-none text-white cursor">Services</a>
+            </div>
+
+            <div class="op">
+                <a @onclick='() => ScrollToSection("contactUs")' class="text-decoration-none text-white cursor">Contact Us</a>
             </div>
 
             <button class="btn btn-primary px-4 py-1" @onclick="showLogin">Login</button>
@@ -66,10 +69,10 @@
         <div class="overlay"></div>
         <div class="cont">
             <div class="wrap">
-                <h1 class="t1">
+                <h1 class="fw-bolder">
                     THE SALVATION ARMY
                 </h1>
-                <h1 class="t2">
+                <h1 class="fw-bolder">
                     MANDAUE OUTPOST
                 </h1>
             </div>
@@ -86,37 +89,43 @@
 
     <!--Content2-->
     <div id="aboutUs" class="content2">
-        <div class="first">
-            <div class="d-flex align-items-center justify-content-start">
-                <div class="c1">
-                    <img src="https://i.ibb.co/GvN78XCw/one-army.png" style="max-width:300px;" alt="one army" />
-                </div>
-            </div>
+        <div class="mb-4">
+            <p class="text-primary fw-bold">About Section</p>
+            <h1 class="fw-bold">
+                WHO WE ARE
+            </h1>
+        </div>
 
-            <div class="c2 d-flex flex-column gap-3">
-                <h5 class="fw-bold mb-4">
-                    About Mandaue Outpost
-                </h5>
-                <p class="text-wrap">The Salvation Army is a Protestant Christian church and an international charitable organization headquartered in London, England. It is aligned with the Wesleyan-Holiness movement.  The Salvation Army is a Protestant Christian church and an international charitable organisation headquartered in London, England. It is aligned with the Wesleyan-Holiness movement.</p>
-            </div>
+        <div>
+            <p class="fw-light mb-4">
+                The Salvation Army Mandaue Outpost is a faith-driven community committed to worship, discipleship, and service, carrying forward the mission of the worldwide Salvation Army: to preach the gospel of Jesus Christ and meet human needs in His name without discrimination. Rooted in compassion and integrity, the Outpost serves both the spiritual and practical needs of its congregation and community, providing a place of worship, fellowship, and outreach.
+
+                To strengthen its ministry and ensure more effective operations, the Outpost has adopted the GospelReach Church Management System. This web-based platform streamlines core church functions such as attendance tracking, member management, and event coordination, ensuring accurate and transparent records. More than just a digital tool, GospelReach empowers church leaders with real-time insights into member engagement, fosters stronger communication, and supports the Outpost’s mission of accountability, growth, and faithful service.
+            </p>
+
+            <p class="fw-light">
+                The Salvation Army Mandaue Outpost is a faith-driven community committed to worship, discipleship, and service, carrying forward the mission of the worldwide Salvation Army: to preach the gospel of Jesus Christ and meet human needs in His name without discrimination. Rooted in compassion and integrity, the Outpost serves both the spiritual and practical needs of its congregation and community, providing a place of worship, fellowship, and outreach.
+
+                To strengthen its ministry and ensure more effective operations, the Outpost has adopted the GospelReach Church Management System. This web-based platform streamlines core church functions such as attendance tracking, member management, and event coordination, ensuring accurate and transparent records. More than just a digital tool, GospelReach empowers church leaders with real-time insights into member engagement, fosters stronger communication, and supports the Outpost’s mission of accountability, growth, and faithful service.
+            </p>
+        </div>
+    </div>
+
+    <div id="services" class="content2">
+        <div class="mb-4">
+            <p class="text-primary fw-bold">Service Section</p>
+            <h1 class="fw-bold">
+                WHO WE DO
+            </h1>
+        </div>
+
+        <div>
+            <p class="fw-light mb-4">At the Salvation Army Mandaue Outpost, we focus on both spiritual growth and community service. Through regular worship services, discipleship programs, and outreach initiatives, we provide a space where individuals and families can strengthen their faith and experience fellowship. With the help of the GospelReach Church Management System, we are able to organize and monitor our ministries more effectively. The system enables us to track attendance, manage member information, and coordinate church events with greater accuracy and efficiency.</p>
         </div>
     </div>
 
     <!--End Container-->
-    <div class="d-flex flex-column">
-        <div class="third">
-            <div class="d-flex flex-column gap-3">
-                <h5 class="fw-bold mb-4">
-                    The Mandaue Outpost Family
-                </h5>
-                <p class="text-wrap">The Salvation Army is a Protestant Christian church and an international charitable organization headquartered in London, England. It is aligned with the Wesleyan-Holiness movement.  The Salvation Army is a Protestant Christian church and an international charitable organisation headquartered in London, England. It is aligned with the Wesleyan-Holiness movement.</p>
-            </div>
-
-            <div class="d-flex align-items-center justify-content-end">
-                <img src="/img/family.png" style="max-width:500px;" alt="one army" />
-            </div>
-        </div>
-
+    <div id="contactUs" class="d-flex flex-column">
         <div id="contactUs" class="endContainer">
             <div class="end1">
                 <div class="w-auto">
@@ -276,6 +285,7 @@
                             }
                             else
                             {
+                                isLogginIn = false;
                                 await JSRuntime.InvokeVoidAsync("alert", "Too many login attempts. Try again later.");
                                 return;
                             }
@@ -322,12 +332,14 @@
                             }
                             else
                             {
+                                isLogginIn = false;
                                 await JSRuntime.InvokeVoidAsync("alert", "The account is disabled. Please contact administrator");
                                 return;
                             }
                         }
                         else
                         {
+                            isLogginIn = false;
                             await JSRuntime.InvokeVoidAsync("alert", "Too many attempts. Please try again later.");
                             return;
                         }

@@ -6,6 +6,7 @@
 @inject IJSRuntime _js
 @using System.Text.RegularExpressions
 @using System.Globalization
+@inject ToastService _toast
 
 
 <PageTitle>Admin</PageTitle>
@@ -14,8 +15,10 @@
 <div class="page">
 
     <!--Add User Model-->
-    <div @onclick="ToggleAddUserModal" class="addUserModal @(isAddUserModalVisible ? "show" : "")">
-        <div class="addUser" @onclick:stopPropagation>
+    <div @onclick="ToggleModal" class="addUserModal @(isAddUserModalVisible ? "show" : "")">
+
+        <!--Add/Update User-->
+        <div hidden="@(!isAddUserModal)" class="addUser" @onclick:stopPropagation>
             <h4 class="fw-bold">
                 @title
             </h4>
@@ -79,7 +82,7 @@
                 <p>Saving record.Please wait...</p>
 
 
-                <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-2">
                     <img src="/img/loading.svg" style="height:50px; width: 50px;" />
                 </div>
             </div>
@@ -87,17 +90,65 @@
             @if (title == "Add User")
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
-                    <button class="btn p-2 px-4" style="border: 1px solid #dee2e6;" @onclick="ToggleAddUserModal">Cancel</button>
+                    <button class="btn p-2 px-4" style="border: 1px solid #dee2e6;" @onclick="ToggleModal">Cancel</button>
                     <button class="btn btn-primary p-2 px-4 text-white" @onclick="AddUser">Create</button>
                 </div>
             }
             else
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
-                    <button class="btn p-2 px-4" style="border: 1px solid #dee2e6;" @onclick="ToggleAddUserModal">Cancel</button>
+                    <button class="btn p-2 px-4" style="border: 1px solid #dee2e6;" @onclick="ToggleModal">Cancel</button>
                     <button class="btn btn-primary p-2 px-4 text-white" @onclick="UpdateUser">Update</button>
                 </div>
             }
+            
+        </div>
+
+        <!--Loading Modal-->
+        <div @onclick:stopPropagation hidden="@(!isLoadingModal)" class="helperModal">
+            <div class="loading">
+                <h1>Loading</h1>
+                <p>Please wait...</p>
+
+                <img src="/img/loading.svg" style="height:50px; width: 50px;" />
+            </div>
+        </div>
+
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation hidden="@(!isConfirmModal)" class="helperModal">
+            <div class="confirm">
+                <h1>@confirmTitle</h1>
+                <p>@confirmMessage</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>@updatingMessage</p>
+            </div>
+
+
+            @if (confirmType == "success")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-success text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Reset</button>
+                </div>
+            }
+            else if (confirmType == "disable")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Disable</button>
+                </div>
+            }
+            else
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Enable</button>
+                </div>
+            }
+            
+
             
         </div>
     </div>
@@ -151,18 +202,18 @@
                                 </div>
 
                                 <!--Reset-->
-                                <button @onclick="@(() => ResetPassword(items.Email))" class="btn btn-outline-danger text-danger p-2 px-4 btn-reset" style="font-size:13px;"><i class="bi bi-arrow-repeat text-danger"></i> Reset</button>
+                                <button @onclick="@(() => showConfirm("reset",items.Email))" class="btn btn-outline-danger text-danger p-2 px-4 btn-reset" style="font-size:13px;"><i class="bi bi-arrow-repeat text-danger"></i> Reset</button>
 
                                 <!--Check account status-->
                                 @if (items.Status != "Disabled")
                                 {
                                     <!--Disable-->
-                                    <button @onclick="@(() => DisableUser(items.Id))" class="btn btn-danger text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Disable</button>
+                                    <button @onclick="@(() => showConfirm("disable",items.Id))" class="btn btn-danger text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Disable</button>
                                 }
                                 else
                                 {
                                     <!--Enable-->
-                                    <button @onclick="@(() => EnableUser(items.Id))" class="btn btn-primary text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Enable</button>
+                                    <button @onclick="@(() => showConfirm("enable",items.Id))" class="btn btn-primary text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Enable</button>
                                 }
                             </td>
                                 
@@ -192,7 +243,20 @@
     private string role = "Administrator";
     private string member = string.Empty;
     private string searchedActivity = string.Empty;
-    private IEnumerable<User> FilteredUsers => accounts.Where(u => string.IsNullOrWhiteSpace(searchedActivity) || u.Email.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Role.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Status.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase)).ToList();
+    private IEnumerable<User> FilteredUsers => accounts.Where(u => string.IsNullOrWhiteSpace(searchedActivity) || u.FirstName.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Email.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Role.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase) || u.Status.Contains(searchedActivity, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    //Data
+    private string confirmType = string.Empty;
+    private string confirmTitle = string.Empty;
+    private string confirmMessage = string.Empty;
+    private string updatingMessage = string.Empty;
+    private bool isUpdating = false;
+    private string data = string.Empty;
+
+    //Modals
+    private bool isAddUserModal = false;
+    private bool isLoadingModal = false;
+    private bool isConfirmModal = false;
 
 
     //On startup
@@ -214,7 +278,8 @@
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", result.Error);
+            _toast.AddNotification("error", "Something went wrong","Failed to get Users");
+            // await _js.InvokeVoidAsync("alert", result.Error);
         }
     }
 
@@ -226,11 +291,13 @@
 
     private void OpenModal()
     {
-        ToggleAddUserModal();
+        ToggleModal();
     }
 
     private async Task ToggleUpdateModal(string docId)
     {
+        ToggleModal();
+        isLoadingModal = true;
         var userRes = await _accountsServices.GetUserById(docId);
         if (userRes.Success)
         {
@@ -238,24 +305,33 @@
             user = new();
             user = users;
             title = "Update User";
-            role = users.Role;
-            isAddUserModalVisible = !isAddUserModalVisible;
+            isLoadingModal = false;
+            isAddUserModal = true;
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "An error occured");
+            ToggleModal();
+            _toast.AddNotification("error", "Something went wrong", "Failed to get User");
+            // await _js.InvokeVoidAsync("alert", "An error occured");
         }
 
     }
 
 
-    private void ToggleAddUserModal()
+    private void ToggleModal()
     {
         isAddUserModalVisible = !isAddUserModalVisible;
-        title = "Add User";
-        memberId = string.Empty;
-        isValid = false;
-        role = "Administrator";
+        isLoadingModal = false;
+        isAddUserModal = false;
+        isConfirmModal = false;
+        isUpdating = false;
+        data = string.Empty;
+
+        // isAddUserModalVisible = !isAddUserModalVisible;
+        // title = "Add User";
+        // memberId = string.Empty;
+        // isValid = false;
+        // role = "Administrator";
     }
 
     private bool IsValidEmail(string email)
@@ -314,8 +390,9 @@
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "An error occured. Please try again later.");
-            ToggleAddUserModal();
+            _toast.AddNotification("error", "Something went wrong", "Please try again");
+            // await _js.InvokeVoidAsync("alert", "An error occured. Please try again later.");
+            ToggleModal();
             return;
         }
 
@@ -334,19 +411,21 @@
         {
 
             await OnResetPassword(user.Email); // Send reset password email
-            await _js.InvokeVoidAsync("alert", "Account Successfully Created.\nA Password reset link has been sent to the email.");
+            _toast.AddNotification("success", "Account successfuly created", "A password reset link has ben sent to email");
+            // await _js.InvokeVoidAsync("alert", "Account Successfully Created.\nA Password reset link has been sent to the email.");
             isAdding = false;
             user = new();
             memberId = string.Empty;
             accounts = new();
             role = "Administrator";
             await GetUsers();
-            ToggleAddUserModal();
+            ToggleModal();
         }
         else
         {
             isAdding = false;
-            await _js.InvokeVoidAsync("alert", result.Message);
+            _toast.AddNotification("error", "Something went wrong", "Failed to add user");
+            // await _js.InvokeVoidAsync("alert", result.Message);
         }
     }
 
@@ -357,37 +436,73 @@
             var (success, message) = await Authentication.ResetPasswordAsync(email);
             if (!success)
             {
-                await _js.InvokeVoidAsync("alert", $"Error sending password reset email: {message}");
+                _toast.AddNotification("error", "Something went wrong", "Error sending reset link");
+                // await _js.InvokeVoidAsync("alert", $"Error sending password reset email: {message}");
             }
         }
         catch(Exception ex)
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            _toast.AddNotification("error", "Something went wrong", "Failed to reset. Please try again later.");
+            // await _js.InvokeVoidAsync("alert", ex.Message);
         }
     }
 
-    private async Task ResetPassword(string email)
+    private void showConfirm(string type, string info)
     {
-        bool confirm = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to reset password?");
+        confirmType = type;
+        ToggleModal();
+        isConfirmModal = true;
+        data = info;
+        switch (type)
+        {
+            case "reset":
+                confirmTitle = "Confirm Reset";
+                confirmMessage = "You are about to send reset link";
+                updatingMessage = "Sending reset link...";
+                break;
+            case "disable":
+                confirmTitle = "Confirm Disable";
+                confirmMessage = "You are about to disable a user";
+                updatingMessage = "Disabling user...";
+                break;
+            case "enable":
+                confirmTitle = "Confirm Enable";
+                confirmMessage = "You are about to enable a user";
+                updatingMessage = "Enabling user...";
+                break;
+        }
 
-        if (!confirm) return;
+    }
+
+    private async Task ResetPassword()
+    {
+        isUpdating = true;
+
         try
         {
-            var (success, message) = await Authentication.ResetPasswordAsync(email);
+            var (success, message) = await Authentication.ResetPasswordAsync(data);
             if (!success)
             {
-                await _js.InvokeVoidAsync("alert", $"Error sending password reset email: {message}");
+                ToggleModal();
+                _toast.AddNotification("error", "Something went wrong", "Error sending reset link.");
+                // await _js.InvokeVoidAsync("alert", $"Error sending password reset email: {message}");
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", $"Successfully sent reset password link");
+                ToggleModal();
+                _toast.AddNotification("success", "Success", "A password reset link has been sent");
+                // await _js.InvokeVoidAsync("alert", $"Successfully sent reset password link");
             }
         }
         catch (Exception ex)
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            ToggleModal();
+            _toast.AddNotification("error", "Something went wrong", "Failed to reset. Please try again later.");
+            // await _js.InvokeVoidAsync("alert", ex.Message);
         }
     }
+
+
 
     private async Task UpdateUser()
     {
@@ -423,47 +538,55 @@
             accounts = new();
             role = "Administrator";
             await GetUsers();
-            await _js.InvokeVoidAsync("alert", "User updated successfully");
+            _toast.AddNotification("success", "Success", "User updated successfully");
+            // await _js.InvokeVoidAsync("alert", "User updated successfully");
         }
         else
         {
             isAdding = false;
-            await _js.InvokeVoidAsync("alert", updateRes.Error);
+            _toast.AddNotification("error", "Something went wrong", "Failed to update user, Try again later.");
+            // await _js.InvokeVoidAsync("alert", updateRes.Error);
             return;
         }
     }
 
-    private async Task DisableUser(string docId)
+    private async Task DisableUser()
     {
-        bool confirm = await _js.InvokeAsync<bool>("confirm", "Confirm Changes?");
-
-        if (!confirm) return;
-
+        isUpdating = true;
         try
         {
-            await _accountsServices.DisableAccountAsync(docId);
+            await _accountsServices.DisableAccountAsync(data);
             await GetUsers();
-            await _js.InvokeVoidAsync("alert", "User disabled successfully");
+            ToggleModal();
+            _toast.AddNotification("success", "Success", "User has been disabled");
+            // await _js.InvokeVoidAsync("alert", "User disabled successfully");
         }
         catch (Exception ex)
         {
-            await _js.InvokeVoidAsync("alert", $"Error disabling user: {ex.Message}");
+            ToggleModal();
+            _toast.AddNotification("error", "Something went wrong", "Failed to disable. Try again later.");
+            // await _js.InvokeVoidAsync("alert", $"Error disabling user: {ex.Message}");
             return;
         }
     }
 
     //Enable Accoubt
-    private async Task EnableUser(string docId)
+    private async Task EnableUser()
     {
+        isUpdating = true;
         try
         {
-            await _accountsServices.EnableAccountAsync(docId);
+            await _accountsServices.EnableAccountAsync(data);
             await GetUsers();
-            await _js.InvokeVoidAsync("alert", "User enabled successfully");
+            ToggleModal();
+            _toast.AddNotification("success", "Success", "User enabled successfully");
+            // await _js.InvokeVoidAsync("alert", "User enabled successfully");
         }
         catch (Exception ex)
         {
-            await _js.InvokeVoidAsync("alert", $"Error enabling user: {ex.Message}");
+            ToggleModal();
+            _toast.AddNotification("error", "Something went wrong", "Failed to enable user. Try again later");
+            // await _js.InvokeVoidAsync("alert", $"Error enabling user: {ex.Message}");
             return;
         }
     }

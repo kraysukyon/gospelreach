@@ -2,7 +2,7 @@
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
+    font-family: "Inter", sans-serif;
 }
 
 
@@ -169,11 +169,19 @@ a, p {
     margin: 0 4rem;
     margin-top: 4rem;
     background-color: #FFF;
-    border-radius: 50px;
-    box-shadow: 4px 4px 25px rgba(0,0,0,0.1);
-    padding-bottom: .5rem;
+    border-radius: 12px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 4rem;
     margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
 }
+
+    .content2:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
 
 .first {
     padding: 4rem 8rem;

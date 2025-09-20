@@ -3,9 +3,22 @@
 <div class="notificationModal">
     @foreach (var n in ToastService.Notifications)
     {
-        <div class="toast-notification @n.Type">
-            <span>@n.Message</span>
-            <button class="btn-close" @onclick="@(() => Remove(n.Id))">×</button>
+        <div class="toast-notification">
+            @if (n.Type == "error")
+            {
+                <i class="bi bi-exclamation-circle-fill text-danger"></i>
+            }
+            else
+            {
+                <div class="circle"></div>
+            }
+            
+            
+            <div class="message">
+                <p class="title">@n.Title</p>
+                <p class="content">@n.Message</p>
+            </div>
+            <i @onclick="() => Remove(n.Id)" class="bi bi-x text-black cursor fs-4 notifClose"></i>
         </div>
     }
 </div>

@@ -9,7 +9,7 @@ namespace GospelReachCapstone.Services
         private readonly IJSRuntime _jsRuntime;
         private readonly AuthState _authState;
 
-        public FirebaseAuthenticationService(IJSRuntime jSRuntime, AuthState authstate, DepartmentMemberService firestore)
+        public FirebaseAuthenticationService(IJSRuntime jSRuntime, AuthState authstate)
         {
             _jsRuntime = jSRuntime;
             _authState = authstate;
