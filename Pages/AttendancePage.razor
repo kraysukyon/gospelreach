@@ -323,7 +323,7 @@
                                 <td class="table-cell c2">@item.Title</td>
                                 <td class="table-cell c2"><p class="fw-bold @(item.isCompleted ? "text-success" : "text-danger")">@(item.isCompleted ? "Complete" : "Missing")</p></td>
                                 <td class="table-cell c2">
-                                    <button class="btn p-2 px-4" @onclick="() => OpenAttendance(item.AttendanceId)" style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-pencil-square"></i> Update</button>
+                                    <button class="btn p-2 px-4" @onclick="() => OpenAttendance(item.AttendanceId)" style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-info-circle"></i> View</button>
                                 </td>
                                 @* <td class="table-cell">
                                     <button class="btn btn-outline-light border border-1 p-2" style="font-size: 13px;" @onclick="() => OpenAttendance(item.AttendanceId)" @onclick:stopPropagation><span><i class="bi bi-info-circle"></i></span> View</button>

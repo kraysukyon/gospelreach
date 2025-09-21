@@ -29,20 +29,52 @@
         }
     },
 
+    // Disable all accounts by role by updating the status field
+    async disableAllAccountRole(role) {
+        try {
+            // get all users with the specified role
+            const snapshot = await db.collection("Users")
+                .where("role", "==", role)
+                .get();
+
+            if (snapshot.empty) {
+                return { success: true };
+            }
+
+            // create a batch to update all at once
+            const batch = db.batch();
+
+            snapshot.forEach(doc => {
+                const docRef = doc.ref;
+                // update status field to "disabled"
+                batch.update(docRef, { status: "Disabled" });
+            });
+
+            // commit the batch
+            await batch.commit();
+
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
     //Disable Account
     async disableAccount(docId) {
         try {
             await db.collection("Users").doc(docId).update({ status: "Disabled" });
+            return { success: true };
         } catch (error) {
-            alert(error)
+            return { success: false, error: error.message };
         }
     },
     //Enable Account
     async enableAccount(docId) {
         try {
             await db.collection("Users").doc(docId).update({ status: "Active" });
+            return { success: true };
         } catch (error) {
-            alert(error)
+            return { success: false, error: error.message };
         }
     },
 

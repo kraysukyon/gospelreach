@@ -14,6 +14,8 @@
                 lastName: account.lastName,
                 role: account.role,
                 status: account.status,
+                attempts: 5,
+                lockUntil: account.lockUntil
             });
 
             return { success: true, uid: userCredential.user.uid }

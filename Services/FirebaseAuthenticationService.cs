@@ -14,10 +14,30 @@ namespace GospelReachCapstone.Services
             _jsRuntime = jSRuntime;
             _authState = authstate;
         }
-        public async Task<(bool Success, string Message)> RegisterAsync(User user)
+        public async Task<FirebaseResult> RegisterAsync(User user)
         {
-            var result = await _jsRuntime.InvokeAsync<FirebaseResult>("firebaseAuth.register", user);
-            return result.Success ? (true, "Account Added Successful") : (false, result.Error);
+            try
+            {
+                var result = await _jsRuntime.InvokeAsync<FirebaseResult>("firebaseAuth.register", user);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new FirebaseResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new FirebaseResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            
         }
 
         public async Task<FirebaseResult> LoginAsync(string email, string password)

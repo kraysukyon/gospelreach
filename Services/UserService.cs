@@ -76,15 +76,41 @@ namespace GospelReachCapstone.Services
         }
 
         //Disable Account for logging in
-        public async Task DisableAccountAsync(string docId)
+        public async Task<UserResult> DisableAccountAsync(string docId)
         {
-            await _js.InvokeVoidAsync("firestoreFunctions.disableAccount", docId);
+            try
+            {
+                var result = await _js.InvokeAsync<UserResult>("firestoreFunctions.disableAccount", docId);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new UserResult { Success = false, Error = ex.Message };
+            }
+            catch (Exception ex)
+            {
+                return new UserResult { Success = false, Error = ex.Message };
+            }
+
         }
 
         //Enable Account for logging in
-        public async Task EnableAccountAsync(string docId)
+        public async Task<UserResult> EnableAccountAsync(string docId)
         {
-            await _js.InvokeVoidAsync("firestoreFunctions.enableAccount", docId);
+            try
+            {
+                var result = await _js.InvokeAsync<UserResult>("firestoreFunctions.enableAccount", docId);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new UserResult { Success = false, Error = ex.Message };
+            }
+            catch (Exception ex)
+            {
+                return new UserResult { Success = false, Error = ex.Message };
+            }
+            
         }
 
 
@@ -146,6 +172,32 @@ namespace GospelReachCapstone.Services
             try
             {
                 var result = await _js.InvokeAsync<UserResult>("firestoreFunctions.updateAttempt", user);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new UserResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new UserResult
+                {
+                    Success = false,
+                    Error = ex.Message
+                };
+            }
+        }
+
+        //Get User By Id
+        public async Task<UserResult> DisableAllAccountsByRole(string role)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<UserResult>("firestoreFunctions.disableAllAccountRole", role);
                 return result;
             }
             catch (JSException ex)

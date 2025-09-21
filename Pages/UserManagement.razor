@@ -78,35 +78,19 @@
                     }
                 </div>
             }
-            <div class="mt-3 @(isAdding ? "d-flex" : "d-none") align-items-center justify-content-center">
-                @if (title == "Add User")
-                {
-                    <p>Add user.Please wait...</p>
-                }
-                else
-                {
-                    <p>Updating user.Please wait...</p>
-                }
-
-
-
-                @* <div class="d-flex gap-4 align-items-center justify-content-center mt-2">
-                    <img src="/img/loading.svg" style="height:50px; width: 50px;" />
-                </div> *@
-            </div>
 
             @if (title == "Add User")
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn p-2 px-4" style="border: 1px solid #dee2e6;" @onclick="ToggleModal">Cancel</button>
-                    <button class="btn btn-primary p-2 px-4 text-white" @onclick="AddUser">Create</button>
+                    <button class="btn btn-primary p-2 px-4 text-white" @onclick="CheckValidation">Create</button>
                 </div>
             }
             else
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
                     <button class="btn p-2 px-4" style="border: 1px solid #dee2e6;" @onclick="ToggleModal">Cancel</button>
-                    <button class="btn btn-primary p-2 px-4 text-white" @onclick="UpdateUser">Update</button>
+                    <button class="btn btn-primary p-2 px-4 text-white" @onclick="CheckValidation">Update</button>
                 </div>
             }
             
@@ -138,22 +122,37 @@
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Reset</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else if (confirmType == "disable")
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="DisableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Disable</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="DisableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
+            else if (confirmType == "enable")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="EnableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
+            else if(confirmType == "user")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="AddUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="EnableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Enable</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="UpdateUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
+
             }
             
 
@@ -210,18 +209,18 @@
                                 </div>
 
                                 <!--Reset-->
-                                <button @onclick="@(() => showConfirm("reset",items.Email))" class="btn btn-outline-danger text-danger p-2 px-4 btn-reset" style="font-size:13px;"><i class="bi bi-arrow-repeat text-danger"></i> Reset</button>
+                                <button @onclick="@(() => showConfirm("reset",items.Email,""))" class="btn btn-outline-danger text-danger p-2 px-4 btn-reset" style="font-size:13px;"><i class="bi bi-arrow-repeat text-danger"></i> Reset</button>
 
                                 <!--Check account status-->
                                 @if (items.Status != "Disabled")
                                 {
                                     <!--Disable-->
-                                    <button @onclick="@(() => showConfirm("disable",items.Id))" class="btn btn-danger text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Disable</button>
+                                    <button @onclick="@(() => showConfirm("disable",items.Id,""))" class="btn btn-danger text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Disable</button>
                                 }
                                 else
                                 {
                                     <!--Enable-->
-                                    <button @onclick="@(() => showConfirm("enable",items.Id))" class="btn btn-primary text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Enable</button>
+                                    <button @onclick="@(() => showConfirm("enable",items.Id,items.Role))" class="btn btn-primary text-white p-2 px-4" style="font-size:13px;"><i class="bi bi-trash text-white"></i>Enable</button>
                                 }
                             </td>
                                 
@@ -279,7 +278,6 @@
         }
 
         isLoad = !isLoad;
-        role = "Administrator";
         await GetUsers();
         isLoad = !isLoad;
     }
@@ -320,7 +318,6 @@
         title = "Add User";
         memberId = string.Empty;
         isValid = false;
-        role = "Administrator";
     }
 
     private async Task ToggleUpdateModal(string docId)
@@ -364,6 +361,7 @@
         isConfirmModal = false;
         isUpdating = false;
         data = string.Empty;
+        isAdding = false;
     }
 
     private bool IsValidEmail(string email)
@@ -371,10 +369,8 @@
         return Regex.IsMatch(email, pattern);
     }
 
-    private async Task AddUser()
+    private async Task CheckValidation()
     {
-        
-        isAdding = true;
         bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
         if (!isOnline)
@@ -407,35 +403,62 @@
             validation.Add("-Last Name is required");
         }
 
+        if (title == "Add User")
+        {
+            var checkUser = await _accountsServices.GetUserAccountsAsync();
+            if (checkUser.Success)
+            {
+                if (checkUser.Data != null)
+                {
+                    var check = checkUser.Data.FirstOrDefault(u => u.Email == user.Email);
+                    if (check != null)
+                    {
+                        validation.Add("-Email already exist");
+                    }
+                }
+
+            }
+            else
+            {
+                _toast.AddNotification("error", "Something went wrong", "Please try again");
+                // await _js.InvokeVoidAsync("alert", "An error occured. Please try again later.");
+                ToggleModal();
+                return;
+            }
+        }
+
+
         if (validation.Any())
         {
-            isAdding = false;
             return;
         }
 
-        var checkUser = await _accountsServices.GetUserAccountsAsync();
-        if (checkUser.Success)
-        {
-            if (checkUser.Data != null)
-            {
-                var check = checkUser.Data.FirstOrDefault(u => u.Email == user.Email);
-                if (check != null)
-                {
-                    validation.Add("-Email already exist");
-                    isAdding = false;
-                    return;
-                }
-            }
 
+        if (title == "Add User")
+        {
+            showConfirm("user", "","");
         }
         else
         {
-            _toast.AddNotification("error", "Something went wrong", "Please try again");
-            // await _js.InvokeVoidAsync("alert", "An error occured. Please try again later.");
+            showConfirm("update", user.Id,"");
+        }
+
+    }
+
+    private async Task AddUser()
+    {
+        isUpdating = true;
+
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
             ToggleModal();
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
             return;
         }
 
+        isUpdating = true;
 
         user.FirstName = textInfo.ToTitleCase(user.FirstName);
         if (user.MiddleName != null)
@@ -445,21 +468,19 @@
 
         user.LastName = textInfo.ToTitleCase(user.LastName);
         user.Password = Authentication.GeneratePassword();
+        await _accountsServices.DisableAllAccountsByRole(user.Role);
         var result = await Authentication.RegisterAsync(user);
 
         if (result.Success)
         {
-
             await OnResetPassword(user.Email); // Send reset password email
-            _toast.AddNotification("success", "Account successfuly created", "A password reset link has ben sent to email");
-            // await _js.InvokeVoidAsync("alert", "Account Successfully Created.\nA Password reset link has been sent to the email.");
-            isAdding = false;
             user = new();
             memberId = string.Empty;
             accounts = new();
-            role = "Administrator";
-            await GetUsers();
             ToggleModal();
+            _toast.AddNotification("success", "Account successfuly created", "A password reset link has ben sent to email");
+            await GetUsers();
+
         }
         else
         {
@@ -495,11 +516,15 @@
         }
     }
 
-    private void showConfirm(string type, string info)
+    private void showConfirm(string type, string info, string roles)
     {
         confirmType = type;
-        ToggleModal();
-        isConfirmModal = true;
+        if(type != "update" && type != "user")
+        {
+            ToggleModal();
+            isConfirmModal = true;
+        }
+        role = roles;
         data = info;
         switch (type)
         {
@@ -515,8 +540,22 @@
                 break;
             case "enable":
                 confirmTitle = "Confirm Enable";
-                confirmMessage = "You are about to enable a user";
+                confirmMessage = "You are about to enable a user. Any existing same role will be disabled";
                 updatingMessage = "Enabling user...";
+                break;
+            case "user":
+                isAddUserModal = false;
+                isConfirmModal = true;
+                confirmTitle = "Confirm Action";
+                confirmMessage = "You are about to create a user. Any existing same role will be disabled";
+                updatingMessage = "Creating user...";
+                break;
+            case "update":
+                isAddUserModal = false;
+                isConfirmModal = true;
+                confirmTitle = "Confirm Action";
+                confirmMessage = "You are about to update a user\nAny existing same role will be disabled";
+                updatingMessage = "Updating user...";
                 break;
         }
 
@@ -537,6 +576,7 @@
 
         try
         {
+
             var (success, message) = await Authentication.ResetPasswordAsync(data);
             if (!success)
             {
@@ -561,7 +601,7 @@
 
     private async Task UpdateUser()
     {
-        isAdding = true;
+        isUpdating = true;
         bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
         if (!isOnline)
@@ -570,28 +610,8 @@
             return;
         }
 
-        isAdding = true;
-        if (string.IsNullOrEmpty(user.FirstName))
-        {
-            validation.Add("-First Name is required");
-        }
-
-        if (string.IsNullOrEmpty(user.FirstName))
-        {
-            validation.Add("-Last Name is required");
-        }
-
-        if (validation.Any())
-        {
-            isAdding = false;
-            return;
-        }
-        user.FirstName = textInfo.ToTitleCase(user.FirstName);
-        if (user.MiddleName != null)
-        {
-            user.MiddleName = textInfo.ToTitleCase(user.MiddleName);
-        }
-        user.LastName = textInfo.ToTitleCase(user.LastName);
+        isUpdating = true;
+        await _accountsServices.DisableAllAccountsByRole(user.Role);
         var updateRes = await _accountsServices.UpdateAccountAsync(user.Id, user);
         if (updateRes.Success)
         {
@@ -626,20 +646,17 @@
         }
 
         isUpdating = true;
-        try
+        var disRes = await _accountsServices.DisableAccountAsync(data);
+        if (disRes.Success)
         {
-            await _accountsServices.DisableAccountAsync(data);
-            await GetUsers();
             ToggleModal();
             _toast.AddNotification("success", "Success", "User has been disabled");
-            // await _js.InvokeVoidAsync("alert", "User disabled successfully");
+            await GetUsers();
         }
-        catch (Exception ex)
+        else
         {
             ToggleModal();
             _toast.AddNotification("error", "Something went wrong", "Failed to disable. Try again later.");
-            // await _js.InvokeVoidAsync("alert", $"Error disabling user: {ex.Message}");
-            return;
         }
     }
 
@@ -656,20 +673,18 @@
         }
 
         isUpdating = true;
-        try
+        await _accountsServices.DisableAllAccountsByRole(role);
+        var enRes = await _accountsServices.EnableAccountAsync(data);
+        if (enRes.Success)
         {
-            await _accountsServices.EnableAccountAsync(data);
-            await GetUsers();
             ToggleModal();
             _toast.AddNotification("success", "Success", "User enabled successfully");
-            // await _js.InvokeVoidAsync("alert", "User enabled successfully");
+            await GetUsers();
         }
-        catch (Exception ex)
+        else
         {
             ToggleModal();
             _toast.AddNotification("error", "Something went wrong", "Failed to enable user. Try again later");
-            // await _js.InvokeVoidAsync("alert", $"Error enabling user: {ex.Message}");
-            return;
         }
     }
 }

@@ -199,8 +199,9 @@ code {
 
     .helperModal .actions{
         margin-top:1.5rem;
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns:1fr 1fr;
+        gap:1.5rem;
     }
 
     .helperModal .actions button{
