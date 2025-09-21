@@ -5,7 +5,7 @@
         public string Id { get; set; }
         public string Title { get; set; }
         public string CategoryId { get; set; }
-        public string DepartmentId { get; set; }
+        public string DepartmentId { get; set; } = "Senior";
         public DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public string StartTime { get; set; }

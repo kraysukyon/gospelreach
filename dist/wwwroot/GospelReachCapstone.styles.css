@@ -3816,8 +3816,15 @@ a[b-few9ehv55j] {
     }
 
 .renameModal[b-few9ehv55j] {
-    width: 400px;
-    background-color: white;
+    border-radius: .75rem;
+    box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    border: solid .3px rgb(128, 128, 128, 0.08);
+    padding: 2.5rem 2.5rem !important;
+    max-height: calc(100vh - 20vh);
+    background-color: #FFF;
+    overflow-y: auto;
+    width: 420px;
 }
 
 .cards[b-few9ehv55j] {
@@ -3908,11 +3915,12 @@ a[b-few9ehv55j] {
 .table-row[b-few9ehv55j] {
     border-bottom-width: 1px;
     border-color: rgb(229,231,235);
+    vertical-align:middle;
 }
 
 .table-cell[b-few9ehv55j] {
     white-space: nowrap;
-    padding: 30px 24px 20px 24px;
+    padding: 20px 24px;
     font-size: .875rem;
     line-height: 1.25rem;
 }

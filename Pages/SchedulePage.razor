@@ -303,8 +303,8 @@
             </div>
 
             <div class="addOptions mt-4 d-block d-md-flex gap-2" style="justify-self: end;">
-                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
-                <button hidden="@(title != "New Schedule")" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addService">Create</button>
+                <button class="btn border border-1 p-2 px-4" @onclick="ToggleModal">Close</button>
+                <button hidden="@(title != "New Schedule")" class="btn btn-primary p-2 px-4 text-white" @onclick="addService">Create</button>
             </div>
         </div>
 
@@ -1025,6 +1025,41 @@
             </div>
         </div>
 
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation hidden="@(!isConfirmModal)" class="helperModal">
+            <div class="confirm">
+                <h1>@confirmTitle</h1>
+                <p>@confirmMessage</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>@updatingMessage</p>
+            </div>
+
+
+            @if (confirmType == "add")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5"  style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
+            else if (confirmType == "update")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
+            else if (confirmType == "remove")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5"  style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
+        </div>
+
     </div>
 
     <!--Header Section-->
@@ -1314,6 +1349,14 @@
     private bool isRemoveModal = false;
     private bool isRemoving = false;
     private bool isUpdateServiceModal = false;
+    private bool isConfirmModal = false;
+
+    //Data
+    private bool isUpdating = false;
+    private string confirmType = string.Empty;
+    private string confirmTitle = string.Empty;
+    private string confirmMessage = string.Empty;
+    private string updatingMessage = string.Empty;
 
 
     //Service
@@ -1623,13 +1666,11 @@
     //Show Add Schedule Modal
     private async Task ToggleAddSched()
     {
-        ToggleModal();
-        isLoadingModal = true;
         await GetGroupName();
+        ToggleModal();
         isAddSched = true;
         serviceSchedule = new();
         serviceSchedule.CategoryId = "Department";
-        serviceSchedule.DepartmentId = "Senior";
         serviceSchedule.Title = "Holiness Meeting";
         isLoadingModal = false;
     }

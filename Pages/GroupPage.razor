@@ -9,6 +9,7 @@
 @inject GospelReachCapstone.Services.GroupMemberService _groupMemberService
 @inject HttpClient Http
 @inject ToastService _toast
+@using System.Globalization
 
 <PageTitle>Notification Management</PageTitle>
 
@@ -32,40 +33,54 @@
                     </div>
                 </div>
 
-                <!--Table Section-->
+                <div>
+                    <!--Table Section-->
+                    <p class="mt-3">Select People</p>
+                    <!--Search Section-->
+                    <div class="position-relative mt-2">
+                        <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                        <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
+                    </div>
 
-                <p class="mt-3">Select People</p>
-                <!--Search Section-->
-                <div class="position-relative mt-2">
-                    <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                    <input type="text" @bind="memberSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
-                </div>
 
-
-                <div class="table-container mt-2 d-flex flex-grow-1">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th class="thead" style="width: auto; white-space: nowrap;"><input checked @onchange="ToggleCheckbox" type="checkbox" /></th>
-                                <th class="thead" style="width: 100%;">Name</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @foreach (var item in filteredMember)
-                            {
+                    <div class="table-container mt-2 d-flex flex-column h-100 flex-grow-1">
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td class="table-cell" style="width: auto; white-space: nowrap;">
-                                        <input @bind="item.isSelected" type="checkbox"/>
-                                    </td>
-                                    <td class="table-cell" style="width: 100%;">@item.Member.GetFullName()</td>
+                                    <th class="thead" style="width: auto; white-space: nowrap;"><input checked @onchange="ToggleCheckbox" type="checkbox" /></th>
+                                    <th class="thead" style="width: 100%;">Name</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
 
-                <button @onclick='() => showConfirm("addGroup","")' class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+                            <tbody>
+                                @foreach (var item in filteredMember)
+                                {
+                                    <tr>
+                                        <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                            <input @bind="item.isSelected" type="checkbox" />
+                                        </td>
+                                        <td class="table-cell" style="width: 100%;">@item.Member.GetFullName()</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                    @if (validation.Any())
+                    {
+                        <div class="d-flex flex-column justify-content-between mt-3 mb-3">
+                            @foreach (string a in validation)
+                            {
+                                <p class="text-danger">@a</p>
+                            }
+                        </div>
+                    }
+
+                    <button @onclick="CheckValidation" class="btn btn-primary p-2 text-white w-100">Save</button>
+
+                </div>
+                
             </div>
 
         </div>
@@ -110,23 +125,36 @@
                 </table>
             </div>
 
-            <button @onclick="() => AddMembers(groupId)" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+            <button disabled="@(!filteredMember.Any(u => u.isSelected))" @onclick='() => showConfirm("addMembers",groupId)' class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
         </div>
 
         <!--Rename Modal-->
         <div hidden="@(!isRenameVisible)" @onclick:stopPropagation class="cards renameModal">
-            <h4 class="fw-bold">
-                Rename this Group
-            </h4>
+            <h1 class="fw-bold">
+                Confirm Rename
+            </h1>
             <p style="font-size:14px;">You are about to rename this group</p>
 
             <div class="position-relative mt-3">
                 <input readonly="@(isWorking)" @bind="groupName" type="text" class="form-control border p-2" placeholder="Enter group name..." />
             </div>
 
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p class="text-center mt-3">@updatingMessage</p>
+            </div>
+
+            @if (validation.Any())
+            {
+                @foreach (var a in validation)
+                {
+                    <p class="text-center mt-3 text-danger">@a</p>
+                }
+                
+            }
+
             <div class="groupButton">
-                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleBackModal">Cancel</button>
-                <button @onclick="() => UpdateGroupName(groupId)" disabled="@(isWorking)" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Save</button>
+                <button class="btn border border-1 p-2 px-4" @onclick="ToggleBackModal">Cancel</button>
+                <button @onclick="() => UpdateGroupName(groupId)" disabled="@(isWorking)" class="btn btn-primary px-4 p-2 text-white">Confirm</button>
             </div>
         </div>
 
@@ -153,7 +181,7 @@
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleBackModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="DeleteGroup" style="font-size: 13px; border: 1px solid #dee2e6;">Delete</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="DeleteGroup" style="font-size: 13px; border: 1px solid #dee2e6;">Remove</button>
                 </div>
             }
             else if (confirmType == "removeMembers")
@@ -161,6 +189,13 @@
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleBackModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
                     <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="RemoveMembers" style="font-size: 13px; border: 1px solid #dee2e6;">Remove</button>
+                </div>
+            }
+            else if (confirmType == "addMembers")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleBackModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="AddMembers" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
 
@@ -201,7 +236,7 @@
                         <thead>
                             <tr>
                                 <th class="thead">Group</th>
-                                <th class="thead"></th>
+                                <th class="thead">Action</th>
                             </tr>
                         </thead>
 
@@ -213,24 +248,16 @@
                                     <tr class="table-row">
                                         @if(item.Id == "All")
                                         {
-                                            <td @onclick:stopPropagation @onclick="ShowAllmembers" class="table-cell" style="width: 100%; font-weight: 500;"><p class="link">All Members</p></td>
+                                            <td @onclick:stopPropagation @onclick="ShowAllmembers" class="table-cell" style="width: 100%; font-weight: 500;"><p>All Members</p></td>
                                         }
                                         else
                                         {
-                                            <td @onclick:stopPropagation class="table-cell" style="width: 100%; font-weight: 500;" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))"><p class="link">@item.Name</p></td>
+                                            <td @onclick:stopPropagation class="table-cell" style="width: 100%; font-weight: 500;" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))"><p>@item.Name</p></td>
                                         }
-                                        
-                                        <td hidden="@(item.Id == "All")" @onclick:stopPropagation class="table=cell">
-                                            <div @onclick:stopPropagation class="optionDot">
-                                                <i @onclick="() => ToggleOption(item.Id)" class="bi bi-three-dots-vertical cursor hover"></i>
-                                                @if (SelectedRow == item.Id)
-                                                {
-                                                    <div class="optionDotChild">
-                                                        <p @onclick="() => RenameGroupModal(item.Id, item.Name)">Rename</p>
-                                                        <p @onclick='() => showConfirm("deleteGroup",item.Id)'>Delete</p>
-                                                    </div>
-                                                }
-                                            </div>
+
+                                        <td @onclick:stopPropagation class="table-cell @(item.Id == "All" ? "d-none" : "") d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
+                                            <button class="btn p-2 px-4" @onclick="@(() => RenameGroupModal(item.Id, item.Name))" style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-pencil-square"></i> Rename</button>
+                                            <button class="btn btn-danger p-2 px-4 text-white" @onclick='() => showConfirm("deleteGroup", item.Id)' style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-trash text-white fs-6"></i> Remove</button>
                                         </td>
                                     </tr>
                                 }
@@ -277,7 +304,7 @@
                                 <td hidden="@(isAllMember)" class="table-cell" style="width: auto; white-space: nowrap;">
                                     <input @bind="item.isSelected" type="checkbox" />
                                 </td>
-                                <td class="table-cell" style="font-weight:500;"><p class="link">@item.Member.GetFullName()</p></td>
+                                <td class="table-cell" style="font-weight:500;"><p>@item.Member.GetFullName()</p></td>
                             </tr>
                         }
                     </tbody>
@@ -285,7 +312,7 @@
             </div>
 
             <div class="@(isAllMember ? "d-none" : "d-flex") gap-2 justify-content-end">
-                <button class="btn btn-danger px-4 py-2 text-white m-0" @onclick='() => showConfirm("removeMembers","")' style="width: 100px;">Delete</button>
+                <button disabled="@(!filteredExistingMemberList.Any() || !filteredExistingMemberList.Any(u => u.isSelected))" class="btn btn-danger px-4 py-2 text-white m-0" @onclick='() => showConfirm("removeMembers", "")' style="width: 100px;">Delete</button>
                 <button class="btn btn-primary px-4 py-2 text-white m-0" @onclick="() => ToggleShowMember(groupId)" style="width: 100px;">Add</button>
             </div>
 
@@ -327,6 +354,8 @@
     private bool isRenameVisible = false;
     private string GroupName = string.Empty;
     private string data = string.Empty;
+    private List<string> validation = new();
+    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
 
     private IEnumerable<GroupMemberSelection> filteredMember => groupMemberSelectionList.Where(u => string.IsNullOrWhiteSpace(memberSearch) || u.Member.GetFullName().Contains(memberSearch, StringComparison.OrdinalIgnoreCase));
     private IEnumerable<Attendance> filteredList => attendancesList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Date.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -358,12 +387,54 @@
         await GetAllGroups();
     }
 
+    //Check validation
+    private async Task CheckValidation()
+    {
+        if (string.IsNullOrEmpty(group.Name))
+        {
+            validation.Add("-Group name is required.");
+            return;
+        }
+
+        var groupRes = await _groupService.GetGroupsAsync();
+        if (groupRes.Success)
+        {
+            if (groupRes.Data != null)
+            {
+                var check = groupRes.Data.Any(u => u.Name == group.Name);
+
+                if (check)
+                {
+                    validation.Add("-Group name already exist.");
+                    return;
+                }
+            }
+        }
+        else
+        {
+            _toast.AddNotification("error", "Something went wrong", "Please try again");
+            return;
+        }
+
+        if (validation.Any())
+        {
+            return;
+        }
+
+        ToggleBackModal();
+        showConfirm("addGroup", "");
+    }
+
     //confirm modal
     private void showConfirm(string type, string info)
     {
-        confirmType = type;
-        ToggleBackModal();
+        if (type != "addMembers")
+        {
+            ToggleBackModal();
+
+        }
         isConfirmModal = true;
+        confirmType = type;
         data = info;
         switch (type)
         {
@@ -379,10 +450,16 @@
                 confirmMessage = "You are about to add a group";
                 updatingMessage = "Adding group...";
                 break;
+            case "addMembers":
+                isAddMemberVisible = false;
+                confirmTitle = "Confirm Add";
+                confirmMessage = "You are about to add members";
+                updatingMessage = "Adding members...";
+                break;
             case "removeMembers":
                 confirmTitle = "Confirm Remove";
                 confirmMessage = "You are about to remove members";
-                updatingMessage = "Removing...";
+                updatingMessage = "Removing members...";
                 break;
         }
 
@@ -430,6 +507,9 @@
     //Update Group Name
     private async Task UpdateGroupName(string Id)
     {
+        validation.Clear();
+        updatingMessage = "Updating group...";
+        isUpdating = true;
         bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
         if (!isOnline)
@@ -438,6 +518,42 @@
             return;
         }
         isWorking = true;
+
+        if (string.IsNullOrEmpty(groupName))
+        {
+            validation.Add("-Group name is required");
+            isUpdating = false;
+            isWorking = false;
+            return;
+        }
+
+        var checkGroup = await _groupService.GetGroupsAsync();
+        if (checkGroup.Success)
+        {
+            if(checkGroup.Data != null)
+            {
+                string gr = groupName.Trim().ToLower();
+                var check = checkGroup.Data.Any(u => u.Id != Id && u.Name == groupName);
+                string test = textInfo.ToTitleCase(gr);
+
+                if (check || test == "All Members")
+                {
+                    validation.Add("-Group name already exist");
+                    isUpdating = false;
+                    isWorking = false;
+                    return;
+                }
+            }
+        }
+        else
+        {
+            _toast.AddNotification("error", "Something went wrong", "Please try again later");
+            isUpdating = false;
+            isWorking = false;
+            return;
+        }
+
+        groupName = textInfo.ToTitleCase(groupName);
         var result = await _groupService.RenameGroupAsync(Id, groupName);
 
         if (result.Success)
@@ -447,24 +563,28 @@
             isViewPanel = false;
             SelectedRow = null;
             isRenameVisible = false;
+            _toast.AddNotification("success", "Success", "Successfully renamed group");
             ToggleBackModal();
             await GetAllGroups();
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to rename group: " + result.Error);
+            _toast.AddNotification("error", "Something went wrong", "Failed to rename group");
+            ToggleBackModal();
+            return;
         }
 
-        isWorking = false;
+
     }
 
     //Open Rename Modal
     private void RenameGroupModal(string Id, string Name)
     {
+        ToggleBackModal();
         isRenameVisible = true;
         groupId = Id;
         groupName = Name;
-        ToggleBackModal();
+
     }
 
     //Delete
@@ -480,7 +600,7 @@
             return;
         }
 
-        
+
 
         var result = await _groupService.RemoveGroupAsync(data);
 
@@ -518,14 +638,16 @@
 
     private async Task RemoveMembers()
     {
+        isUpdating = true;
         bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
         if (!isOnline)
         {
             _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            ToggleBackModal();
             return;
         }
-
+        isUpdating = true;
         var membersToDelete = existingMemberList.Where(u => u.isSelected).ToList();
 
         foreach (var item in membersToDelete)
@@ -533,7 +655,8 @@
             var result = await _groupMemberService.RemoveGroupMembersAsync(item.Member.Id);
         }
 
-        await _js.InvokeVoidAsync("alert", "Members successfully deleted!");
+        _toast.AddNotification("success", "Success", "Successfully removed members");
+        ToggleBackModal();
         await GetGroupAndMembers(groupId,groupName);
 
     }
@@ -550,8 +673,9 @@
     }
 
     //Add Members to Existing group
-    private async Task AddMembers(string Id)
+    private async Task AddMembers()
     {
+        isUpdating = true;
         bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
         if (!isOnline)
@@ -559,6 +683,8 @@
             _toast.AddNotification("error", "Connection Error", "Check your internet connection");
             return;
         }
+
+        isUpdating = true;
 
         var memToAdd = groupMemberSelectionList.Where(u => u.isSelected).ToList();
 
@@ -568,22 +694,15 @@
             {
                 var m = new GroupMember
                 {
-                    GroupId = Id,
+                    GroupId = data,
                     MemberId = item.Member.Id
                 };
                 var result = await _groupMemberService.AddGroupMembersAsync(m);
             }
 
-
-            await GetGroupAndMembers(groupId, groupName);
+            _toast.AddNotification("success", "Success", "Successfully added members to group");
             isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
-            await _js.InvokeVoidAsync("alert", "Members Added Successfully!");
-
-
-        }
-        else
-        {
-
+            await GetGroupAndMembers(groupId, groupName);
         }
     }
 
@@ -793,8 +912,8 @@
             return;
         }
 
-        
 
+        group.Name = textInfo.ToTitleCase(group.Name);
         var groupResult = await _groupService.AddGroupAsync(group);
         isAllSelected = false;
 
@@ -842,6 +961,8 @@
         isConfirmModal = false;
         isViewPanel = false;
         isUpdating = false;
+        isRenameVisible = false;
+        isWorking = false;
     }
 
     private async Task ToggleAddGroup()
@@ -855,6 +976,7 @@
         }
 
         ToggleBackModal();
+        validation.Clear();
         group = new();
         isAddMemberVisible = false;
         await GetAllMembers();
@@ -916,17 +1038,18 @@
                         addMemberMessage = string.Empty;
                     }
                 }
-                
+
             }
             else
             {
-                await _js.InvokeVoidAsync("Failed to get members: " + results.Error);
+                _toast.AddNotification("error", "Something went wrong", "Failed to get members");
+                // await _js.InvokeVoidAsync("Failed to get members: " + results.Error);
             }
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to get members: " + result.Error);
-
+            // await _js.InvokeVoidAsync("alert", "Failed to get members: " + result.Error);
+            _toast.AddNotification("error", "Something went wrong", "Failed to get members");
         }
     }
 

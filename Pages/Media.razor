@@ -19,7 +19,7 @@
 
         <div>
             <InputFile OnChange="HandleFile" accept="image/*,video/*,audio/*,.pdf" />
-            <button class="btn btn-primary text-white p-2" @onclick="UploadFile" disabled="@(!CanUpload)">Upload</button>
+            <button class="btn btn-primary text-white p-2 px-4" @onclick="UploadFile" disabled="@(!CanUpload)">Upload</button>
         </div>
 
         
@@ -107,22 +107,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
-
-        if (!isOnline)
-        {
-            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
-            return;
-        }
-
-
         try
         {
             await LoadFiles();
         }
-        catch (Exception ex)
+        catch
         {
-            await _js.InvokeVoidAsync("alert", $"Error loading files: {ex.Message}");
+            _toast.AddNotification("error", "Something went wrong", "Please try again later");
         }
 
     }
@@ -188,6 +179,7 @@
 
     private async Task LoadFiles()
     {
+        files.Clear();
         bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
         if (!isOnline)
