@@ -183,6 +183,7 @@
         else
         {
             ToggleModal();
+            await getSongList();
             _toast.AddNotification("error", "Something went wrong", "Failed to remove song");
         }
     }

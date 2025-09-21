@@ -1937,7 +1937,7 @@ textarea[b-2q70jhrmqz]{
     text-transform: uppercase;
     letter-spacing: .05em;
     color: rgb(107,114,128);
-    padding: 1rem 1.5rem;
+    padding: 20px 24px;
     border: none;
     text-wrap: nowrap;
 }
@@ -1945,11 +1945,12 @@ textarea[b-2q70jhrmqz]{
 .table-row[b-2q70jhrmqz] {
     border-bottom-width: 1px;
     border-color: rgb(229,231,235);
+    vertical-align:middle;
 }
 
 .table-cell[b-2q70jhrmqz] {
     white-space: nowrap;
-    padding: 30px 24px 20px 24px;
+    padding: 20px 24px;
     font-size: .875rem;
     line-height: 1.25rem;
 }
@@ -5923,19 +5924,20 @@ a[b-pyu84pds10] {
     text-transform: uppercase;
     letter-spacing: .05em;
     color: rgb(107,114,128);
-    padding: 1rem 1.5rem;
-    border:none;
+    padding: 20px 24px;
+    border: none;
 }
 
 .table-row[b-pyu84pds10] {
     border-bottom-width: 1px;
     border-color: rgb(229,231,235);
+    vertical-align:middle;
 }
 
 .table-cell[b-pyu84pds10] {
     white-space: nowrap;
-/*    padding: 30px 24px 20px 24px;*/
-    padding: 2rem;
+    /*    padding: 30px 24px 20px 24px;*/
+    padding: 20px 24px;
     font-size: .875rem;
     line-height: 1.25rem;
 }

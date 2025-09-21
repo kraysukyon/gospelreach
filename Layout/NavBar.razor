@@ -27,7 +27,7 @@
                 </div>
 
                 <!--Member Management-->
-                <div hidden="@(auth.Role != "Administrator" || auth.Role != "Pastor")" class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
+                <div hidden="@(auth.Role != "Administrator" && auth.Role != "Pastor")" class="@GetClass(3, "link")" @onclick="() => SetActive(3)">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-people"></i>
                     </div>

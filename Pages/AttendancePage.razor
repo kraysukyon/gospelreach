@@ -10,6 +10,7 @@
 @inject GospelReachCapstone.Services.VisitorService _visitorsService
 @inject GospelReachCapstone.Services.AuthState _auth
 @inject NavigationManager _nav
+@inject ToastService _toast
 
 <PageTitle>Attendance Tracker</PageTitle>
 
@@ -321,9 +322,12 @@
                                 <td class="table-cell c2">@item.Category</td>
                                 <td class="table-cell c2">@item.Title</td>
                                 <td class="table-cell c2"><p class="fw-bold @(item.isCompleted ? "text-success" : "text-danger")">@(item.isCompleted ? "Complete" : "Missing")</p></td>
-                                <td class="table-cell">
-                                    <button class="btn btn-outline-light border border-1 p-2" style="font-size: 13px;" @onclick="() => OpenAttendance(item.AttendanceId)" @onclick:stopPropagation><span><i class="bi bi-info-circle"></i></span> View</button>
+                                <td class="table-cell c2">
+                                    <button class="btn p-2 px-4" @onclick="() => OpenAttendance(item.AttendanceId)" style="font-size: 13px; border: 1px solid #dee2e6;"><i class="bi bi-pencil-square"></i> Update</button>
                                 </td>
+                                @* <td class="table-cell">
+                                    <button class="btn btn-outline-light border border-1 p-2" style="font-size: 13px;" @onclick="() => OpenAttendance(item.AttendanceId)" @onclick:stopPropagation><span><i class="bi bi-info-circle"></i></span> View</button>
+                                </td> *@
                             </tr>
                         }
                     </tbody>
@@ -387,12 +391,28 @@
     //On initialized
     protected override async Task OnInitializedAsync()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         await GetOngoingSchedules();
     }
 
     //Get Schedules by status
     private async Task OnFilterChange(ChangeEventArgs e)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         dateFilter = e.Value!.ToString()!;
         joinedList.Clear();
 
@@ -426,6 +446,14 @@
     //Filter Department
     private async Task FilterDepartment(ChangeEventArgs e)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         departmentName = e.Value!.ToString()!;
 
         joinedList.Clear();
@@ -466,6 +494,14 @@
     //GetVisitors List
     private async Task GetVisitors()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         var result = await _visitorsService.GetVisitorsAsync();
 
         if (result.Success)
@@ -489,6 +525,13 @@
     //View Schedule
     private async Task OpenEdit(string Id)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
 
         var m = joinedList.FirstOrDefault(u => u.AttendanceId == Id);
 
@@ -560,6 +603,14 @@
     //Update attendanceMember and schedule
     private async Task UpdateAttendance()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         var updateSchedAttendance = await _schedule.UpdateScheduleAttendance(attVM.ScheduleId, true);
         if (updateSchedAttendance.Success)
         {
@@ -629,6 +680,14 @@
     //Open Attendance page
     private async Task OpenAttendance(string Id)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         ToggleModal();
         isLoadingModal = true;
         var attRes = await _attendanceService.GetAttendanceByIdAsync(Id);
@@ -760,6 +819,14 @@
     //Get Upcoming list of schedules
     private async Task GetUpcomingSchedules()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         message = "Fetching files...Please wait";
 
         var result = await _schedule.GetUpcomingSchedules();
@@ -779,6 +846,14 @@
     // Get Ongoing list of schedules
     private async Task GetOngoingSchedules()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         message = "Fetching files...Please wait";
 
         var results = await _attendanceService.GetOngoingAttendanceAsync();
@@ -821,6 +896,14 @@
     // Get Ongoing list of schedules By Department
     private async Task GetOngoingSchedulesByDepartment(string department)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         message = "Fetching files...Please wait";
 
         var results = await _attendanceService.GetOngoingAttendanceByDepartmentAsync(department);
@@ -905,6 +988,13 @@
     // Get Upcoming list of schedules By Dpartment
     private async Task GetCompletedSchedulesByDepartment(string department)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
         message = "Fetching files...Please wait";
 
         var result = await _schedule.GetCompletedSchedules();

@@ -93,7 +93,7 @@
                     <button disabled="@(string.IsNullOrEmpty(lyricsAndChords))" @onclick="ToggleTransposeView" class="btns" style="background-color:  @(string.IsNullOrWhiteSpace(lyricsAndChords) ? "gainsboro" : "")">Transpose</button>
                     <button @onclick="AutoBracket" class="btns">Auto Bracket</button>
                     <button @onclick="RemoveBracket" class="btns">Remove Brackets</button>
-                    <button @onclick="ToggleModal" class="btns save">Save</button>
+                    <button @onclick="checkValidation" class="btns save">Save</button>
                 </div>
             </div>
             <textarea spellcheck="false" @ref="inputTextArea" @bind="lyricsAndChords" @oninput="ResizeTextArea" type="text" class="form-control p-2 mt-2" placeholder="Type or paste you chords and lyrics here" />
@@ -111,7 +111,7 @@
                     <button @onclick="StepDown" class="btns"> - </button>
                     <button @onclick="StepUp" class="btns"> + </button>
                     <button @onclick="ToggleBracketlessView" class="btns">Preview without brackets</button>
-                    <button @onclick="ToggleModal" class="btns save">Save</button>
+                    <button @onclick="checkValidation2" class="btns save">Save</button>
                 </div>
             </div>
             <textarea readonly style="background-color: #FFFFFF;" value="@transposedOutput" @ref="outputTextArea" type="text" class="form-control p-2 mt-2" placeholder="Type or paste you chords and lyrics here" />
@@ -207,18 +207,9 @@
         transposedOutput = _chordsFormatterService.TransposeAll(lyricsAndChords, transposeStep, showBracketlessPreview);
     }
 
-    //Save to Firestore
-    private async Task SaveToFirestore()
+    //Check Validation
+    private void checkValidation()
     {
-        isUpdating = true;
-        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
-
-        if (!isOnline)
-        {
-            ToggleModal();
-            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
-            return;
-        }
         validation.Clear();
 
         if (string.IsNullOrEmpty(song.Title))
@@ -239,6 +230,53 @@
         if (validation.Any())
         {
             isAdding = false;
+            return;
+        }
+
+        ToggleModal();
+    }
+
+    //Check Validation
+    private void checkValidation2()
+    {
+        validation.Clear();
+
+        if (string.IsNullOrEmpty(song.Title))
+        {
+            validation.Add("-Title is required");
+        }
+
+        if (string.IsNullOrEmpty(song.Artist))
+        {
+            song.Artist = "N/A";
+        }
+
+        if (string.IsNullOrEmpty(lyricsAndChords))
+        {
+            validation.Add("-Input is required");
+        }
+
+        if (validation.Any())
+        {
+            isAdding = false;
+            return;
+        }
+
+        ToggleModal();
+    }
+
+
+    //Save to Firestore
+    private async Task SaveToFirestore()
+    {
+        isUpdating = true;
+        
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            ToggleModal();
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
             return;
         }
 
@@ -261,27 +299,14 @@
 
     private async Task SaveToFirestore2()
     {
-        validation.Clear();
-        isAdding = true;
+        isUpdating = true;
 
-        if (string.IsNullOrEmpty(song.Title))
-        {
-            validation.Add("-Title is required");
-        }
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
-        if (string.IsNullOrEmpty(song.Artist))
+        if (!isOnline)
         {
-            song.Artist = "N/A";
-        }
-
-        if (string.IsNullOrEmpty(lyricsAndChords))
-        {
-            validation.Add("-Input is required");
-        }
-
-        if (validation.Any())
-        {
-            isAdding = false;
+            ToggleModal();
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
             return;
         }
 
