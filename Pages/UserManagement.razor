@@ -79,12 +79,20 @@
                 </div>
             }
             <div class="mt-3 @(isAdding ? "d-flex" : "d-none") align-items-center justify-content-center">
-                <p>Saving record.Please wait...</p>
+                @if (title == "Add User")
+                {
+                    <p>Add user.Please wait...</p>
+                }
+                else
+                {
+                    <p>Updating user.Please wait...</p>
+                }
 
 
-                <div class="d-flex gap-4 align-items-center justify-content-center mt-2">
+
+                @* <div class="d-flex gap-4 align-items-center justify-content-center mt-2">
                     <img src="/img/loading.svg" style="height:50px; width: 50px;" />
-                </div>
+                </div> *@
             </div>
 
             @if (title == "Add User")
@@ -126,25 +134,25 @@
             </div>
 
 
-            @if (confirmType == "success")
+            @if (confirmType == "reset")
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-success text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Reset</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Reset</button>
                 </div>
             }
             else if (confirmType == "disable")
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Disable</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="DisableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Disable</button>
                 </div>
             }
             else
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Enable</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="EnableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Enable</button>
                 </div>
             }
             
@@ -262,6 +270,14 @@
     //On startup
     protected override async Task OnInitializedAsync()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         isLoad = !isLoad;
         role = "Administrator";
         await GetUsers();
@@ -271,6 +287,14 @@
     //Get users List
     private async Task GetUsers()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         var result = await _accountsServices.GetUserAccountsAsync();
         if (result.Success)
         {
@@ -278,7 +302,7 @@
         }
         else
         {
-            _toast.AddNotification("error", "Something went wrong","Failed to get Users");
+            _toast.AddNotification("error", "Something went wrong","Please try again later.");
             // await _js.InvokeVoidAsync("alert", result.Error);
         }
     }
@@ -292,10 +316,23 @@
     private void OpenModal()
     {
         ToggleModal();
+        isAddUserModal = true;
+        title = "Add User";
+        memberId = string.Empty;
+        isValid = false;
+        role = "Administrator";
     }
 
     private async Task ToggleUpdateModal(string docId)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         ToggleModal();
         isLoadingModal = true;
         var userRes = await _accountsServices.GetUserById(docId);
@@ -317,21 +354,16 @@
 
     }
 
-
     private void ToggleModal()
     {
+        user = new();
+        validation.Clear();
         isAddUserModalVisible = !isAddUserModalVisible;
         isLoadingModal = false;
         isAddUserModal = false;
         isConfirmModal = false;
         isUpdating = false;
         data = string.Empty;
-
-        // isAddUserModalVisible = !isAddUserModalVisible;
-        // title = "Add User";
-        // memberId = string.Empty;
-        // isValid = false;
-        // role = "Administrator";
     }
 
     private bool IsValidEmail(string email)
@@ -339,11 +371,19 @@
         return Regex.IsMatch(email, pattern);
     }
 
-
     private async Task AddUser()
     {
-        validation.Clear();
+        
         isAdding = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        validation.Clear();
         if (string.IsNullOrEmpty(user.Email))
         {
             validation.Add("-Email is required");
@@ -431,6 +471,14 @@
 
     private async Task OnResetPassword(string email)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         try
         {
             var (success, message) = await Authentication.ResetPasswordAsync(email);
@@ -477,6 +525,15 @@
     private async Task ResetPassword()
     {
         isUpdating = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        isUpdating = true;
 
         try
         {
@@ -502,10 +559,17 @@
         }
     }
 
-
-
     private async Task UpdateUser()
     {
+        isAdding = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         isAdding = true;
         if (string.IsNullOrEmpty(user.FirstName))
         {
@@ -553,6 +617,15 @@
     private async Task DisableUser()
     {
         isUpdating = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        isUpdating = true;
         try
         {
             await _accountsServices.DisableAccountAsync(data);
@@ -573,6 +646,15 @@
     //Enable Accoubt
     private async Task EnableUser()
     {
+        isUpdating = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         isUpdating = true;
         try
         {

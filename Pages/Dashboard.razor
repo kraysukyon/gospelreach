@@ -132,6 +132,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         await GetStats();
         await GetEvents();
     }

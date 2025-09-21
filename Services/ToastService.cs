@@ -8,7 +8,7 @@
 
         public IReadOnlyList<NotificationItem> Notifications => _notifications.AsReadOnly();
 
-        public void AddNotification(string type, string title, string message, int timeoutMs = 5000)
+        public void AddNotification(string type, string title, string message, int timeoutMs = 10000)
         {
             var notification = new NotificationItem
             {
@@ -50,5 +50,5 @@ public class NotificationItem
     public string Title { get; set; } = "";
     public string Message { get; set; } = "";
     public string Type { get; set; } = "info"; // info, success, error
-    public int TimeoutMs { get; set; } = 5000;
+    public int TimeoutMs { get; set; } = 10000;
 }

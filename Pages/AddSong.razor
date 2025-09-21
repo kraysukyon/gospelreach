@@ -6,8 +6,41 @@
 @using GospelReachCapstone.Models
 @inject NavigationManager _nav
 @using System.Globalization
+@inject ToastService _toast
 
 <div class="sub-page">
+    <!--Background Modal-->
+    <div @onclick="ToggleModal" class="bgModal @(!isBackgroundModalVisible ? "" : "showModal")">
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation class="helperModal">
+            <div class="confirm">
+                <h1>Confirm Add</h1>
+                <p>You are about to add this song</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>Saving song...</p>
+            </div>
+
+            @if (isTransposeShow)
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="SaveToFirestore2" style="font-size: 13px; border: 1px solid #dee2e6;">Add</button>
+                </div>
+            }
+            else
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="SaveToFirestore" style="font-size: 13px; border: 1px solid #dee2e6;">Add</button>
+                </div>
+            }
+
+
+        </div>
+    </div>
+
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
         <div>
@@ -60,7 +93,7 @@
                     <button disabled="@(string.IsNullOrEmpty(lyricsAndChords))" @onclick="ToggleTransposeView" class="btns" style="background-color:  @(string.IsNullOrWhiteSpace(lyricsAndChords) ? "gainsboro" : "")">Transpose</button>
                     <button @onclick="AutoBracket" class="btns">Auto Bracket</button>
                     <button @onclick="RemoveBracket" class="btns">Remove Brackets</button>
-                    <button @onclick="SaveToFirestore" class="btns save">Save</button>
+                    <button @onclick="ToggleModal" class="btns save">Save</button>
                 </div>
             </div>
             <textarea spellcheck="false" @ref="inputTextArea" @bind="lyricsAndChords" @oninput="ResizeTextArea" type="text" class="form-control p-2 mt-2" placeholder="Type or paste you chords and lyrics here" />
@@ -78,7 +111,7 @@
                     <button @onclick="StepDown" class="btns"> - </button>
                     <button @onclick="StepUp" class="btns"> + </button>
                     <button @onclick="ToggleBracketlessView" class="btns">Preview without brackets</button>
-                    <button @onclick="SaveToFirestore2" class="btns save">Save</button>
+                    <button @onclick="ToggleModal" class="btns save">Save</button>
                 </div>
             </div>
             <textarea readonly style="background-color: #FFFFFF;" value="@transposedOutput" @ref="outputTextArea" type="text" class="form-control p-2 mt-2" placeholder="Type or paste you chords and lyrics here" />
@@ -101,10 +134,20 @@
     private bool isAdding = false;
     TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
 
+    //Modal
+    private bool isBackgroundModalVisible = false;
+    private bool isUpdating = false;
+
     private void ToggleTransposeView()
     {
         isTransposeShow = !isTransposeShow;
         TransposeChords();
+    }
+
+    private void ToggleModal()
+    {
+        isBackgroundModalVisible = !isBackgroundModalVisible;
+        isUpdating = false;
     }
 
     private void Processed()
@@ -167,8 +210,16 @@
     //Save to Firestore
     private async Task SaveToFirestore()
     {
+        isUpdating = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            ToggleModal();
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
         validation.Clear();
-        isAdding = true;
 
         if (string.IsNullOrEmpty(song.Title))
         {
@@ -191,22 +242,21 @@
             return;
         }
 
-        bool confirm = await _js.InvokeAsync<bool>("confirm", "Save Changes?");
-        if (!confirm) return;
-
         song.Title = textInfo.ToTitleCase(song.Title);
-        try
+        song.LyricsAndChords = lyricsAndChords;
+
+        var songRes = await _musicService.AddSongAsync(song);
+        if (songRes.Success)
         {
-            song.LyricsAndChords = lyricsAndChords;
-            await _musicService.AddSongAsync(song);
-            await _js.InvokeVoidAsync("alert", "Song successfully added to database!");
+            ToggleModal();
+            _toast.AddNotification("success", "Success", "Successfully added the song");
             _nav.NavigateTo("/music");
         }
-        catch (Exception ex)
+        else
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            ToggleModal();
+            _toast.AddNotification("error", "Something went wrong", "Please try again later.");    
         }
-
     }
 
     private async Task SaveToFirestore2()
@@ -235,21 +285,19 @@
             return;
         }
 
-        bool confirm = await _js.InvokeAsync<bool>("confirm", "Save Changes?");
-        if (!confirm) return;
-
         song.Title = textInfo.ToTitleCase(song.Title);
-        try
+        song.LyricsAndChords = transposedOutput;
+        var songRes = await _musicService.AddSongAsync(song);
+        if (songRes.Success)
         {
-            song.LyricsAndChords = transposedOutput;
-            await _musicService.AddSongAsync(song);
-            await _js.InvokeVoidAsync("alert", "Song successfully added to database!");
+            ToggleModal();
+            _toast.AddNotification("success", "Success", "Successfully added the song");
             _nav.NavigateTo("/music");
         }
-        catch (Exception ex)
+        else
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            ToggleModal();
+            _toast.AddNotification("error", "Something went wrong", "Please try again later.");
         }
-
     }
 }

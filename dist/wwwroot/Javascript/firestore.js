@@ -579,9 +579,29 @@
     async getSongs() {
         try {
             const songTable = await db.collection("Songs").get();
-            return songTable.docs.map(items => ({ id: items.id, ...items.data() }));
+            const song = songTable.docs.map(items => ({ id: items.id, ...items.data() }));
+
+            return { success: true, data: song };
         } catch (error) {
-            alert(error)
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getSongById(id) {
+        try {
+            const docRef = db.collection("Songs").doc(id);
+
+            const snap = await docRef.get();
+
+            if (snap.exists) {
+                const doc = { id: snap.id, ...snap.data() }
+                return { success: true, song: doc };
+            }
+            else {
+                return { success: true, error: "Song does not exist" };
+            }
+        } catch (error) {
+            return { success: false, error: error.message };
         }
     },
 
@@ -602,21 +622,41 @@
 
     async updateSong(docId, song) {
         try {
-            await db.collection("Songs").doc(docId).update({
-                title: song.title,
-                artist: song.artist,
-                lyricsAndChords: song.lyricsAndChords
-            });
+            const docRef = db.collection("Songs").doc(docId);
+
+            const snap = await docRef.get();
+
+            if (snap.exists) {
+                await docRef.update({
+                    title: song.title,
+                    artist: song.artist,
+                    lyricsAndChords: song.lyricsAndChords
+                });
+
+                return { success: true };
+            }
+            else {
+                return { success: true, error: "Song does not exist" };
+            }
         } catch (error) {
-            alert(error)
+            return { success: false, error: error.message };
         }
     },
 
     async deleteSong(id) {
         try {
-            await db.collection("Songs").doc(id).delete();
+            const docRef = db.collection("Songs").doc(id);
+
+            const snap = await docRef.get();
+
+            if (snap.exists) {
+                await docRef.delete();
+                return { success: true }
+            }
+
+            return { success: false, error: "Song does not exist" };
         } catch (error) {
-            alert(error);
+            return { success: false, error: error.message };
         }
     },
 
@@ -638,9 +678,14 @@
     async getDepartment() {
         try {
             const departmentTable = await db.collection("Departments").get();
-            const departments = departmentTable.docs.map(items => ({ departmentId: items.id, ...items.data() }));
 
-            return { success: true, data: departments };
+            if (!departmentTable.empty) {
+                const departments = departmentTable.docs.map(items => ({ departmentId: items.id, ...items.data() }));
+
+                return { success: true, data: departments };
+            }
+
+            return { success: false, error: "Department does not exist" };
         } catch (error) {
             return { success: false, error: error.message };
         }

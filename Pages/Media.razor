@@ -4,6 +4,7 @@
 @using System.Net
 @inject IJSRuntime _js
 @inject HttpClient Http
+@inject ToastService _toast
 
 <PageTitle>Media Files</PageTitle>
 
@@ -106,6 +107,15 @@
 
     protected override async Task OnInitializedAsync()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+
         try
         {
             await LoadFiles();
@@ -117,7 +127,7 @@
 
     }
 
-    async Task HandleFile(InputFileChangeEventArgs e)
+    private void HandleFile(InputFileChangeEventArgs e)
     {
         selectedFile = e.File;
     }
@@ -132,7 +142,7 @@
         return url.Insert(insertIndex, "fl_attachment/");
     }
 
-    async Task UploadFile()
+    private async Task UploadFile()
     {
         if (selectedFile == null) return;
 
@@ -176,8 +186,16 @@
         await LoadFiles();
     }
 
-    async Task LoadFiles()
+    private async Task LoadFiles()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         isLoading = true;
         files = await Http.GetFromJsonAsync<List<MediaFile>>("https://localhost:7114/api/media/list");
         isLoading = false;
@@ -185,6 +203,14 @@
 
     private async Task DeleteFiles(string publicId)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         var confirmed = await _js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete '{publicId}'?");
         if (!confirmed)
             return;
@@ -203,6 +229,14 @@
 
     async Task DeleteFile(string publicId)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         bool confirm = await _js.InvokeAsync<bool>("confirm", "Confirm delete file?");
 
         if (!confirm) return;

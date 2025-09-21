@@ -5,11 +5,34 @@
 @inject GospelReachCapstone.Services.MusicService _musicService
 @inject GospelReachCapstone.Services.AuthState _auth
 @inject NavigationManager _nav
+@inject ToastService _toast
 
 <PageTitle>Music</PageTitle>
 
 
 <div class="page">
+    <!--Background Modal-->
+    <div @onclick="ToggleModal" class="bgModal @(!isBackgroundModalVisible ? "" : "showModal")">
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation class="helperModal">
+            <div class="confirm">
+                <h1>Confirm Delete</h1>
+                <p>You are about to remove this song</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>Removing song...</p>
+            </div>
+
+
+            <div class="actions">
+                <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="DeleteSong" style="font-size: 13px; border: 1px solid #dee2e6;">Delete</button>
+            </div>
+
+        </div>
+    </div>
+
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-4">
         <div>
@@ -18,7 +41,7 @@
         </div>
 
         <div class="@(_auth.Role == "Guest" ? "d-none" : "")">
-            <a href="addSong" class="btn btn-primary p-2 text-white link w-100">Add Music</a>
+            <a href="addSong" class="btn btn-primary p-2 text-white link w-100">Add Lyrics & Chords</a>
         </div>
     </div>
 
@@ -50,7 +73,7 @@
                                 <button class="btn p-2 px-4" @onclick:stopPropagation @onclick="(() => getSongToDownload(items.Id))" style="font-size: 13px; border: 1px solid #dee2e6;" title="Download"><i class="bi bi-download fs-6"></i></button>
                                 <button class="btn p-2 px-4" @onclick:stopPropagation @onclick="(() => getSongToPrint(items.Id))" style="font-size: 13px; border: 1px solid #dee2e6;" title="Print"><i class="bi bi-printer text-black fs-6"></i></button>
                                 <button class="btn p-2 px-4 @(_auth.Role == "Guest" ? "d-none" : "")" @onclick:stopPropagation @onclick="(() => GotoEditPage(items.Id))" style="font-size: 13px; border: 1px solid #dee2e6;" title="Update"><i class="bi bi-pencil-square fs-6"></i></button>
-                                <button class="btn p-2 px-4 @(_auth.Role == "Guest" ? "d-none" : "")" @onclick:stopPropagation @onclick="(() => DeleteSong(items.Id))" style="font-size: 13px; border: 1px solid #dee2e6;" title="Delete"><i class="bi bi-trash text-danger fs-6"></i></button>
+                                <button class="btn p-2 px-4 @(_auth.Role == "Guest" ? "d-none" : "")" @onclick:stopPropagation @onclick="(() => ToggleDelete(items.Id))" style="font-size: 13px; border: 1px solid #dee2e6;" title="Delete"><i class="bi bi-trash text-danger fs-6"></i></button>
                             </td>
                         </tr>
                     }
@@ -62,100 +85,134 @@
 
 
 @code{
+    //Data
+    private string data = string.Empty;
     private List<Song> songList = new();
     private Song song = new();
     private string searchSong = string.Empty;
     private IEnumerable<Song> FilteredSong => songList.Where(u => string.IsNullOrWhiteSpace(searchSong) || u.Title.Contains(searchSong, StringComparison.OrdinalIgnoreCase) || u.Artist.Contains(searchSong, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    //Modal
+    private bool isBackgroundModalVisible = false;
+    private bool isUpdating = false;
 
     protected override async Task OnInitializedAsync()
     {
         await getSongList();
     }
 
+    private void ToggleModal()
+    {
+        isBackgroundModalVisible = !isBackgroundModalVisible;
+        isUpdating = false;
+    }
+
+    private void ToggleDelete(string id)
+    {
+        ToggleModal();
+        data = id;
+    }
+
 
     private async Task getSongList()
     {
-        try
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
         {
-            songList = new();
-            songList = await _musicService.GetSongsAsync();
-            if (songList != null)
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        songList = new();
+        var result = await _musicService.GetSongsAsync();
+        if (result.Success)
+        {
+            if (result.Data != null)
             {
+                songList = result.Data;
                 songList = songList.OrderByDescending(u => u.Title).ToList();
             }
         }
-        catch (Exception ex)
+        else
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            _toast.AddNotification("error", "Something went wrong", "Failed to get song list");
         }
     }
 
     private async Task GotoEditPage(string docId)
     {
-        // _nav.NavigateTo($"/editSong/{docId}");
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
-        try
+        if (!isOnline)
         {
-            List<Song> list = new();
-            list = await _musicService.GetSongsAsync();
-            if (list != null)
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        var result = await _musicService.GetSongById(docId);
+        if (result.Success)
+        {
+            if (result.Song != null)
             {
-                var songId = list.FirstOrDefault(u => u.Id == docId);
-                if (songId != null)
-                {
-                    _nav.NavigateTo($"/editSong/{songId.Id}");
-                }
-                else
-                {
-                    await _js.InvokeVoidAsync("alert", "Song not found.");
-                }
+                _nav.NavigateTo($"/editSong/{result.Song.Id}");
+            }
+            else
+            {
+                _toast.AddNotification("error", "Failed to get song", "Song not found");
+                await getSongList();
             }
         }
-        catch (Exception ex)
+        else
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            _toast.AddNotification("error", "Something went wrong", "Please try again");
         }
     }
 
-    private async Task DeleteSong(string Id)
+    private async Task DeleteSong()
     {
-        bool confirm = await _js.InvokeAsync<bool>("confirm", "Confirm Delete?");
-        if (!confirm) return;
+        isUpdating = true;
 
-        try
+        var songRes = await _musicService.DeleteSongAsync(data);
+        if (songRes.Success)
         {
-            await _musicService.DeleteSongAsync(Id);
-            await _js.InvokeVoidAsync("alert", "Song Successfully deleted!");
+            ToggleModal();
+            _toast.AddNotification("success", "Success", "Successfully remove song");
             await getSongList();
         }
-        catch(Exception ex)
+        else
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            ToggleModal();
+            _toast.AddNotification("error", "Something went wrong", "Failed to remove song");
         }
     }
 
     private async Task ViewSong(string docId)
     {
-        try
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
         {
-            List<Song> list = new();
-            list = await _musicService.GetSongsAsync();
-            if (list != null)
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        var result = await _musicService.GetSongById(docId);
+        if (result.Success)
+        {
+            if (result.Song != null)
             {
-                var songId = list.FirstOrDefault(u => u.Id == docId);
-                if (songId != null)
-                {
-                    _nav.NavigateTo($"/viewSong/{songId.Id}");
-                }
-                else
-                {
-                    await _js.InvokeVoidAsync("alert", "Song not found.");
-                }
+                _nav.NavigateTo($"/viewSong/{result.Song.Id}");
+            }
+            else
+            {
+                _toast.AddNotification("error", "Failed to get song", "Song not found");
+                await getSongList();
             }
         }
-        catch (Exception ex)
+        else
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            _toast.AddNotification("error", "Something went wrong", "Please try again");
         }
     }
 

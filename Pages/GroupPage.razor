@@ -8,6 +8,7 @@
 @inject GospelReachCapstone.Services.GroupService _groupService
 @inject GospelReachCapstone.Services.GroupMemberService _groupMemberService
 @inject HttpClient Http
+@inject ToastService _toast
 
 <PageTitle>Notification Management</PageTitle>
 
@@ -64,7 +65,7 @@
                     </table>
                 </div>
 
-                <button @onclick="AddGroupAndMembers" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+                <button @onclick='() => showConfirm("addGroup","")' class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
             </div>
 
         </div>
@@ -128,6 +129,44 @@
                 <button @onclick="() => UpdateGroupName(groupId)" disabled="@(isWorking)" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Save</button>
             </div>
         </div>
+
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation hidden="@(!isConfirmModal)" class="helperModal">
+            <div class="confirm">
+                <h1>@confirmTitle</h1>
+                <p>@confirmMessage</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>@updatingMessage</p>
+            </div>
+
+
+            @if (confirmType == "addGroup")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleBackModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="AddGroupAndMembers" style="font-size: 13px; border: 1px solid #dee2e6;">Add</button>
+                </div>
+            }
+            else if (confirmType == "deleteGroup")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleBackModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="DeleteGroup" style="font-size: 13px; border: 1px solid #dee2e6;">Delete</button>
+                </div>
+            }
+            else if (confirmType == "removeMembers")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleBackModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="RemoveMembers" style="font-size: 13px; border: 1px solid #dee2e6;">Remove</button>
+                </div>
+            }
+
+
+
+        </div>
     </div>
 
     <!--Header Section-->
@@ -157,7 +196,7 @@
 
                 <p class="mb-2 mt-2 ms-2"><em>@groupMessage</em></p>
 
-                <div class="table-containers">
+                <div class="table-containers flex-grow-1">
                     <table class="table">
                         <thead>
                             <tr>
@@ -181,14 +220,14 @@
                                             <td @onclick:stopPropagation class="table-cell" style="width: 100%; font-weight: 500;" @onclick="(() => GetGroupAndMembers(item.Id, item.Name))"><p class="link">@item.Name</p></td>
                                         }
                                         
-                                        <td @onclick:stopPropagation class="table=cell">
+                                        <td hidden="@(item.Id == "All")" @onclick:stopPropagation class="table=cell">
                                             <div @onclick:stopPropagation class="optionDot">
                                                 <i @onclick="() => ToggleOption(item.Id)" class="bi bi-three-dots-vertical cursor hover"></i>
                                                 @if (SelectedRow == item.Id)
                                                 {
                                                     <div class="optionDotChild">
                                                         <p @onclick="() => RenameGroupModal(item.Id, item.Name)">Rename</p>
-                                                        <p @onclick="() => DeleteGroup(item.Id)">Delete</p>
+                                                        <p @onclick='() => showConfirm("deleteGroup",item.Id)'>Delete</p>
                                                     </div>
                                                 }
                                             </div>
@@ -246,7 +285,7 @@
             </div>
 
             <div class="@(isAllMember ? "d-none" : "d-flex") gap-2 justify-content-end">
-                <button class="btn btn-danger px-4 py-2 text-white m-0" @onclick="RemoveMembers" style="width: 100px;">Delete</button>
+                <button class="btn btn-danger px-4 py-2 text-white m-0" @onclick='() => showConfirm("removeMembers","")' style="width: 100px;">Delete</button>
                 <button class="btn btn-primary px-4 py-2 text-white m-0" @onclick="() => ToggleShowMember(groupId)" style="width: 100px;">Add</button>
             </div>
 
@@ -287,6 +326,7 @@
     private bool isOptionVisible = false;
     private bool isRenameVisible = false;
     private string GroupName = string.Empty;
+    private string data = string.Empty;
 
     private IEnumerable<GroupMemberSelection> filteredMember => groupMemberSelectionList.Where(u => string.IsNullOrWhiteSpace(memberSearch) || u.Member.GetFullName().Contains(memberSearch, StringComparison.OrdinalIgnoreCase));
     private IEnumerable<Attendance> filteredList => attendancesList.Where(u => string.IsNullOrWhiteSpace(searchString) || u.Date.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -301,11 +341,51 @@
 
     private bool isWorking = false;
     private bool isAllMember = false;
+    private bool isUpdating = false;
+
+    //modal
+    private bool isConfirmModal = false;
+
+    //data
+    private string confirmTitle = string.Empty;
+    private string confirmMessage = string.Empty;
+    private string updatingMessage = string.Empty;
+    private string confirmType = string.Empty;
 
     //Load List during page initialization
     protected override async Task OnInitializedAsync()
     {
         await GetAllGroups();
+    }
+
+    //confirm modal
+    private void showConfirm(string type, string info)
+    {
+        confirmType = type;
+        ToggleBackModal();
+        isConfirmModal = true;
+        data = info;
+        switch (type)
+        {
+            case "deleteGroup":
+                confirmTitle = "Confirm Remove";
+                confirmMessage = "You are about to remove a group and its members";
+                updatingMessage = "Removing group...";
+                break;
+            case "addGroup":
+                isView = false;
+                isAddDepartmentModalVisible = true;
+                confirmTitle = "Confirm Add";
+                confirmMessage = "You are about to add a group";
+                updatingMessage = "Adding group...";
+                break;
+            case "removeMembers":
+                confirmTitle = "Confirm Remove";
+                confirmMessage = "You are about to remove members";
+                updatingMessage = "Removing...";
+                break;
+        }
+
     }
 
     private void NavigateMembers(string name)
@@ -316,6 +396,13 @@
     //show all members
     private async Task ShowAllmembers()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
         existingMemberList.Clear();
         isAllMember = true;
         isViewPanel = true;
@@ -343,6 +430,13 @@
     //Update Group Name
     private async Task UpdateGroupName(string Id)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
         isWorking = true;
         var result = await _groupService.RenameGroupAsync(Id, groupName);
 
@@ -374,23 +468,34 @@
     }
 
     //Delete
-    private async Task DeleteGroup(string Id)
+    private async Task DeleteGroup()
     {
-        bool confirm = await _js.InvokeAsync<bool>("confirm", "Are you sure want to delete this group?");
+        isUpdating = true;
 
-        if (!confirm) return;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
-        var result = await _groupService.RemoveGroupAsync(Id);
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        
+
+        var result = await _groupService.RemoveGroupAsync(data);
 
         if (result.Success)
         {
-            await _js.InvokeVoidAsync("alert", "Group successfully deleted!");
-            isViewPanel = false;
+            _toast.AddNotification("success", "Success", "Successfully removed group");
+            // await _js.InvokeVoidAsync("alert", "Group successfully deleted!");
+            ToggleBackModal();
             await GetAllGroups();
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to delete group: " + result.Error);
+            ToggleBackModal();
+            _toast.AddNotification("error", "Something went wrong", "Please try again later");
+            // await _js.InvokeVoidAsync("alert", "Failed to delete group: " + result.Error);
         }
     }
 
@@ -413,6 +518,14 @@
 
     private async Task RemoveMembers()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         var membersToDelete = existingMemberList.Where(u => u.isSelected).ToList();
 
         foreach (var item in membersToDelete)
@@ -439,6 +552,14 @@
     //Add Members to Existing group
     private async Task AddMembers(string Id)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         var memToAdd = groupMemberSelectionList.Where(u => u.isSelected).ToList();
 
         if (memToAdd != null)
@@ -469,6 +590,14 @@
     //Get All members
     private async Task GetAllMembers()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         var result = await _memberService.GetMembersAsync();
 
         if (result.Success)
@@ -488,23 +617,17 @@
         }
     }
 
-    //Get All Members
-    // private async Task GetAllMembers()
-    // {
-    //     var result = await _memberService.GetMembersAsync();
-    //     if (result.Success)
-    //     {
-
-    //     }
-    //     else
-    //     {
-    //         await _js.InvokeVoidAsync("alert", result.Error);
-    //     }
-    // }
-
     //Get Group and its members
     private async Task GetGroupAndMembers(string Id, string Name)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         existingMemberList.Clear();
         isAllMember = false;
         viewMembersMessage = "Fetching data, please wait...";
@@ -561,6 +684,14 @@
     //Update GroupMembers and Group
     private async Task UpdateGroupAndMembers()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         var result = await _groupService.UpdateGroupAsync(group);
 
         if (result.Success)
@@ -593,6 +724,14 @@
     //Get All Groups
     private async Task GetAllGroups()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         groupMessage = "Fetching data, please wait...";
         groupList.Clear();
         var result = await _groupService.GetGroupsAsync();
@@ -644,6 +783,18 @@
     //Adding Groups and Members
     private async Task AddGroupAndMembers()
     {
+        isUpdating = true;
+
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        
+
         var groupResult = await _groupService.AddGroupAsync(group);
         isAllSelected = false;
 
@@ -664,20 +815,21 @@
                     var result = await _groupMemberService.AddGroupMembersAsync(mem);
                 }
 
-                isAddDepartmentModalVisible = false;
+                ToggleBackModal();
+                _toast.AddNotification("success", "Success", "Successfully added group");
                 await GetAllGroups();
-
-                await _js.InvokeVoidAsync("alert", "Group added successfully!");
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", "Group added successfully!");
+                ToggleBackModal();
+                _toast.AddNotification("success", "Success", "Successfully added group");
             }
 
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to add group: " + groupResult.Error);
+            ToggleBackModal();
+            _toast.AddNotification("error", "Something went wrong", "Please try again later");
         }
     }
 
@@ -687,10 +839,21 @@
         isAddDepartmentModalVisible = !isAddDepartmentModalVisible;
         isView = false;
         isAddMemberVisible = false;
+        isConfirmModal = false;
+        isViewPanel = false;
+        isUpdating = false;
     }
 
     private async Task ToggleAddGroup()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         ToggleBackModal();
         group = new();
         isAddMemberVisible = false;
@@ -700,6 +863,14 @@
 
     private async Task ToggleShowMember(string Id)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         addMemberMessage = "Fetching data, please wait...";
         groupMemberSelectionList.Clear();
         isAddDepartmentModalVisible = !isAddDepartmentModalVisible;

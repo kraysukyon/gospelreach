@@ -5,6 +5,7 @@
 @inject GospelReachCapstone.Services.MemberService _memberService
 @inject GospelReachCapstone.Services.AuthState _auth
 @inject NavigationManager _nav
+@inject ToastService _toast
 
 <PageTitle>Notification Management</PageTitle>
 
@@ -76,7 +77,7 @@
                     <thead>
                         <tr>
                             <th class="thead">Name</th>
-                            <th class="thead">Status</th>
+                            <th hidden="@(_auth.Role == "Administrator" || _auth.Role == "Pastor")" class="thead">Status</th>
                         </tr>
                     </thead>
 
@@ -84,8 +85,8 @@
                         @foreach (var item in filteredMemberList)
                         {
                             <tr class="table-row">
-                                <td class="table-cell" style="font-weight:500;"><p class="link">@item.GetFullName()</p></td>
-                                <td class="table-cell fw-bold @(_auth.Role != "Administrator" ? "" : "d-none")" style="font-weight:500;"><p class="link @(item.Status == "Active" ? "text-success" : "text-danger")">@item.Status</p></td>
+                                <td class="table-cell" style="font-weight:500;"><p>@item.GetFullName()</p></td>
+                                <td class="table-cell fw-bold @(_auth.Role != "Administrator" ? "" : "d-none")" style="font-weight:500;"><p class="@(item.Status == "Active" ? "text-success" : "text-danger")">@item.Status</p></td>
                             </tr>
                         }
                     </tbody>
@@ -115,22 +116,46 @@
         {
             if (_auth.Role == "Administrator" || _auth.Role == "Pastor")
             {
+                bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+                if (!isOnline)
+                {
+                    _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+                    return;
+                }
+
                 depName = "All";
                 await GetAllMembers("Senior");
             }
             else
             {
+                bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+                if (!isOnline)
+                {
+                    _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+                    return;
+                }
+
                 depName = _auth.Department!;
                 await GetAllMembers(depName);
             }
 
         }
-        
+
     }
 
     //Get Members
     private async Task GetAllMembers(string department)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         memberList.Clear();
         message = "Fetching data. Please wait...";
         var result = await _memberService.GetMembersAsync();
@@ -166,7 +191,8 @@
         }
         else
         {
-            message = "No Data Found";
+            _toast.AddNotification("error","Something went wrong","Failed to fetch data");
+            message = "Failed to fetch data";
         }
     }
 }

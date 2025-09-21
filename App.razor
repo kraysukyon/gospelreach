@@ -1,6 +1,7 @@
 ﻿@inject HttpClient Http
 @inject IJSRuntime JS
 @inject GospelReachCapstone.Services.FirebaseConfigService FirebaseService
+@inject ToastService _toast
 
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
@@ -18,6 +19,14 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
+        bool isOnline = await JS.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         await FirebaseService.LoadConfig(Http);
         await JS.InvokeVoidAsync("initializeFirebase", FirebaseService.Config);
     }

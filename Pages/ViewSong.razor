@@ -5,6 +5,7 @@
 @inject GospelReachCapstone.Services.ChordsFormatterService _chordsFormatterService
 @using GospelReachCapstone.Models
 @inject NavigationManager _nav
+@inject ToastService _toast
 
 <div class="sub-page">
     <!--Header Section-->
@@ -67,17 +68,34 @@
 
     protected override async Task OnInitializedAsync()
     {
-        songList = await _musicService.GetSongsAsync();
-        var item = songList.FirstOrDefault(u => u.Id == Id);
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
-        if (item != null)
+        if (!isOnline)
         {
-            lyricsAndChords = item.LyricsAndChords;
-            song.Title = item.Title;
-            song.Artist = item.Artist;
-            transposedOutput = item.LyricsAndChords;
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
         }
 
+        var result = await _musicService.GetSongById(Id);
+        if (result.Success)
+        {
+            if (result.Song != null)
+            {
+                lyricsAndChords = result.Song.LyricsAndChords;
+                song.Title = result.Song.Title;
+                song.Artist = result.Song.Artist;
+                transposedOutput = result.Song.LyricsAndChords;
+            }
+            else
+            {
+                _toast.AddNotification("error", "Something went wrong", "Song not found");
+                _nav.NavigateTo("/music");
+            }
+        }
+        else
+        {
+            _toast.AddNotification("error", "Something went wrong", "Failed to get song");
+        }
     }
 
     private void ToggleTransposeView()

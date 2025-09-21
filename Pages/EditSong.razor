@@ -5,8 +5,41 @@
 @inject IJSRuntime _js
 @using GospelReachCapstone.Models
 @inject NavigationManager _nav
+@inject ToastService _toast
 
 <div class="sub-page">
+    <!--Background Modal-->
+    <div @onclick="ToggleModal" class="bgModal @(!isBackgroundModalVisible ? "" : "showModal")">
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation class="helperModal">
+            <div class="confirm">
+                <h1>Confirm Changes</h1>
+                <p>You are about to update this song</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>Updating song...</p>
+            </div>
+
+            @if (isTransposeShow)
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="SaveToFirestore2" style="font-size: 13px; border: 1px solid #dee2e6;">Update</button>
+                </div>
+            }
+            else
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="SaveToFirestore" style="font-size: 13px; border: 1px solid #dee2e6;">Update</button>
+                </div>
+            }
+            
+
+        </div>
+    </div>
+
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-5">
         <div>
@@ -40,7 +73,7 @@
                     <button @onclick="ToggleTransposeView" class="btns">Transpose</button>
                     <button @onclick="AutoBracket" class="btns">Auto Bracket</button>
                     <button @onclick="RemoveBracket" class="btns">Remove Brackets</button>
-                    <button @onclick="SaveToFirestore" class="btns save">Save</button>
+                    <button @onclick="ToggleModal" class="btns save">Save</button>
                 </div>
             </div>
             <textarea spellcheck="false" @ref="inputTextArea" @bind="lyricsAndChords" @oninput="ResizeTextArea" type="text" class="form-control p-2 mt-2" placeholder="Type or paste you chords and lyrics here" />
@@ -58,7 +91,7 @@
                     <button @onclick="StepDown" class="btns"> - </button>
                     <button @onclick="StepUp" class="btns"> + </button>
                     <button @onclick="ToggleBracketlessView" class="btns">Preview without brackets</button>
-                    <button @onclick="SaveToFirestore2" class="btns save">Save</button>
+                    <button @onclick="ToggleModal" class="btns save">Save</button>
                 </div>
             </div>
             <textarea readonly style="background-color: #FFFFFF;" value="@transposedOutput" @ref="outputTextArea" type="text" class="form-control p-2 mt-2" placeholder="Type or paste you chords and lyrics here" />
@@ -81,18 +114,47 @@
     private Song song = new();
     private List<Song> songList = new();
 
+    private string data = string.Empty;
+
+    //Modal
+    private bool isBackgroundModalVisible = false;
+    private bool isUpdating = false;
+
     protected override async Task OnInitializedAsync()
     {
-        songList = await _musicService.GetSongsAsync();
-        var item = songList.FirstOrDefault(u => u.Id == Id);
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
-        if (item != null)
+        if (!isOnline)
         {
-            lyricsAndChords = item.LyricsAndChords;
-            song.Title = item.Title;
-            song.Artist = item.Artist;
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
         }
 
+        var result = await _musicService.GetSongById(Id);
+        if (result.Success)
+        {
+            if (result.Song != null)
+            {
+                lyricsAndChords = result.Song.LyricsAndChords;
+                song.Title = result.Song.Title;
+                song.Artist = result.Song.Artist;
+            }
+            else
+            {
+                _toast.AddNotification("error", "Something went wrong", "Song not found");
+                _nav.NavigateTo("/music");
+            }
+        }
+        else
+        {
+            _toast.AddNotification("error", "Something went wrong", "Failed to get song");
+        }
+    }
+
+    private void ToggleModal()
+    {
+        isBackgroundModalVisible = !isBackgroundModalVisible;
+        isUpdating = false;
     }
 
     private void ToggleTransposeView()
@@ -161,41 +223,75 @@
     //Save to Firestore
     private async Task SaveToFirestore()
     {
-        bool confirm = await _js.InvokeAsync<bool>("confirm", "Save Changes?");
-        if (!confirm) return;
+        isUpdating = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
-        try
+        if (!isOnline)
         {
-            song.LyricsAndChords = lyricsAndChords;
-            await _musicService.UpdateSongAsync(Id, song);
-            await _js.InvokeVoidAsync("alert", "Song successfully updated!");
-            _nav.NavigateTo("/music");
-
+            ToggleModal();
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
         }
-        catch (Exception ex)
+        song.LyricsAndChords = lyricsAndChords;
+        var result = await _musicService.UpdateSongAsync(Id, song);
+        if (result.Success)
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            if (string.IsNullOrEmpty(result.Error))
+            {
+                ToggleModal();
+                _toast.AddNotification("success", "Success", "Song successfully udpated");
+                _nav.NavigateTo("/music");
+            }
+            else
+            {
+                ToggleModal();
+                _toast.AddNotification("error", "Something went wrong", "Song not found");
+                _nav.NavigateTo("/music");
+            }
+        }
+        else
+        {
+            ToggleModal();
+            _toast.AddNotification("error", "Something went wrong", "Failed to update song");
+            _nav.NavigateTo("/music");
         }
 
     }
 
     private async Task SaveToFirestore2()
     {
-        bool confirm = await _js.InvokeAsync<bool>("confirm", "Save Changes?");
-        if (!confirm) return;
+        isUpdating = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
-        try
+        if (!isOnline)
         {
-            song.LyricsAndChords = transposedOutput;
-            await _musicService.UpdateSongAsync(Id, song);
-            await _js.InvokeVoidAsync("alert", "Song successfully updated!");
+            ToggleModal();
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        song.LyricsAndChords = transposedOutput;
+        var result = await _musicService.UpdateSongAsync(Id, song);
+        if (result.Success)
+        {
+            if (string.IsNullOrEmpty(result.Error))
+            {
+                ToggleModal();
+                _toast.AddNotification("success", "Success", "Song successfully udpated");
+                _nav.NavigateTo("/music");
+            }
+            else
+            {
+                ToggleModal();
+                _toast.AddNotification("error", "Something went wrong", "Song not found");
+                _nav.NavigateTo("/music");
+            }
+        }
+        else
+        {
+            ToggleModal();
+            _toast.AddNotification("error", "Something went wrong", "Failed to update song");
             _nav.NavigateTo("/music");
-
         }
-        catch (Exception ex)
-        {
-            await _js.InvokeVoidAsync("alert", ex.Message);
-        }
-
     }
 }

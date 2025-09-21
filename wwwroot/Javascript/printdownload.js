@@ -221,3 +221,9 @@ window.saveDivAsPdf = async function (divId, fileName) {
 
     pdf.save(fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`);
 };
+
+window.networkHelper = {
+    isOnline: function () {
+        return navigator.onLine;
+    }
+};

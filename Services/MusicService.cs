@@ -15,18 +15,21 @@ namespace GospelReachCapstone.Services
         }
 
         //======================================================Function===================================================//
-        public async Task<List<Song>> GetSongsAsync()
+        public async Task<SongResult> GetSongsAsync()
         {
             try
             {
-                var result = await _js.InvokeAsync<Song[]>("firestoreFunctions.getSongs");
-                return result.ToList();
+                var result = await _js.InvokeAsync<SongResult>("firestoreFunctions.getSongs");
+                return result;
 
+            }
+            catch (JSException ex)
+            {
+                return new SongResult { Success = false, Error = ex.Message };
             }
             catch (Exception ex)
             {
-                await _js.InvokeVoidAsync("alert", ex.Message);
-                return new List<Song>();
+                return new SongResult { Success = false, Error = ex.Message };
             }
         }
 
@@ -46,27 +49,55 @@ namespace GospelReachCapstone.Services
                 return new SongResult { Success = false, Error = ex.Message };
             }
         }
-        public async Task UpdateSongAsync(string Id, Song song)
+        public async Task<SongResult> UpdateSongAsync(string Id, Song song)
         {
             try
             {
-                await _js.InvokeVoidAsync("firestoreFunctions.updateSong", Id, song);
+                var result = await _js.InvokeAsync<SongResult>("firestoreFunctions.updateSong", Id, song);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new SongResult { Success = false, Error = ex.Message };
             }
             catch (Exception ex)
             {
-                await _js.InvokeVoidAsync("alert", ex.Message);
+                return new SongResult { Success = false, Error = ex.Message };
             }
         }
 
-        public async Task DeleteSongAsync(string Id)
+        public async Task<SongResult> DeleteSongAsync(string Id)
         {
             try
             {
-                await _js.InvokeVoidAsync("firestoreFunctions.deleteSong", Id);
+                var result = await _js.InvokeAsync<SongResult>("firestoreFunctions.deleteSong", Id);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new SongResult { Success = false, Error = ex.Message };
             }
             catch (Exception ex)
             {
-                await _js.InvokeVoidAsync("alert", ex.Message);
+                return new SongResult { Success = false, Error = ex.Message };
+            }
+        }
+
+        //Get song by id
+        public async Task<SongResult> GetSongById(string Id)
+        {
+            try
+            {
+                var result = await _js.InvokeAsync<SongResult>("firestoreFunctions.getSongById", Id);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new SongResult { Success = false, Error = ex.Message };
+            }
+            catch (Exception ex)
+            {
+                return new SongResult { Success = false, Error = ex.Message };
             }
         }
 
