@@ -48,15 +48,20 @@ namespace GospelReachCapstone.Services
             }
         }
 
-        public async Task updateMemberAsync(string memberId, Member member)
+        public async Task<MembersResult> updateMemberAsync(string memberId, Member member)
         {
             try
             {
-                await _js.InvokeVoidAsync("firestoreFunctions.updateMember", memberId, member);
+                var result = await _js.InvokeAsync<MembersResult>("firestoreFunctions.updateMember", memberId, member);
+                return result;
+            }
+            catch (JSException ex)
+            {
+                return new MembersResult { Success = false, Error = ex.Message };
             }
             catch (Exception ex)
             {
-                await _js.InvokeVoidAsync("alert", ex.Message);
+                return new MembersResult { Success = false, Error = ex.Message };
             }
         }
 

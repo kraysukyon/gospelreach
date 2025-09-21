@@ -4676,7 +4676,7 @@ a[b-9990y649dx] {
     width: 550px;
     padding: 2rem 1.5rem;
     background-color: #FFFFFF;
-    border-radius: 25px 0 0 25px;
+    border-radius: 12px;
     max-height: 80vh;
     overflow-y: auto;
 }

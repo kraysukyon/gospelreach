@@ -583,8 +583,7 @@
             });
             return { success: true }
         } catch (error) {
-            return { success: false }
-            alert(error)
+            return { success: false, error: error.message }
         }
     },
 
@@ -592,8 +591,9 @@
     async updateMember(docId, member) {
         try {
             await db.collection("Members").doc(docId).set(member);
+            return { success: true };
         } catch (error) {
-            alert(error)
+            return { success: false, error: error.message }
         }
     },
 

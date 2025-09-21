@@ -6,6 +6,7 @@
 @inject GospelReachCapstone.Services.GeneralFunctions _gen
 @using System.Text.RegularExpressions
 @using System.Globalization
+@inject ToastService _toast
 
 <PageTitle>Member Management</PageTitle>
 
@@ -70,7 +71,9 @@
 
     <!--Add Member Model-->
     <div @onclick="ToggleModal" class="addMemberModal @(isAddModalVisible ? "show" : "")">
-        <div class="addMember" @onclick:stopPropagation>
+
+        <!--Add-->
+        <div hidden="@(!isAddModal)" class="addMember" @onclick:stopPropagation>
             <h4 class="fw-bold">
                 @title
             </h4>
@@ -79,10 +82,9 @@
             <div class="inputs mt-3">
                 <div class="d-flex align-items-center gap-2">
                     <p>First Name</p>
-                    <p class="text-danger fw-bold @(validFirstname ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p>
                 </div>
                 
-                <input spellcheck="false" @bind="member.FirstName" @onblur="(() => CheckIfValid(nameof(member.FirstName)))" type="text" class="form-control p-2 mt-2 @(validFirstname ? "" : "border-danger")" placeholder="First Name" />
+                <input spellcheck="false" @bind="member.FirstName" type="text" class="form-control p-2 mt-2" placeholder="First Name" />
             </div>
 
             <div class="inputs mt-3">
@@ -96,9 +98,8 @@
             <div class="inputs mt-3">
                 <div class="d-flex align-items-center gap-2">
                     <p>Last Name</p>
-                    <p class="text-danger fw-bold @(validLastName ? "d-none" : "")" style="font-size: 12px; padding: 0; margin: 0">This field is required.</p>
                 </div>
-                <input spellcheck="false" @bind="member.LastName" @onblur="(() => CheckIfValid(nameof(member.LastName)))" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
+                <input spellcheck="false" @bind="member.LastName" type="text" class="form-control p-2 mt-2" placeholder="Last Name" />
             </div>
 
             
@@ -108,7 +109,7 @@
                     <p>Email</p>
                     <p style="font-size: 12px; padding: 0; margin: 0; color:gray;">(optional)</p>
                 </div>
-                <input spellcheck="false" @bind="member.Email" @onblur="(() => CheckIfValidEmail())" type="text" class="form-control p-2 mt-2" placeholder="Email" />
+                <input spellcheck="false" @bind="member.Email" type="text" class="form-control p-2 mt-2" placeholder="Email" />
             </div>
 
             <div class="inputs mt-3">
@@ -164,32 +165,52 @@
                     }
                 </div>
             }
-
-            <div class="mt-3 @(isAdding ? "d-flex" : "d-none") align-items-center justify-content-center">
-                <p>Saving record.Please wait...</p>
-
-
-                <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
-                    <img src="/img/loading.svg" style="height:50px; width: 50px;" />
-                </div>
-            </div>
             
 
             @if (title == "Add Member")
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
-                    <button class="btn p-2 px-4" style="font-size:13px;" @onclick="ToggleModal">Cancel</button>
-                    <button class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" @onclick="addMember">Create</button>
+                    <button class="btn border border-1 p-2 px-4" @onclick="ToggleModal">Cancel</button>
+                    <button class="btn btn-primary p-2 px-4 text-white" @onclick="CheckValidation">Create</button>
                 </div>
             }
             else
             {
                 <div class="addOptions mt-5 d-block d-md-flex gap-2 justify-content-end">
-                    <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Cancel</button>
-                    <button @onclick="UpdateMember" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white" >Update</button>
+                    <button class="btn border border-1 p-2 px-4" @onclick="ToggleModal">Cancel</button>
+                    <button @onclick="CheckValidation" class="btn btn-primary p-2 px-4 text-white">Update</button>
                 </div>
             }
 
+        </div>
+
+
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation hidden="@(!isConfirmModal)" class="helperModal">
+            <div class="confirm">
+                <h1>@confirmTitle</h1>
+                <p>@confirmMessage</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>@updatingMessage</p>
+            </div>
+
+
+            @if (confirmType == "add")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="addMember" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
+            else
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="UpdateMember" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
         </div>
     </div>
 
@@ -202,7 +223,7 @@
             </div>
 
             <div>
-                <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleModal">Add Member</button>
+                <button class="btn btn-primary px-4 py-2 text-white" @onclick="ToggleAdd">Add Member</button>
             </div>
         </div>
         
@@ -294,6 +315,15 @@
     private string emailError = string.Empty;
     private string searchstring = string.Empty;
     private List<Member> FilteredMember => membersList.Where(u => string.IsNullOrWhiteSpace(searchstring) || u.FirstName.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.MiddleName) && u.MiddleName.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || u.LastName.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.Email) && u.Email.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.Contact) && u.Contact.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.Classification) && u.Classification.Contains(searchstring, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(u.Status) && u.Status.Contains(searchstring, StringComparison.OrdinalIgnoreCase)).ToList();
+    private bool isAddModal = false;
+    private bool isConfirmModal = false;
+    private bool isUpdating = false;
+
+    private string confirmType = string.Empty;
+    private string confirmTitle = string.Empty;
+    private string confirmMessage = string.Empty;
+    private string updatingMessage = string.Empty;
+    private string data = string.Empty;
 
 
     protected override async Task OnInitializedAsync()
@@ -312,8 +342,25 @@
         isLoad = !isLoad;
     }
 
+    private void ToggleAdd()
+    {
+        ToggleModal();
+        validation.Clear();
+        member = new();
+        title = "Add Member";
+        isAddModal = true;
+    }
+
     private async Task getMembers()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         totalMembers = 0;
         activeMembers = 0;
         newMembers = 0;
@@ -327,7 +374,7 @@
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", $"Unable to fetch Members List: {result.Error}");
+            _toast.AddNotification("error", "Something went wrong", "Failed to get members");
         }
     }
 
@@ -336,9 +383,17 @@
         return Regex.IsMatch(email, pattern);
     }
 
-    private async Task addMember()
+    //check validation
+    private async Task CheckValidation()
     {
-        isAdding = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         validation.Clear();
         if (string.IsNullOrEmpty(member.FirstName))
         {
@@ -372,11 +427,103 @@
             validation.Add("-Member must be at least 12 years old");
         }
 
+        if (!string.IsNullOrEmpty(member.FirstName) && !string.IsNullOrEmpty(member.LastName))
+        {
+            var getRes = await _memberService.GetMembersAsync();
+            if (getRes.Success)
+            {
+                var newFirst = member.FirstName.Trim().ToLower();
+                var newMiddle = (member.MiddleName ?? "").Trim().ToLower();
+                var newLast = member.LastName.Trim().ToLower();
+
+                var exists = getRes.Data.Any(m =>
+                        m.FirstName.ToLower().Trim() == newFirst &&
+                        (m.MiddleName ?? "").ToLower().Trim() == newMiddle &&
+                        m.LastName.ToLower().Trim() == newLast
+                    );
+
+                if (title != "Add Member")
+                {
+                    exists = getRes.Data.Any(m => m.Id != member.Id &&
+                        m.FirstName.ToLower().Trim() == newFirst &&
+                        (m.MiddleName ?? "").ToLower().Trim() == newMiddle &&
+                        m.LastName.ToLower().Trim() == newLast
+                    );
+                }
+                
+
+                if (exists)
+                {
+                    validation.Add("-Member already exist");
+                    return;
+                }
+            }
+            else
+            {
+                _toast.AddNotification("error", "Something went wrong", "Error in validating");
+                ToggleModal();
+                return;
+            }
+        }
+
+
+
         if (validation.Any())
         {
             isAdding = false;
             return;
         }
+
+        isAddModal = false;
+        if (title == "Add Member")
+        {
+            showConfirm("add", "");
+        }
+        else
+        {
+            showConfirm("update", member.Id);
+        }
+
+
+    }
+
+    //show confirm modal
+    private void showConfirm(string type, string info)
+    {
+        confirmType = type;
+        isConfirmModal = true;
+        data = info;
+        switch (type)
+        {
+            case "add":
+                confirmTitle = "Confirm Add";
+                confirmMessage = "You are about to add a member";
+                updatingMessage = "Adding member...";
+                break;
+            case "update":
+                confirmTitle = "Confirm Update";
+                confirmMessage = "You are about to update a member";
+                updatingMessage = "Updating member...";
+                break;
+        }
+
+
+
+    }
+
+    private async Task addMember()
+    {
+        isUpdating = true;
+
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        isUpdating = true;
 
         member.FirstName = textInfo.ToTitleCase(member.FirstName);
         if (!string.IsNullOrEmpty(member.MiddleName))
@@ -388,16 +535,14 @@
         var memRes = await _memberService.AddMemberAsync(member);
         if (memRes.Success)
         {
-            isAdding = false;
-            await _js.InvokeVoidAsync("alert", "Member added successfully");
-            await getMembers();
+            _toast.AddNotification("success", "Success", "Successfully add member");
             ToggleModal();
             member = new();
+            await getMembers();
         }
         else
         {
-            isAdding = false;
-            await _js.InvokeVoidAsync("alert", memRes.Error);
+            _toast.AddNotification("error", "Something went wrong", "Failed to add member.");
         }
     }
 
@@ -435,8 +580,10 @@
 
     private async Task ToggleUpdateModal(string docId)
     {
-        isAddModalVisible = !isAddModalVisible;
+        ToggleModal();
+        isAddModal = true;
         title = "Update Member";
+        validation.Clear();
         var accountToUpdate = membersList.FirstOrDefault(u => u.Id == docId);
         if (accountToUpdate != null)
         {
@@ -463,45 +610,17 @@
 
     private async Task UpdateMember()
     {
-        isAdding = true;
-        validation.Clear();
-        if (string.IsNullOrEmpty(member.FirstName))
-        {
-            validation.Add("-First Name is required");
-        }
+        isUpdating = true;
 
-        if (string.IsNullOrEmpty(member.LastName))
-        {
-            validation.Add("-Last Name is required");
-        }
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
-        if (!string.IsNullOrEmpty(member.Email))
+        if (!isOnline)
         {
-            if (!IsValidEmail(member.Email))
-            {
-                validation.Add("-Invalid Email");
-            }
-        }
-
-        if (!string.IsNullOrEmpty(member.Contact))
-        {
-            if (!IsValidContact(member.Contact))
-            {
-                validation.Add("-Contact number must be 11 digits");
-            }
-        }
-
-
-        if (member.Birthdate > DateOnly.FromDateTime(DateTime.Now).AddYears(-12))
-        {
-            validation.Add("-Member must be at least 12 years old");
-        }
-
-        if (validation.Any())
-        {
-            isAdding = false;
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
             return;
         }
+
+        isUpdating = true;
 
         member.FirstName = textInfo.ToTitleCase(member.FirstName);
         if (!string.IsNullOrEmpty(member.MiddleName))
@@ -510,16 +629,17 @@
         }
         member.LastName = textInfo.ToTitleCase(member.LastName);
 
-        try
+        var upRes = await _memberService.updateMemberAsync(member.Id, member);
+        if (upRes.Success)
         {
-            await _memberService.updateMemberAsync(member.Id, member);
+            _toast.AddNotification("success", "Success", "Successfully updated member");
             ToggleModal();
             await getMembers();
-            await _js.InvokeVoidAsync("alert", "Member updated successfully.");
         }
-        catch (Exception ex)
+        else
         {
-            await _js.InvokeVoidAsync("alert", ex.Message);
+            _toast.AddNotification("error", "Something went wrong", "Failed to update member");
+            ToggleModal();
         }
     }
 
@@ -546,10 +666,10 @@
 
     private void ToggleModal()
     {
-        validation.Clear();
         isAddModalVisible = !isAddModalVisible;
-        member = new();
-        title = "Add Member";
+        isConfirmModal = false;
+        isAddModal = false;
+        isUpdating = false;
     }
 
     private void CheckIfValid(string fieldName)
