@@ -975,7 +975,16 @@
     //Update Financial Record
     private async Task UpdateFinancial()
     {
+        isUpdating = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        isUpdating = true;
 
         DateTime date = DateTime.Now;
         updateMensRecord.DateModified = DateOnly.FromDateTime(date);
@@ -988,7 +997,8 @@
             {
                 isUpdating = false;
                 isUpdateModal = false;
-                isFailedToUpdateModal = true;
+                _toast.AddNotification("error", "Something went wrong", "Pleas try again later.");
+                ToggleModal();
                 await GetAllFinancialData();
                 await GetDataByDateRange(dateTo, dateFrom, DepName);
                 updateMensRecord = new();
@@ -996,14 +1006,15 @@
             }
             isUpdating = false;
             isUpdateModal = false;
-            isUpdateSuccessModal = true;
+            _toast.AddNotification("success", "Success", "Successfully updated an entry.");
+            ToggleModal();
             await GetAllFinancialData();
             await GetDataByDateRange(dateTo, dateFrom, DepName);
             updateMensRecord = new();
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", result.Error);
+            _toast.AddNotification("error", "Something went wrong", "Pleas try again later.");
         }
     }
 
@@ -1043,13 +1054,13 @@
             else
             {
                 isLoadingModal = false;
-                isFailedToFetchModal = true;
+                _toast.AddNotification("error", "Something went wrong", "Pleas try again later.");
                 await GetDataByDateRange(dateTo, dateFrom, DepName);
             }
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", result.Error);
+            _toast.AddNotification("error", "Something went wrong", "Pleas try again later.");
         }
     }
 

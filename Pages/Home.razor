@@ -220,6 +220,7 @@
 
     private void showLogin()
     {
+        validation.Clear();
         isSidebarVisible = false;
         isLoginModalVisible = !isLoginModalVisible;
     }
@@ -247,11 +248,12 @@
         if (!isOnline)
         {
             isLogginIn = !isLogginIn;
-            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            validation.Add("Connection error, check your connection.");
+            // _toast.AddNotification("error", "Connection Error", "Check your internet connection");
             return;
         }
 
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(email))
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
         {
             validation.Add("Please input required fields");
             isLogginIn = !isLogginIn;
