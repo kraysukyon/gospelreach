@@ -1,4 +1,4 @@
-﻿@page "/schedules"
+﻿@page "/schedules-copy"
 @layout LandingLayout
 @inject GospelReachCapstone.Services.ScheduleService _schedule
 @inject GospelReachCapstone.Services.AttendanceService _attendance
@@ -15,7 +15,6 @@
 @inject IJSRuntime _js
 @using System.Globalization
 @inject HttpClient Http
-@inject ToastService _toast
 
 
 <PageTitle>Schedule Management</PageTitle>
@@ -68,10 +67,37 @@
             <div class="d-flex justify-content-between mb-3">
                 <div>
                     <h4 class="fw-bold">
-                        @title
+                        New Department Schedule
                     </h4>
                 </div>
             </div>
+
+
+            @if (serviceValidation.Any())
+            {
+                <div class="mb-3">
+                    @foreach (var item in serviceValidation)
+                    {
+                        <p class="text-danger">@item</p>
+                    }
+                </div>
+            }
+
+
+            <!--Type-->
+            @* <div class="input mt-4">
+                <div class="title">
+                    <i class="bi bi-ui-radios-grid"></i>
+                    <p>Type</p>
+                </div>
+
+                <div class="cat">
+                    <button @onclick="(() => setType(1))" class="btn type @GetClass(1)"><i class="bi bi-star"></i> Event</button>
+                    <button @onclick="(() => setType(2))" class="btn type @GetClass(2)"><i class="bi bi-book"></i> Department</button>
+                    <button @onclick="(() => setType(3))" class="btn type @GetClass(3)"><i class="bi bi-houses"></i> Service</button>
+                    <button @onclick="(() => setType(4))" class="btn type @GetClass(4)"><i class="bi bi-houses"></i> Others</button>
+                </div>
+            </div> *@
 
             <!--Host-->
             <div class="input mt-3">
@@ -80,41 +106,23 @@
                     <p>Host</p>
                 </div>
 
-                @if (serviceSchedule.CategoryId == "Department")
-                {
-                    <select value="@selectedDepartment" @onchange="OnDepartmentChange" class="form-select p-2 text-center">
+                <select @onchange="OnDepartmentChange" class="form-select p-2 text-center">
                     <option value="Senior">Senior</option>
                     <option value="Womens">Womens</option>
                     <option value="Mens">Mens</option>
                     <option value="Youth">Youth</option>
                 </select>
-                }
-                else
-                {
-                    <select @bind="serviceSchedule.DepartmentId" class="form-select p-2 text-center">
-                        <option value="Senior">Senior</option>
-                        <option value="Womens">Womens</option>
-                        <option value="Mens">Mens</option>
-                        <option value="Youth">Youth</option>
-                    </select>
-                }
-                
-
-                
 
             </div>
 
             <!--Departments-->
             <div class="input mt-3">
-                <!--Title-->
                 <div class="title">
-                    <i class="bi bi-pencil-square"></i>
-                    <p>Title</p>
+                    @* <i class="bi bi-calendar-check"></i>
+                    <p>Date</p> *@
                 </div>
 
-                @if(serviceSchedule.CategoryId == "Department")
-                {
-                    <select value="@serviceSchedule.Title" @onchange="OnDivisionChange" disabled="@(selectedDepartment == "Mens")" class="form-select text-center p-2">
+                <select @onchange="OnDivisionChange" disabled="@(selectedDepartment == "Mens")" class="form-select text-center p-2">
                     @if (SubCategories.Any())
                     {
                         @foreach (var sub in SubCategories)
@@ -123,40 +131,45 @@
                         }
                     }
                 </select>
-                }
-                else
-                {
-                    <input @bind="serviceSchedule.Title" spellcheck="false" type="text" class="form-control p-2" placeholder="Add Title" />
-                }
+
+
+                @* <div class="date">
+                    <select value="@selectedDepartment" @onchange="OnDepartmentChange" class="form-select text-center p-2">
+                        @foreach (var category in Categories)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </select>
+                    <i class="bi bi-arrow-right"></i>
+                    
+                </div> *@
             </div>
 
             <!--Title-->
-            @* <div class="input mt-3">
+            <div class="input mt-3">
                 <div class="title">
                     <i class="bi bi-pencil-square"></i>
                     <p>Title</p>
                 </div>
 
                 <input readonly @bind="serviceSchedule.Title" type="text" class="form-control p-2" placeholder="Add Title" />
-            </div> *@
+            </div>
 
 
             <!--Attendees-->
             <div class="input mt-3">
                 <div class="title mt-2">
-                    <i class="bi bi-people"></i>
-                    @* <input checked="@(serviceSchedule.HasAttendee)" @onchange="ToggleAttendee" type="checkbox" class="cursor" /> *@
+                    <input checked="@(serviceSchedule.HasAttendee)" @onchange="ToggleAttendee" type="checkbox" class="cursor" />
                     <label>Attendee</label>
                 </div>
 
                 <div class="date">
-                    <select value="@selectedGroup"  @onchange="OnChangeAttendee" class="form-select text-center p-2">
-                        <option value="None">None</option>
+                    <select disabled="@(!serviceSchedule.HasAttendee)" @onchange="OnChangeAttendee" class="form-select text-center p-2">
                         <option value="All">All</option>
                         <option value="Group">Groups</option>
                     </select>
                     <i class="bi bi-arrow-right"></i>
-                    <select disabled="@(selectedGroup == "None" || selectedGroup == "All")" @onchange="OnChangeGroup" class="form-select text-center p-2">
+                    <select disabled="@(!isAttendee || Attendee == "All")" @onchange="OnChangeGroup" class="form-select text-center p-2">
                         @foreach (var item in filteredGroupList)
                         {
                             if (item.Name != "All Members")
@@ -202,7 +215,7 @@
                     <!--Radio button for time option-->
                     <div class="time">
                         <div class="d-flex gap-1 align-items-center">
-                            <input checked="@(serviceSchedule.TimeOption == "Custom")" type="radio" @onchange="(() => OnChangeRadio(0))" id="custom" name="time" class="cursor" />
+                            <input checked type="radio" @onchange="(() => OnChangeRadio(0))" id="custom" name="time" class="cursor" />
                             <label>Custom</label>
                         </div>
 
@@ -249,22 +262,20 @@
             <!--Notification-->
             <div class="input inputD mt-3 mb-3">
                 <div class="title mt-2">
-                    <i class="bi bi-envelope"></i>
-                    @* <input @onchange="ToggleNotify" type="checkbox" class="cursor" /> *@
+                    <input @onchange="ToggleNotify" type="checkbox" class="cursor" />
                     @* <i class="bi bi-bell"></i> *@
                     <label>Notify</label>
                 </div>
 
                 <div class="d-flex flex-column gap-2">
-                    <select @bind="groupMemberId"  class="form-select p-2 text-center">
-                        <option value="None">None</option>
+                    <select disabled="@(!isNotify)" @bind="groupMemberId" class="form-select p-2 text-center">
                         @foreach (var item in notifList)
                         {
                             <option value="@item.Id">@item.Name</option>
                         }
                     </select>
                     <div class="email">
-                        <input readonly="@(groupMemberId == "None")" spellcheck="false" @bind="emailToAdd" type="text" class="form-control p-2 pe-5" placeholder="Add Email" />
+                        <input readonly="@(!isNotify)" spellcheck="false" @bind="emailToAdd" type="text" class="form-control p-2 pe-5" placeholder="Add Email" />
                         <i @onclick="AddToEmailList" class="bi bi-plus-circle-fill text-primary fs-5 cursor add"></i>
                     </div>
 
@@ -282,7 +293,7 @@
 
             </div>
 
-            <div class="mt-3 @(isUpdating ? "d-flex" : "d-none") align-items-center justify-content-center">
+            <div class="mt-3 @(isAddingService ? "d-flex" : "d-none") align-items-center justify-content-center">
                 <p>Creating schedule.Please wait...</p>
 
 
@@ -291,19 +302,9 @@
                 </div>
             </div>
 
-            @if (serviceValidation.Any())
-            {
-                <div class="mb-3 mt-3">
-                    @foreach (var item in serviceValidation)
-                    {
-                        <p class="text-danger">@item</p>
-                    }
-                </div>
-            }
-
             <div class="addOptions mt-4 d-block d-md-flex gap-2" style="justify-self: end;">
                 <button class="btn border border-1 p-2 px-4" @onclick="ToggleModal">Close</button>
-                <button class="btn btn-primary p-2 px-4 text-white" @onclick="CheckValidation">Create</button>
+                <button hidden="@(title != "New Schedule")" class="btn btn-primary p-2 px-4 text-white" @onclick="addService">Create</button>
             </div>
         </div>
 
@@ -533,6 +534,18 @@
                 </div>
             </div>
 
+
+            @if (updateServiceValidation.Any())
+            {
+                <div class="mb-3">
+                    @foreach (var item in updateServiceValidation)
+                    {
+                        <p class="text-danger">@item</p>
+                    }
+                </div>
+            }
+
+
             <!--Type-->
             @* <div class="input mt-4">
                 <div class="title">
@@ -578,41 +591,17 @@
             <!--Attendees-->
             <div class="input mt-3">
                 <div class="title mt-2">
-                    <i class="bi bi-people"></i>
+                    <input checked="@(updateServiceSchedule.HasAttendee)" @onchange="ToggleAttendee" type="checkbox" class="cursor" />
                     <label>Attendee</label>
                 </div>
 
                 <div class="date">
-                    <select value="@selectedGroup" @onchange="OnChangeAttendee" class="form-select text-center p-2">
-                        <option value="None">None</option>
+                    <select disabled="@(!updateServiceSchedule.HasAttendee)" @onchange="OnChangeAttendee" class="form-select text-center p-2">
                         <option value="All">All</option>
                         <option value="Group">Groups</option>
                     </select>
                     <i class="bi bi-arrow-right"></i>
-                    <select disabled="@(selectedGroup == "None" || selectedGroup == "All")" @onchange="OnChangeGroup" class="form-select text-center p-2">
-                        @foreach (var item in filteredGroupList)
-                        {
-                            <option value="@item.Id" selected="@(item.Id == selectedGroupId)">@item.Name</option>
-                        }
-                    </select>
-                </div>
-            </div>
-
-            <!--Attendees-->
-            @* <div class="input mt-3">
-                <div class="title mt-2">
-                    <i class="bi bi-people"></i>
-                    <label>Attendee</label>
-                </div>
-
-                <div class="date">
-                    <select value="@selectedGroup" @onchange="OnChangeAttendee" class="form-select text-center p-2">
-                        <option value="None">None</option>
-                        <option value="All">All</option>
-                        <option value="Group">Groups</option>
-                    </select>
-                    <i class="bi bi-arrow-right"></i>
-                    <select disabled="@(selectedGroup == "None" || selectedGroup == "All")" @onchange="OnChangeGroup" class="form-select text-center p-2">
+                    <select disabled="@(!isAttendee || Attendee == "All")" @onchange="OnChangeGroup" class="form-select text-center p-2">
                         @foreach (var item in filteredGroupList)
                         {
                             if (item.Name != "All Members")
@@ -624,7 +613,7 @@
                 </div>
 
 
-            </div> *@
+            </div>
 
             <!--Date-->
             <div class="input mt-3">
@@ -705,22 +694,20 @@
             <!--Notification-->
             <div class="input inputD mt-3 mb-3">
                 <div class="title mt-2">
-                    <i class="bi bi-envelope"></i>
-                    @* <input @onchange="ToggleNotify" type="checkbox" class="cursor" /> *@
+                    <input @onchange="ToggleNotify" type="checkbox" class="cursor" />
                     @* <i class="bi bi-bell"></i> *@
                     <label>Notify</label>
                 </div>
 
                 <div class="d-flex flex-column gap-2">
-                    <select @bind="groupMemberId" class="form-select p-2 text-center">
-                        <option value="None">None</option>
+                    <select disabled="@(!isNotify)" @bind="groupMemberId" class="form-select p-2 text-center">
                         @foreach (var item in notifList)
                         {
                             <option value="@item.Id">@item.Name</option>
                         }
                     </select>
                     <div class="email">
-                        <input readonly="@(groupMemberId == "None")" spellcheck="false" @bind="emailToAdd" type="text" class="form-control p-2 pe-5" placeholder="Add Email" />
+                        <input readonly="@(!isNotify)" spellcheck="false" @bind="emailToAdd" type="text" class="form-control p-2 pe-5" placeholder="Add Email" />
                         <i @onclick="AddToEmailList" class="bi bi-plus-circle-fill text-primary fs-5 cursor add"></i>
                     </div>
 
@@ -738,19 +725,18 @@
 
             </div>
 
-            @if (updateServiceValidation.Any())
-            {
-                <div class="mb-3">
-                    @foreach (var item in updateServiceValidation)
-                    {
-                        <p class="text-danger">@item</p>
-                    }
+            <div class="mt-3 @(isUpdatingService ? "d-flex" : "d-none") align-items-center justify-content-center">
+                <p>Updating schedule.Please wait...</p>
+
+
+                <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
+                    <img src="/img/loading.svg" style="height:50px; width: 50px;" />
                 </div>
-            }
+            </div>
 
             <div class="addOptions mt-4 d-block d-md-flex gap-2" style="justify-self: end;">
-                <button class="btn border border-1 p-2 px-4" @onclick="ToggleModal">Close</button>
-                <button @onclick="CheckUpdateValidation" class="btn btn-primary p-2 px-4 text-white">Update</button>
+                <button class="btn btn-outline-light px-4 py-1 rounded rounded-pill border border-2" @onclick="ToggleModal">Close</button>
+                <button @onclick="updateService" class="btn btn-primary px-4 py-1 rounded rounded-pill text-white">Update</button>
             </div>
         </div>
 
@@ -990,7 +976,7 @@
                     <i class="bi bi-three-dots-vertical optionIcon cursor fs-4" @onclick="ToggleOption" @onclick:stopPropagation></i>
                     <div hidden="@(!isOptionVisible)" class="options-child">
                         <div class="cursor fsx" @onclick="() => ToggleUpdateUI(sched.Id)">Update</div>
-                        <div class="cursor fsx" @onclick='(() => showConfirm("remove",sched.Id))'>Remove</div>
+                        <div class="cursor fsx" @onclick="(() => removeSchedule(sched.Id))">Remove</div>
                     </div>
                 </div>
 
@@ -1051,25 +1037,25 @@
             </div>
 
 
-            @if (confirmType == "addDepartment")
+            @if (confirmType == "add")
             {
                 <div class="actions">
-                    <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" @onclick="addService" class="btn btn-primary text-white p-2 fs-5"  style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5"  style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else if (confirmType == "update")
             {
                 <div class="actions">
-                    <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" @onclick="updateService" class="btn btn-danger text-white p-2 fs-5" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else if (confirmType == "remove")
             {
                 <div class="actions">
-                    <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" @onclick="RemoveSchedule" class="btn btn-danger text-white p-2 fs-5"  style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5"  style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
         </div>
@@ -1084,8 +1070,8 @@
         </div>
 
         <div class="d-flex gap-2 @(role != "Administrator" ? "d-none" : "")">
-            <button @onclick='() => ToggleAddSched("Department")' class="btn btn-primary p-2 px-3 text-white link w-100 text-nowrap"><i class="bi bi-plus-circle-fill text-white me-2"></i>Add Department Meeting</button>
-            <button @onclick='() => ToggleAddSched("Service")' class="btn btn-primary p-2 px-3 text-white link w-100"><i class="bi bi-plus-circle-fill text-white me-2"></i>Add Service</button>
+            <button @onclick="ToggleAddSched" class="btn btn-primary p-2 px-3 text-white link w-100 text-nowrap"><i class="bi bi-plus-circle-fill text-white me-2"></i>Add Department Meeting</button>
+            <button @onclick="ToggleAddServiceModal" class="btn btn-primary p-2 px-3 text-white link w-100"><i class="bi bi-plus-circle-fill text-white me-2"></i>Add Service</button>
         </div>
     </div>
 
@@ -1093,22 +1079,22 @@
     <div class="lcontainer" hidden="@(isListVisible)">
         <div class="d-flex align-items-center justify-content-center gap-2">
             <div class="l1"></div>
-            Senior
+            Event
         </div>
 
         <div class="d-flex align-items-center justify-content-center gap-2">
             <div class="l2"></div>
-            Womens
+            Meeting
         </div>
 
         <div class="d-flex align-items-center justify-content-center gap-2">
             <div class="l3"></div>
-            Mens
+            Services
         </div>
 
         <div class="d-flex align-items-center justify-content-center gap-2">
             <div class="l4"></div>
-            Youth
+            Others
         </div>
     </div>
 
@@ -1136,7 +1122,6 @@
             }
         </div>
 
-
         <div class="calendar-grid">
             @foreach (var week in CalendarWeeks)
             {
@@ -1157,7 +1142,7 @@
 
 
 
-                                    <div class="@SwitchClass(item.DepartmentId)" @onclick="(() => OpenEdit(item.Id, new DateOnly(SelectedYear, SelectedMonth, day)))">@item.Title</div>
+                                    <div class="@SwitchClass(item.CategoryId)" @onclick="(() => OpenEdit(item.Id, new DateOnly(SelectedYear, SelectedMonth, day)))">@item.Title</div>
                                 }
                             </div>
                         }
@@ -1236,11 +1221,8 @@
 </div>
 
 @code {
-    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
     private List<Schedule> schedulesList = new();
     private List<Schedule> schedulesListView = new();
-    private string selectedGroupId = string.Empty;
-    private string data = string.Empty;
     ElementReference textarea;
     private bool isView = false;
     private string title = "New Schedule";
@@ -1349,7 +1331,6 @@
 
     private string? selectedDepartment;
     private string? selectedSub;
-    private string selectedGroup = "All";
     private bool isAttendee = true;
     private string Attendee = "All";
     private string Department = "Senior";
@@ -1402,24 +1383,14 @@
         }
         await getScheduleList();
         at = "1234";
-
+        
     }
 
-    //Check Validation
-    private async Task CheckValidation()
+    //Add Service to database
+    private async Task addService()
     {
-        isUpdating = true;
-        serviceValidation.Clear();
-
-        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
-
-        if (!isOnline)
-        {
-            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
-            return;
-        }
-
-        isUpdating = true;
+        isAddingService = true;
+        serviceValidation = new();
         serviceSchedule.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
         serviceSchedule.EndTime = eTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
         if (serviceSchedule.EndDate < serviceSchedule.StartDate) serviceValidation.Add("-End Date must not less than the Start Date");
@@ -1427,122 +1398,11 @@
         if (string.IsNullOrWhiteSpace(serviceSchedule.Location)) serviceValidation.Add("-Venue cannot be empty");
         if (serviceValidation.Any())
         {
-            isUpdating = false; return;
+            isAddingService = false; return;
         }
 
-        ToggleModal();
-        showConfirm("addDepartment","");
 
-    }
 
-    //Check Validation
-    private async Task CheckUpdateValidation()
-    {
-        isUpdating = true;
-        updateServiceValidation.Clear();
-
-        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
-
-        if (!isOnline)
-        {
-            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
-            return;
-        }
-
-        isUpdatingService = true;
-
-        var checkResult = await _schedule.GetScheduleByIdAsync(updateServiceSchedule.Id);
-        if (checkResult.Success)
-        {
-            if (checkResult.Schedule.hasAttendance == true || checkResult.Schedule.hasFinance == true)
-            {
-                _toast.AddNotification("error", "Failed to update", "Event has link to attendance or finance ");
-                // await _js.InvokeVoidAsync("alert", "Cannot proceed, Event has link to attendance or finance");
-                ToggleModal();
-                await getScheduleList();
-                return;
-            }
-            else
-            {
-                updateServiceValidation = new();
-                updateServiceSchedule.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                updateServiceSchedule.EndTime = eTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                if (updateServiceSchedule.EndDate < updateServiceSchedule.StartDate) updateServiceValidation.Add("-End Date must not less than the Start Date");
-                if (string.IsNullOrWhiteSpace(updateServiceSchedule.Title)) updateServiceValidation.Add("-Title cannot be empty");
-                if (string.IsNullOrWhiteSpace(updateServiceSchedule.Location)) updateServiceValidation.Add("-Venue cannot be empty");
-                if (updateServiceValidation.Any())
-                {
-                    isUpdatingService = false; return;
-                }
-            }
-
-        }
-        else
-        {
-            _toast.AddNotification("error", "Failed to update", "Event has link to attendance or finance ");
-            ToggleModal();
-            // await _js.InvokeVoidAsync("alert", checkResult.Error);
-            await getScheduleList();
-
-        }
-
-        ToggleModal();
-        showConfirm("update", updateServiceSchedule.Id);
-
-    }
-
-    //show confirm modal
-    //confirm modal
-    private void showConfirm(string type, string info)
-    {
-        ToggleModal();
-        isConfirmModal = true;
-        confirmType = type;
-        data = info;
-        switch (type)
-        {
-            case "addDepartment":
-                confirmTitle = "Confirm Add";
-                confirmMessage = "You are about to add an event";
-                updatingMessage = "Adding event...";
-                break;
-            case "addService":
-                confirmTitle = "Confirm Add";
-                confirmMessage = "You are about to add an event";
-                updatingMessage = "Adding event...";
-                break;
-            case "update":
-                confirmTitle = "Confirm Update";
-                confirmMessage = "You are about to update an event";
-                updatingMessage = "Updating event...";
-                break;
-            case "remove":
-                ToggleModal();
-                isConfirmModal = true;
-                confirmTitle = "Confirm Remove";
-                confirmMessage = "You are about to remove an event ";
-                updatingMessage = "Removing event...";
-                break;
-
-        }
-
-    }
-
-    //Add Service to database
-    private async Task addService()
-    {
-        isUpdating = true;
-        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
-
-        if (!isOnline)
-        {
-            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
-            return;
-        }
-
-        isUpdating = true;
-        serviceSchedule.Title = textInfo.ToTitleCase(serviceSchedule.Title);
-        serviceSchedule.Location = textInfo.ToTitleCase(serviceSchedule.Location);
         var result = await _schedule.AddScheduleAsync(serviceSchedule);
         if(result.Success)
         {
@@ -1612,142 +1472,168 @@
                     }
                 }
             }
-            _toast.AddNotification("success", "Success", "Successfully added a schedule");
-            ToggleModal();
+
             _ = SendEmail();
             await getScheduleList();
+            await _js.InvokeVoidAsync("alert", "Service Added Successfully");
             serviceSchedule = new();
+            ToggleModal();
         }
         else
         {
-            _toast.AddNotification("error", "Something went wrong", "Please try again later");
             await _js.InvokeVoidAsync("alert", result.Error);
         }
+        isAddingService = false;
     }
 
     //Update Service to database
     private async Task updateService()
     {
-        isUpdating = true;
-        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+        isUpdatingService = true;
 
-        if (!isOnline)
+        var checkResult = await _schedule.GetScheduleByIdAsync(updateServiceSchedule.Id);
+        if (checkResult.Success)
         {
-            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
-            return;
-        }
+            
 
-        isUpdating = true;
-        updateServiceSchedule.Title = textInfo.ToTitleCase(updateServiceSchedule.Title);
-        updateServiceSchedule.Location = textInfo.ToTitleCase(updateServiceSchedule.Location);
-
-        var result = await _schedule.UpdateScheduleAsync(updateServiceSchedule.Id, updateServiceSchedule);
-        if (result.Success)
-        {
-            var removeFinanceresult = await _financeEventsService.RemoveFinanceRecordsByScheduleIdAsync(updateServiceSchedule.Id);
-
-            int Days = updateServiceSchedule.EndDate.DayNumber - updateServiceSchedule.StartDate.DayNumber + 1;
-            for (int i = 0; i < Days; i++)
+            if (checkResult.Schedule.hasAttendance == true || checkResult.Schedule.hasFinance == true)
             {
-                DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
-                var financeToAdd = new FinanceSchedule
-                {
-                    DepartmentId = updateServiceSchedule.DepartmentId,
-                    isCompleted = false,
-                    ScheduleId = updateServiceSchedule.Id,
-                    Date = date
-                };
-
-                var addFinance = await _financeEventsService.AddFinanceEventsAsync(financeToAdd);
-            }
-
-            if (updateServiceSchedule.HasAttendee)
-            {
-                var checkAttend = await _attendance.GetAttendanceByScheduleId(updateServiceSchedule.Id);
-                if (checkAttend.Data != null)
-                {
-                    foreach (var item in checkAttend.Data)
-                    {
-                        var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(item.Id);
-                        var removeAttendance = await _attendance.DeleteAttendanceAsync(item.Id);
-                    }
-                }
-
-                int count = 0;
-                if (updateServiceSchedule.GroupId == "All")
-                {
-                    var getMemRes = await _memberService.GetMembersAsync();
-                    count = getMemRes.Data.Count;
-
-                    int days = updateServiceSchedule.EndDate.DayNumber - updateServiceSchedule.StartDate.DayNumber + 1;
-
-                    for (int i = 0; i < days; i++)
-                    {
-                        DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
-                        var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Department = updateServiceSchedule.DepartmentId, TotalAttendee = count, Date = date };
-                        var attRes = await _attendance.AddAttendanceAsync(attendance);
-
-                        foreach (var item in getMemRes.Data)
-                        {
-                            var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.Id };
-                            var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
-                        }
-                    }
-                }
-                else
-                {
-                    var groupRes = await _groupMemberService.GetGroupMembersByGroupIdAsync(updateServiceSchedule.GroupId);
-                    count = groupRes.Data.Count();
-
-                    int days = updateServiceSchedule.EndDate.DayNumber - updateServiceSchedule.StartDate.DayNumber + 1;
-
-                    var groupMemRes = await _groupMemberService.GetGroupMembersByGroupIdAsync(updateServiceSchedule.GroupId);
-                    var groupMem = groupMemRes.Data;
-                    if (groupMem != null)
-                    {
-                        for (int i = 0; i < days; i++)
-                        {
-                            DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
-                            var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Department = updateServiceSchedule.DepartmentId, TotalAttendee = count, Date = date };
-                            var attRes = await _attendance.AddAttendanceAsync(attendance);
-
-                            foreach (var item in groupMem)
-                            {
-                                var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.MemberId };
-                                var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
-                            }
-                        }
-
-
-                    }
-                }
+                await _js.InvokeVoidAsync("alert", "Cannot proceed, Schedule has link to attendance or finance");
+                ToggleModal();
+                await getScheduleList();
             }
             else
             {
-                var checkAtt = await _attendance.GetAttendanceByScheduleId(updateServiceSchedule.Id);
-                if (checkAtt.Data != null)
+                updateServiceValidation = new();
+                updateServiceSchedule.StartTime = sTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                updateServiceSchedule.EndTime = eTime.ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
+                if (updateServiceSchedule.EndDate < updateServiceSchedule.StartDate) updateServiceValidation.Add("-End Date must not less than the Start Date");
+                if (string.IsNullOrWhiteSpace(updateServiceSchedule.Title)) updateServiceValidation.Add("-Title cannot be empty");
+                if (string.IsNullOrWhiteSpace(updateServiceSchedule.Location)) updateServiceValidation.Add("-Venue cannot be empty");
+                if (updateServiceValidation.Any())
                 {
-                    foreach (var item in checkAtt.Data)
-                    {
-                        var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(item.Id);
-                        var removeAttendance = await _attendance.DeleteAttendanceAsync(item.Id);
+                    isUpdatingService = false; return;
+                }
 
+                var result = await _schedule.UpdateScheduleAsync(updateServiceSchedule.Id, updateServiceSchedule);
+                if (result.Success)
+                {
+                    var removeFinanceresult = await _financeEventsService.RemoveFinanceRecordsByScheduleIdAsync(updateServiceSchedule.Id);
+
+                    int Days = updateServiceSchedule.EndDate.DayNumber - updateServiceSchedule.StartDate.DayNumber + 1;
+                    for (int i = 0; i < Days; i++)
+                    {
+                        DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
+                        var financeToAdd = new FinanceSchedule
+                        {
+                            DepartmentId = updateServiceSchedule.DepartmentId,
+                            isCompleted = false,
+                            ScheduleId = updateServiceSchedule.Id,
+                            Date = date
+                        };
+
+                        var addFinance = await _financeEventsService.AddFinanceEventsAsync(financeToAdd);
                     }
 
+                    if (updateServiceSchedule.HasAttendee)
+                    {
+                        var checkAttend = await _attendance.GetAttendanceByScheduleId(updateServiceSchedule.Id);
+                        if (checkAttend.Data != null)
+                        {
+                            foreach (var item in checkAttend.Data)
+                            {
+                                var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(item.Id);
+                                var removeAttendance = await _attendance.DeleteAttendanceAsync(item.Id);
+                            }
+                        }
+
+                        int count = 0;
+                        if (updateServiceSchedule.GroupId == "All")
+                        {
+                            var getMemRes = await _memberService.GetMembersAsync();
+                            count = getMemRes.Data.Count;
+
+                            int days = updateServiceSchedule.EndDate.DayNumber - updateServiceSchedule.StartDate.DayNumber + 1;
+
+                            for (int i = 0; i < days; i++)
+                            {
+                                DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
+                                var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Department = updateServiceSchedule.DepartmentId, TotalAttendee = count, Date = date };
+                                var attRes = await _attendance.AddAttendanceAsync(attendance);
+
+                                foreach (var item in getMemRes.Data)
+                                {
+                                    var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.Id };
+                                    var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var groupRes = await _groupMemberService.GetGroupMembersByGroupIdAsync(updateServiceSchedule.GroupId);
+                            count = groupRes.Data.Count();
+
+                            int days = updateServiceSchedule.EndDate.DayNumber - updateServiceSchedule.StartDate.DayNumber + 1;
+
+                            var groupMemRes = await _groupMemberService.GetGroupMembersByGroupIdAsync(updateServiceSchedule.GroupId);
+                            var groupMem = groupMemRes.Data;
+                            if (groupMem != null)
+                            {
+                                for (int i = 0; i < days; i++)
+                                {
+                                    DateOnly date = updateServiceSchedule.StartDate.AddDays(i);
+                                    var attendance = new Attendance { ScheduleId = updateServiceSchedule.Id, Department = updateServiceSchedule.DepartmentId, TotalAttendee = count, Date = date };
+                                    var attRes = await _attendance.AddAttendanceAsync(attendance);
+
+                                    foreach (var item in groupMem)
+                                    {
+                                        var toAdd = new AttendanceMemberRecord { AttendanceId = attRes.Id, IsPresent = false, MemberId = item.MemberId };
+                                        var addGroupMem = await _attenanceMemberRecordService.AddAttendanceMemberRecordAsync(toAdd);
+                                    }
+                                }
+
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var checkAtt = await _attendance.GetAttendanceByScheduleId(updateServiceSchedule.Id);
+                        if (checkAtt.Data != null)
+                        {
+                            foreach(var item in checkAtt.Data)
+                            {
+                                var removeAttendanceMember = await _attenanceMemberRecordService.RemoveAttendanceRecordAsync(item.Id);
+                                var removeAttendance = await _attendance.DeleteAttendanceAsync(item.Id);
+
+                            }
+
+                        }
+                    }
+
+                    _ = SendEmail();
+                    await getScheduleList();
+                    await _js.InvokeVoidAsync("alert", "Schedule successfully updated");
+                    updateServiceSchedule = new();
+                    ToggleModal();
                 }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", result.Error);
+                }
+                isUpdatingService = false;
             }
 
-            _ = SendEmail();
-            _toast.AddNotification("success", "Success", "Successfully updated an event.");
-            updateServiceSchedule = new();
-            ToggleModal();
-            await getScheduleList();
         }
         else
         {
-            _toast.AddNotification("error", "Something went wrong", "Please try again later.");
-            // await _js.InvokeVoidAsync("alert", result.Error);
+            ToggleModal();
+            await _js.InvokeVoidAsync("alert", checkResult.Error);
+            await getScheduleList();
+
         }
+
+
     }
 
     //Toggle Add Service Modal
@@ -1778,105 +1664,49 @@
     }
 
     //Show Add Schedule Modal
-    private async Task ToggleAddSched(string category)
+    private async Task ToggleAddSched()
     {
         await GetGroupName();
         ToggleModal();
         isAddSched = true;
         serviceSchedule = new();
-        selectedDepartment = "Senior";
-        selectedGroup = "None";
+        serviceSchedule.CategoryId = "Department";
+        serviceSchedule.Title = "Holiness Meeting";
         isLoadingModal = false;
-        groupMemberId = "None";
-        OnChangeRadio(0);
-        sTime = new TimeOnly(8, 0);
-        eTime = new TimeOnly(17, 0);
-        if (category == "Department")
-        {
-            title = "New Department Schedule";
-            serviceSchedule.CategoryId = "Department";
-            var subs = Categories.FirstOrDefault(u => u.Id == "Senior");
-            if (subs != null)
-            {
-
-                var subCat = subs.SubCategories;
-                if (subCat != null)
-                {
-                    SubCategories = subCat.OrderByDescending(u => u.Name == "Holiness Meeting").ThenBy(u => u.Name).ToList();
-                    serviceSchedule.Title = subCat.First().Name;
-                    selectedSub = subCat.First().Name;
-
-                    // Find the Holiness item
-                    var holiness = SubCategories.FirstOrDefault(u => u.Name == "Holiness Meeting");
-                    if (holiness != null)
-                    {
-                        serviceSchedule.Title = holiness.Id; // set the selected option
-                    }
-                }
-
-
-            }
-        }
-        else
-        {
-            title = "New Service";
-            serviceSchedule.CategoryId = "Service";
-            serviceSchedule.DepartmentId = "Senior";
-        }
     }
 
     //Onchange sa attendance all
 
     private void OnChangeAttendee(ChangeEventArgs e)
     {
-        selectedGroup = e.Value!.ToString()!;
         Attendee = e.Value!.ToString()!;
         hasAttendee = true;
 
-        if (Attendee == "None")
+        if (Attendee == "All")
         {
             at = "1234";
-            hasAttendee = false;
-            serviceSchedule.HasAttendee = false;
-            updateServiceSchedule.HasAttendee = false;
-            groupId = null;
-            serviceSchedule.GroupId = string.Empty;
-            updateServiceSchedule.GroupId = string.Empty;
-        }
-        else if (Attendee == "All")
-        {
-            at = "1234";
-            hasAttendee = true;
-            serviceSchedule.HasAttendee = true;
-            serviceSchedule.GroupId = "All";
-            updateServiceSchedule.HasAttendee = true;
-            updateServiceSchedule.GroupId = "All";
             groupId = string.Empty;
         }
         else
         {
-            serviceSchedule.HasAttendee = true;
-            updateServiceSchedule.HasAttendee = true;
-            serviceSchedule.GroupId = groupList.First().Id;
-            updateServiceSchedule.GroupId = groupList.First().Id;
             groupId = groupList.First().Id;
             at = string.Empty;
         }
 
-        // string value = e.Value!.ToString()!;
+        string value = e.Value!.ToString()!;
 
-        // if (value == "All")
-        // {
-        //     at = "1234";
-        //     serviceSchedule.GroupId = "All";
-        //     updateServiceSchedule.GroupId = "All";
-        // }
-        // else
-        // {
-        //     at = string.Empty;
-        //     serviceSchedule.GroupId = groupList.First().Id;
-        //     updateServiceSchedule.GroupId = groupList.First().Id;
-        // }
+        if (value == "All")
+        {
+            at = "1234";
+            serviceSchedule.GroupId = "All";
+            updateServiceSchedule.GroupId = "All";
+        }
+        else
+        {
+            at = string.Empty;
+            serviceSchedule.GroupId = groupList.First().Id;
+            updateServiceSchedule.GroupId = groupList.First().Id;
+        }
     }
 
     private void OnChangeGroup(ChangeEventArgs e)
@@ -1894,9 +1724,9 @@
             {
                 Id = "Senior", Name = "Senior", SubCategories = new()
                 {
-                    new SubCat { Id = "Holiness Meeting", Name = "Holiness Meeting" },
-                    new SubCat { Id = "Prayer Meeting", Name = "Prayer Meeting" },
-                    new SubCat { Id = "BibleS tudy", Name = "Bible Study" },
+                    new SubCat { Id = "HolinessMeeting", Name = "Holiness Meeting" },
+                    new SubCat { Id = "PrayerMeeting", Name = "Prayer Meeting" },
+                    new SubCat { Id = "BibleStudy", Name = "Bible Study" },
                 }
             },
 
@@ -1912,9 +1742,6 @@
             new MainCat
             {
                 Id = "Mens", Name = "Mens", SubCategories = new()
-                {
-                    new SubCat { Id = "Mens", Name = "Mens Fellowship" },
-                }
             },
 
             new MainCat
@@ -1922,12 +1749,12 @@
                 Id = "Youth", Name = "Youth", SubCategories = new()
                 {
                     new SubCat { Id = "Torchbearer", Name = "Torchbearer" },
-                    new SubCat { Id = "Corp Cadet", Name = "Corp Cadet" },
+                    new SubCat { Id = "CorpCadet", Name = "Corp Cadet" },
                     // new SubCat { Id = "SundaySchool", Name = "Sunday School" },
                     // new SubCat { Id = "JuniorSoldier", Name = "Junior Soldier" },
                     // new SubCat { Id = "JuniorSoldierPrep", Name = "Junior Soldier Prep" },
-                    new SubCat { Id = "Young People BibleStudy", Name = "Young People Bible Study" },
-                    new SubCat { Id = "Praise And Worship", Name = "Praise And Worship" },
+                    new SubCat { Id = "YoungPeopleBibleStudy", Name = "Young People Bible Study" },
+                    new SubCat { Id = "PraiseAndWorship", Name = "Praise And Worship" },
                 }
             },
         };
@@ -1935,23 +1762,21 @@
 
     private void OnDivisionChange(ChangeEventArgs e)
     {
-        selectedSub = e.Value!.ToString()!;
         serviceSchedule.Title = e.Value!.ToString()!;
-
+        selectedSub = e.Value!.ToString()!;
     }
 
     private void OnDepartmentChange(ChangeEventArgs e)
     {
-        selectedDepartment = e.Value?.ToString()!;
         serviceSchedule.DepartmentId = e.Value?.ToString()!;
-        // if (serviceSchedule.DepartmentId == "Mens")
-        // {
-        //     serviceSchedule.Title = "Mens Fellowship";
-        //     selectedSub = string.Empty;
-        //     isDepartment = true;
-        //     SubCategories = new();
-        //     return;
-        // }
+        if (serviceSchedule.DepartmentId == "Mens")
+        {
+            serviceSchedule.Title = "Mens Fellowship";
+            selectedSub = string.Empty;
+            isDepartment = true;
+            SubCategories = new();
+            return;
+        }
 
 
 
@@ -1975,7 +1800,7 @@
 
     }
 
-
+   
     //set the date to default today
     private void setDateToday()
     {
@@ -2195,10 +2020,10 @@
     {
         return name switch
         {
-            "Senior" => "pill",
-            "Womens" => "pill2",
-            "Mens" => "pill3",
-            "Youth" => "pill4",
+            "Event" => "pill",
+            "Department" => "pill2",
+            "Service" => "pill3",
+            "Others" => "pill4",
             _ => "pill"
         };
     }
@@ -2283,8 +2108,6 @@
         isUpdateView = false;
         isUpdateServiceModal = false;
         isUpdatingService = false;
-        isConfirmModal = false;
-        isUpdating = false;
     }
 
     private void ToggleView()
@@ -2309,7 +2132,7 @@
     //Toggle Update UI
     private async Task ToggleUpdateUI(string Id)
     {
-        // isLoadingModal = true;
+        isLoadingModal = true;
         isView = false;
         var result = await _schedule.GetScheduleByIdAsync(Id);
         if (result.Success)
@@ -2319,47 +2142,26 @@
             await GetGroupName();
             isLoadingModal = false;
 
-            if (!result.Schedule.HasAttendee)
+            if (result.Schedule.CategoryId != "Department")
             {
-                selectedGroup = "None";
-                at = "1234";
-                // attendee = "All";
+                if (!result.Schedule.HasAttendee)
+                {
+                    attendee = "All";
+                }
+                updateServiceValidation.Clear();
+                isUpdateServiceModal = true;
             }
             else
             {
-                if (result.Schedule.GroupId == "All")
-                {
-                    selectedGroup = "All";
-                    at = "1234";
-                }
-                else
-                {
-                    at = string.Empty;
-                    selectedGroup = "Group";
-                    selectedGroupId = result.Schedule.GroupId;
-                    
-                }
+                updateServiceValidation.Clear();
+                isUpdateServiceModal = true;
             }
-            updateServiceValidation.Clear();
-            isUpdateServiceModal = true;
-
-            // if (result.Schedule.CategoryId != "Department")
-            // {
-                
-            // }
-            // else
-            // {
-
-            //     updateServiceValidation.Clear();
-            //     isUpdateServiceModal = true;
-            // }
 
         }
         else
         {
-            _toast.AddNotification("error", "Something went wrong", "Failed to get event");
             ToggleModal();
-            // await _js.InvokeVoidAsync("alert", result.Error);
+            await _js.InvokeVoidAsync("alert", result.Error);
             await getScheduleList();
 
         }
@@ -2416,22 +2218,21 @@
     //View Schedule
     private async Task OpenEdit(string Id, DateOnly date)
     {
-        
-        // isLoadingModal = true;
+        ToggleModal();
+        isLoadingModal = true;
         sched = new();
         var result = await _schedule.GetScheduleByIdAsync(Id);
-        
+
         if (result.Success)
         {
             sched = result.Schedule;
             isLoadingModal = false;
-            ToggleModal();
             isView = true;
-            
+
         }
         else
         {
-            _toast.AddNotification("error", "Something went wrong", "Schedule not found");
+            await _js.InvokeVoidAsync("alert", result.Error);
             ToggleModal();
             await getScheduleList();
         }
@@ -2440,24 +2241,14 @@
     //Remove schedule to database
     private async Task RemoveSchedule()
     {
-        isUpdating = true;
-        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
-
-        if (!isOnline)
-        {
-            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
-            return;
-        }
-        isUpdating = true;
-
+        isRemoving = true;
         var result = await _schedule.GetScheduleByIdAsync(sched.Id);
         if (result.Success)
         {
             if (result.Schedule.hasAttendance == true || result.Schedule.hasFinance == true)
             {
-                _toast.AddNotification("error", "Failed to remove", "Schedule has link to attendance or finance");
                 ToggleModal();
-                // await _js.InvokeVoidAsync("alert", "Cannot proceed. Schedule has been link to attendance or finance");
+                await _js.InvokeVoidAsync("alert", "Cannot proceed. Schedule has been link to attendance or finance");
                 await getScheduleList();
             }
             else
@@ -2478,30 +2269,29 @@
                         }
 
                     }
-                    _toast.AddNotification("success", "Success", "Successfully remove an event");
                     ToggleModal();
                     await getScheduleList();
                 }
                 else
                 {
-                    _toast.AddNotification("error", "Something went wrong", "Failed to remove event");
                     ToggleModal();
-                    // await _js.InvokeVoidAsync("alert", result.Error);
+                    await _js.InvokeVoidAsync("alert", result.Error);
                     await getScheduleList();
                 }
             }
         }
         else
         {
-            _toast.AddNotification("error", "Something went wrong", "Event does not exist");
             ToggleModal();
+            await _js.InvokeVoidAsync("alert", result.Error);
             await getScheduleList();
         }
+        isRemoving = false;
     }
 
     private async Task removeSchedule(string Id)
     {
-
+        
         var result = await _schedule.GetScheduleByIdAsync(Id);
         if (result.Success)
         {
@@ -2710,7 +2500,7 @@
     //Toggle notification
     private void ToggleNotify(ChangeEventArgs e)
     {
-        groupMemberId = e.Value!.ToString()!;
+        isNotify = (bool)e.Value!;
     }
 
 
@@ -2742,7 +2532,7 @@
     //Send Email Function
     private async Task SendEmail()
     {
-        if (groupMemberId != "None")
+        if (!isNotify)
         {
             if (!string.IsNullOrEmpty(groupMemberId))
             {
@@ -2783,18 +2573,16 @@ Gospel Reach Team
 
             if (result.Success)
             {
-                _toast.AddNotification("success", "Email sent", "Successfully send emails.");
+                await _js.InvokeVoidAsync("alert", "Email sent");
             }
             else
             {
-                _toast.AddNotification("error", "Something went wrong", "Failed to send emails.");
+                await _js.InvokeVoidAsync("alert", "Failed to send email: " + result.Error);
             }
 
             emailList.Clear();
         }
     }
-
-
 
     private class GroupMemberSelection
     {

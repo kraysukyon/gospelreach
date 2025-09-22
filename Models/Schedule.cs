@@ -8,7 +8,7 @@
         public string DepartmentId { get; set; } = "Senior";
         public DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
-        public string StartTime { get; set; }
+        public string StartTime { get; set; } 
         public string EndTime { get; set; }
         public string TimeOption { get; set; } = "Custom";
         public string Location { get; set; }
