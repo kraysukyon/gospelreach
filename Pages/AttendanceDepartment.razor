@@ -10,6 +10,7 @@
 @inject GospelReachCapstone.Services.VisitorService _visitorsService
 @inject GospelReachCapstone.Services.AuthState _auth
 @inject NavigationManager _nav
+@inject ToastService _toast
 
 <PageTitle>Attendance Tracker</PageTitle>
 
@@ -33,14 +34,17 @@
         <!--Attendance Section Modal-->
         <div @onclick="HideInviteModal" hidden="@(!isAttendanceVisible)" class="addAttendance" @onclick:stopPropagation>
             <div>
-                <div>
-                    <h4 class="fw-bold">Attendance</h4>
-                    <p>@sched.Title - @attDate.ToString("MMM dd, yyyy")</p>
+                <div class="d-flex align-content-lg-start justify-content-between">
+                    <div>
+                        <h4 class="fw-bold">Attendance</h4>
+                        <p>@attVM.Title - @attDate.ToString("MMM dd, yyyy")</p>
+                    </div>
+                    <i class="bi bi-arrow-return-left fs cursor hover fs-4"></i>
                 </div>
             </div>
 
-            <div class="attendee">
-                <div>
+            <div class="asd">
+                <div class="aw">
                     <!--Table Section-->
                     <div class="d-flex gap-2">
                         <h5 @onclick="ToggleMembers" class="fw-bold mt-3 cursor @(isVisitor ? "t" : "")">Members</h5>
@@ -97,46 +101,48 @@
                             </div>
                         }
                     </div>
-                </div>
 
-                <!--Visitors Section-->
-                <div hidden="@(!isVisitor)">
-                    @if (visitorsList.Count != 0)
-                    {
-                        <div class="position-relative mt-2">
-                            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                            <input type="text" @bind="visitorsSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
-                        </div>
+                    <!--Visitors Section-->
+                    <div hidden="@(!isVisitor)">
+                        @if (visitorsList.Count != 0)
+                        {
+                            <div class="position-relative mt-2">
+                                <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                                <input type="text" @bind="visitorsSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
+                            </div>
 
-                        <p class="m-2"><em>@visitorMessage</em></p>
+                            <p class="m-2"><em>@visitorMessage</em></p>
 
-                        <div class="table-container mt-2">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChanges" /></th>
-                                        <th class="thead" style="width: 100%;">Name</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @foreach (var item in filteredVisitor)
-                                    {
+                            <div class="table-container mt-2">
+                                <table class="table">
+                                    <thead>
                                         <tr>
-                                            <td class="table-cell" style="width: auto; white-space: nowrap;">
-                                                <input @bind="item.isSelected" type="checkbox" />
-                                            </td>
-                                            <td class="table-cell">@item.Visitor.GetFullName()</td>
+                                            <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChanges" /></th>
+                                            <th class="thead" style="width: 100%;">Name</th>
                                         </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
+                                    </thead>
+
+                                    <tbody>
+                                        @foreach (var item in filteredVisitor)
+                                        {
+                                            <tr>
+                                                <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                                    <input @bind="item.isSelected" type="checkbox" />
+                                                </td>
+                                                <td class="table-cell">@item.Visitor.GetFullName()</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
                 </div>
+
+
             </div>
 
-            <button @onclick="UpdateAttendance" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+            <button @onclick='() => showConfirm("update", "")' class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
 
         </div>
 
@@ -246,6 +252,27 @@
                 </table>
             </div>
         </div>
+
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation hidden="@(!isConfirmModal)" class="helperModal">
+            <div class="confirm">
+                <h1>@confirmTitle</h1>
+                <p>@confirmMessage</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>@updatingMessage</p>
+            </div>
+
+
+            @if (confirmType == "update")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 fs-5" @onclick="UpdateAttendance" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
+        </div>
     </div>
 
     <!--Header Section-->
@@ -272,7 +299,7 @@
 
             <div class="d-flex gap-2 align-items-center ms-2">
                 <p class="me-2 text-nowrap">Filter by:</p>
-                <select @onchange="OnFilterChange" class="form-select p-2 px-4">
+                <select value="@status" @onchange="OnFilterChange" class="form-select p-2 px-4">
                     @* <option value="Upcoming">Upcoming</option> *@
                     <option value="Ongoing">Ongoing</option>
                     <option value="Complete">Complete</option>
@@ -337,6 +364,15 @@
     private string visitorsSearch = string.Empty;
     private string visitorMessage = string.Empty;
     private string DepName = string.Empty;
+    private string status = "Ongoing";
+
+    private bool isUpdating = false;
+    private string confirmType = string.Empty;
+    private string confirmTitle = string.Empty;
+    private string confirmMessage = string.Empty;
+    private string updatingMessage = string.Empty;
+    private string data = string.Empty;
+    private bool isConfirmModal = false;
 
     //Models
     private Schedule sched = new();
@@ -369,11 +405,45 @@
     //On initialized
     protected override async Task OnInitializedAsync()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         if (_auth.Department != null)
         {
             DepName = _auth.Department;
         }
         await GetOngoingSchedules();
+    }
+
+    //show cofirm modal
+    //SHow Confirm
+    private void showConfirm(string type, string info)
+    {
+        confirmType = type;
+        ToggleModal();
+        isConfirmModal = true;
+        data = info;
+        switch (type)
+        {
+            case "update":
+                ToggleModal();
+                isConfirmModal = true;
+                confirmTitle = "Confirm Action";
+                confirmMessage = "You are about to add attendance. This action cannot be undone.";
+                updatingMessage = "Adding attendance...";
+                break;
+            case "disable":
+                confirmTitle = "Confirm Disable";
+                confirmMessage = "You are about to disable a user";
+                updatingMessage = "Disabling user...";
+                break;
+        }
+
     }
 
     //Navigate to Attendance Report Page
@@ -385,6 +455,15 @@
     //GetVisitors List
     private async Task GetVisitors()
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+
         var result = await _visitorsService.GetVisitorsAsync();
 
         if (result.Success)
@@ -401,13 +480,20 @@
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to get visitors data: " + result.Error);
+            _toast.AddNotification("error", "Something went wrong", "Failed to get visitors.");
         }
     }
 
     //View Schedule
     private async Task OpenEdit(string Id)
     {
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
 
         var m = joinedList.FirstOrDefault(u => u.AttendanceId == Id);
 
@@ -479,6 +565,19 @@
     //Update attendanceMember and schedule
     private async Task UpdateAttendance()
     {
+        isUpdating = true;
+
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            ToggleModal();
+            return;
+        }
+
+        isUpdating = true;
+
         var updateSchedAttendance = await _schedule.UpdateScheduleAttendance(attVM.ScheduleId, true);
         if (updateSchedAttendance.Success)
         {
@@ -526,20 +625,20 @@
                     }
                 }
 
-                await _js.InvokeVoidAsync("alert", "Success");
+                _toast.AddNotification("success", "Success", "Successfully add attendance.");
                 ToggleModal();
                 await GetOngoingSchedules();
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", updateAttendanceStatus.Error);
+                _toast.AddNotification("error", "Something went wrong", "Failed to add attendance.");
                 ToggleModal();
                 await GetOngoingSchedules();
             }
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", updateSchedAttendance.Error);
+            _toast.AddNotification("error", "Something went wrong", "Please try again later.");
             ToggleModal();
             await GetOngoingSchedules();
         } 
@@ -548,11 +647,19 @@
     //Open Attendance page
     private async Task OpenAttendance(string Id)
     {
-        ToggleModal();
-        isLoadingModal = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        // isLoadingModal = true;
         var attRes = await _attendanceService.GetAttendanceByIdAsync(Id);
         if (attRes.Success)
         {
+            ToggleModal();
             if (attRes.Attendance != null)
             {
                 if (attRes.Attendance.isCompleted)
@@ -590,13 +697,13 @@
                         }
                         else
                         {
-                            await _js.InvokeVoidAsync("alert", members.Error);
+                            _toast.AddNotification("error", "Something went wrong", "Please try again later.");
                             ToggleModal();
                         }
                     }
                     else
                     {
-                        await _js.InvokeVoidAsync("alert", groupMemResult.Error);
+                        _toast.AddNotification("error", "Something went wrong", "Please try again later.");
                         ToggleModal();
                     }
                 }
@@ -605,13 +712,13 @@
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", attRes.Error);
+                _toast.AddNotification("error", "Something went wrong", "Please try again later.");
                 ToggleModal();
             }
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", attRes.Error);
+            _toast.AddNotification("error", "Something went wrong", "Please try again later.");
             ToggleModal();
         }
 
@@ -667,6 +774,8 @@
         isEditMode = false;
         isVisitor = false;
         isLoadingModal = false;
+        isUpdating = false;
+        isConfirmModal = false;
 
     }
 
@@ -724,6 +833,7 @@
     private async Task GetOngoingSchedules()
     {
         message = "Fetching files...Please wait";
+        status = "Ongoing";
 
         var results = await _attendanceService.GetOngoingAttendanceByDepartmentAsync(DepName);
         if (results.Success)
@@ -755,14 +865,14 @@
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + scheduleResult.Error);
+                _toast.AddNotification("error", "Something went wrong", "Please try again later.");
                 message = "No schedules found.";
             }
 
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to attendance: " + results.Error);
+            _toast.AddNotification("error", "Something went wrong", "Please try again later.");
             //     message = "No schedules found.";
         }
     }
@@ -808,20 +918,23 @@
                     {
 
                         message = "No data found";
-                        await _js.InvokeVoidAsync("alert", results.Error);
                     }
 
                 }
                 else
                 {
-                    await _js.InvokeVoidAsync("alert", results.Error);
+                    _toast.AddNotification("error", "Something went wrong", "Please try again later.");
                 }
             }
-            
+            else
+            {
+                message = "No data found";
+            }
+
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
+            _toast.AddNotification("error", "Something went wrong", "Please try again later.");
             message = "Failed to fetch files.";
         }
     }

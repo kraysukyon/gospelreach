@@ -66,7 +66,7 @@ a {
     width: 500px;
 }
 
-.helperModal {
+/*.helperModal {
     border-radius: .75rem;
     box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
     transition: box-shadow 0.3s ease, filter 0.3s ease;
@@ -76,7 +76,7 @@ a {
     background-color: #FFF;
     overflow-y: auto;
     width: 400px;
-}
+}*/
 
     .cards:hover {
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);

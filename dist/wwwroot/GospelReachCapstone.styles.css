@@ -1639,6 +1639,13 @@ button[b-ahqmzowzu1]{
     color: #898989;
 }
 
+.asd[b-ahqmzowzu1] {
+    display: grid;
+    grid-template-rows: 1fr;
+    height: 100vh;
+    overflow-y: auto;
+}
+
 
 @media (max-width: 768px) {
     .pages[b-ahqmzowzu1]{
@@ -1757,7 +1764,7 @@ button[b-ahqmzowzu1]{
     width: 600px;
     padding: 2rem 1.5rem;
     background-color: #FFFFFF;
-    border-radius: 25px;
+    border-radius: 12px;
     max-height: calc(100vh - 10vh);
     overflow-y: auto;
     transition: all 0.5s ease;
@@ -1783,10 +1790,11 @@ button[b-ahqmzowzu1]{
     width: 600px;
     padding: 2rem 1.5rem;
     background-color: #FFFFFF;
-    border-radius: 25px;
+    border-radius: 12px;
     max-height: calc(100vh - 10vh);
     overflow-y: auto;
     transition: all 0.5s ease;
+    min-height:600px;
 }
 
 .attend[b-2q70jhrmqz]{
@@ -2504,6 +2512,13 @@ button[b-2q70jhrmqz]{
 
 .t[b-2q70jhrmqz] {
     color: #898989;
+}
+
+.asd[b-2q70jhrmqz]{
+    display: grid;
+    grid-template-rows:1fr;
+    height:100vh;
+    overflow-y:auto;
 }
 
 
@@ -3445,7 +3460,7 @@ a[b-wf2niajy5v] {
     width: 500px;
 }
 
-.helperModal[b-wf2niajy5v] {
+/*.helperModal {
     border-radius: .75rem;
     box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
     transition: box-shadow 0.3s ease, filter 0.3s ease;
@@ -3455,7 +3470,7 @@ a[b-wf2niajy5v] {
     background-color: #FFF;
     overflow-y: auto;
     width: 400px;
-}
+}*/
 
     .cards:hover[b-wf2niajy5v] {
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);

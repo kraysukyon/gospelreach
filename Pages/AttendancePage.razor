@@ -37,14 +37,14 @@
                 <div class="d-flex align-content-lg-start justify-content-between">
                     <div>
                         <h4 class="fw-bold">Attendance</h4>
-                        <p>@sched.Title - @attDate.ToString("MMM dd, yyyy")</p>
+                        <p>@attVM.Title - @attDate.ToString("MMM dd, yyyy")</p>
                     </div>
                     <i class="bi bi-arrow-return-left fs cursor hover fs-4"></i>
                 </div>
             </div>
 
-            <div class="attendee">
-                <div>
+            <div class="asd">
+                <div class="aw">
                     <!--Table Section-->
                     <div class="d-flex gap-2">
                         <h5 @onclick="ToggleMembers" class="fw-bold mt-3 cursor @(isVisitor ? "t" : "")">Members</h5>
@@ -101,46 +101,48 @@
                             </div>
                         }
                     </div>
-                </div>
 
-                <!--Visitors Section-->
-                <div hidden="@(!isVisitor)">
-                    @if (visitorsList.Count != 0)
-                    {
-                        <div class="position-relative mt-2">
-                            <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
-                            <input type="text" @bind="visitorsSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
-                        </div>
+                    <!--Visitors Section-->
+                    <div hidden="@(!isVisitor)">
+                        @if (visitorsList.Count != 0)
+                        {
+                            <div class="position-relative mt-2">
+                                <i class="bi bi-search position-absolute c2" style="top: .5rem; left: .75rem; font-size: 18px;"></i>
+                                <input type="text" @bind="visitorsSearch" @bind:event="oninput" class="form-control border search" placeholder="Search name..." />
+                            </div>
 
-                        <p class="m-2"><em>@visitorMessage</em></p>
+                            <p class="m-2"><em>@visitorMessage</em></p>
 
-                        <div class="table-container mt-2">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChanges" /></th>
-                                        <th class="thead" style="width: 100%;">Name</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @foreach (var item in filteredVisitor)
-                                    {
+                            <div class="table-container mt-2">
+                                <table class="table">
+                                    <thead>
                                         <tr>
-                                            <td class="table-cell" style="width: auto; white-space: nowrap;">
-                                                <input @bind="item.isSelected" type="checkbox" />
-                                            </td>
-                                            <td class="table-cell">@item.Visitor.GetFullName()</td>
+                                            <th class="thead" style="width: auto; white-space: nowrap;"><input checked type="checkbox" @onchange="OnCheckChanges" /></th>
+                                            <th class="thead" style="width: 100%;">Name</th>
                                         </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
+                                    </thead>
+
+                                    <tbody>
+                                        @foreach (var item in filteredVisitor)
+                                        {
+                                            <tr>
+                                                <td class="table-cell" style="width: auto; white-space: nowrap;">
+                                                    <input @bind="item.isSelected" type="checkbox" />
+                                                </td>
+                                                <td class="table-cell">@item.Visitor.GetFullName()</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
                 </div>
+
+                
             </div>
 
-            <button @onclick="UpdateAttendance" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
+            <button @onclick='() => showConfirm("update", "")' class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
 
         </div>
 
@@ -250,6 +252,27 @@
                 </table>
             </div>
         </div>
+
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation hidden="@(!isConfirmModal)" class="helperModal">
+            <div class="confirm">
+                <h1>@confirmTitle</h1>
+                <p>@confirmMessage</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>@updatingMessage</p>
+            </div>
+
+
+            @if (confirmType == "update")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 fs-5" @onclick="UpdateAttendance" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
+        </div>
     </div>
 
     <!--Header Section-->
@@ -355,6 +378,13 @@
     private string visitorsSearch = string.Empty;
     private string visitorMessage = string.Empty;
 
+    private bool isUpdating = false;
+    private string confirmType = string.Empty;
+    private string confirmTitle = string.Empty;
+    private string confirmMessage = string.Empty;
+    private string updatingMessage = string.Empty;
+    private string data = string.Empty;
+
 
     //Filters
     private string dateFilter = "Ongoing";
@@ -363,6 +393,7 @@
     //Models
     private Schedule sched = new();
     private Visitor visitor { get; set; } = new();
+    private bool isConfirmModal = false;
 
     //List
     private List<Schedule> scheduleList = new();
@@ -400,6 +431,31 @@
         }
 
         await GetOngoingSchedules();
+    }
+
+    //SHow Confirm
+    private void showConfirm(string type, string info)
+    {
+        confirmType = type;
+        ToggleModal();
+        isConfirmModal = true;
+        data = info;
+        switch (type)
+        {
+            case "update":
+                ToggleModal();
+                isConfirmModal = true;
+                confirmTitle = "Confirm Action";
+                confirmMessage = "You are about to add attendance. This action cannot be undone.";
+                updatingMessage = "Adding attendance...";
+                break;
+            case "disable":
+                confirmTitle = "Confirm Disable";
+                confirmMessage = "You are about to disable a user";
+                updatingMessage = "Disabling user...";
+                break;
+        }
+
     }
 
     //Get Schedules by status
@@ -603,6 +659,8 @@
     //Update attendanceMember and schedule
     private async Task UpdateAttendance()
     {
+        isUpdating = true;
+
         bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
         if (!isOnline)
@@ -610,6 +668,8 @@
             _toast.AddNotification("error", "Connection Error", "Check your internet connection");
             return;
         }
+
+        isUpdating = true;
 
         var updateSchedAttendance = await _schedule.UpdateScheduleAttendance(attVM.ScheduleId, true);
         if (updateSchedAttendance.Success)
@@ -658,20 +718,22 @@
                     }
                 }
 
-                await _js.InvokeVoidAsync("alert", "Success");
+                _toast.AddNotification("success", "Success", "Successfully add attendance.");
                 ToggleModal();
+                dateFilter = "Ongoing";
+                departmentName = "All";
                 await GetOngoingSchedules();
             }
             else
             {
-                await _js.InvokeVoidAsync("alert", updateAttendanceStatus.Error);
+                _toast.AddNotification("error", "Something went wrong", "Failed to add attendance.");
                 ToggleModal();
                 await GetOngoingSchedules();
             }
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", updateSchedAttendance.Error);
+            _toast.AddNotification("error", "Something went wrong", "Please try again later.");
             ToggleModal();
             await GetOngoingSchedules();
         } 
@@ -693,6 +755,7 @@
         var attRes = await _attendanceService.GetAttendanceByIdAsync(Id);
         if (attRes.Success)
         {
+            data = Id;
             if (attRes.Attendance != null)
             {
                 if (attRes.Attendance.isCompleted)
@@ -807,6 +870,8 @@
         isEditMode = false;
         isVisitor = false;
         isLoadingModal = false;
+        isUpdating = false;
+        isConfirmModal = false;
 
     }
 
@@ -934,20 +999,20 @@
                 }
                 else
                 {
-                    await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + scheduleResult.Error);
                     message = "No schedules found.";
                 }
             }
             else
             {
-                message = "No records found";
+                message = "No schedules found";
             }
 
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to attendance: " + results.Error);
-            //     message = "No schedules found.";
+            _toast.AddNotification("error", "Something went wrong", "Please try again");
+            // await _js.InvokeVoidAsync("alert", "Failed to attendance: " + results.Error);
+            message = "Failed to get data.";
         }
     }
 
@@ -1005,24 +1070,56 @@
             var results = await _attendanceService.GetCompletedAttendanceByDepartmentAsync(department);
             if (results.Success)
             {
-                var attList = results.Data;
-                joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                if (results.Data != null)
                 {
-                    AttendanceId = a.Id,
-                    ScheduleId = s.Id,
-                    Date = a.Date,
-                    Title = s.Title,
-                    TotalAttendee = a.TotalAttendee,
-                    Category = s.CategoryId,
-                    isCompleted = a.isCompleted
-                }).ToList();
+                    var ids = results.Data.Select(u => u.ScheduleId).ToHashSet();
+
+                    var scheduleResult = await _schedule.GetScheduleAsync();
+                    if (scheduleResult.Success)
+                    {
+
+                        scheduleList = scheduleResult.Data.Where(u => ids.Contains(u.Id)).ToList();
+                        var attList = results.Data;
+                        joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                        {
+                            AttendanceId = a.Id,
+                            ScheduleId = s.Id,
+                            Department = s.DepartmentId,
+                            Date = a.Date,
+                            Title = s.Title,
+                            TotalAttendee = a.TotalAttendee,
+                            Category = s.CategoryId,
+                            isCompleted = a.isCompleted
+                        }).ToList();
+                        message = string.Empty;
+                    }
+                    else
+                    {
+                        message = "No schedules found";
+                    }
+                    // var attList = results.Data;
+                    // joinedList = scheduleList.Join(attList, s => s.Id, a => a.ScheduleId, (s, a) => new AttendanceScheduleVM
+                    // {
+                    //     AttendanceId = a.Id,
+                    //     ScheduleId = s.Id,
+                    //     Date = a.Date,
+                    //     Title = s.Title,
+                    //     TotalAttendee = a.TotalAttendee,
+                    //     Category = s.CategoryId,
+                    //     isCompleted = a.isCompleted
+                    // }).ToList();
+                }
+                else
+                {
+                    message = "No schedules found";
+                }
+
             }
-            message = string.Empty;
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", "Failed to fetch schedules: " + result.Error);
-            message = "No schedules found.";
+            _toast.AddNotification("error", "Something went wrong", "Please try again");
+            message = "Failed to get data.";
         }
     }
 

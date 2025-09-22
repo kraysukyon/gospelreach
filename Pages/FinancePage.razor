@@ -8,6 +8,7 @@
 @using GospelReachCapstone.Models
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager _nav
+@inject ToastService _toast
 
 <PageTitle>Finance Mens</PageTitle>
 
@@ -26,15 +27,6 @@
                 </div>
             </div>
 
-            @if (validationResults.Any())
-            {
-                <div class="d-flex flex-column justify-content-between mb-3">
-                    @foreach (string a in validationResults)
-                    {
-                        <p class="text-danger">@a</p>
-                    }
-                </div>
-            }
 
             <!--Type-->
             <div class="inputs mt-3">
@@ -44,7 +36,6 @@
                 </div>
 
                 <select value="@typeOfFund" @onchange="OnFundChange" class="form-select p-2 mt-2">
-                    @* <option value="General">General Fund</option> *@
                     <option value="Senior">Senior</option>
                     <option value="Womens">Womens</option>
                     <option value="Mens">Mens</option>
@@ -60,8 +51,9 @@
                 </div>
 
                 <select value="@type" class="form-select p-2 mt-2" @onchange="OnTypeChange">
-                    <option hidden="@(typeOfFund == "General")" value="Offering" disabled="@(scheduleFinancesList.Count == 0)">Offering @(scheduleFinancesList.Count == 0 ? "(No schedules)" : "")</option>
+                    <option value="Offering" disabled="@(scheduleFinancesList.Count == 0)">Offering @(scheduleFinancesList.Count == 0 ? "(No schedules)" : "")</option>
                     <option value="Donation">Donation</option>
+                    <option hidden="@(typeOfFund != "Senior")" value="Tithes">Tithes</option>
                     <option value="Expense">Expense</option>
                 </select>
             </div>
@@ -139,7 +131,7 @@
                         </div>
 
                         <select @bind="mensRecord.Category" class="form-select p-2 mt-2">
-                            <option value="Tithes">Tithes</option>
+                            <option hidden="@(typeOfFund == "Senior")" value="Tithes">Tithes</option>
                             <option value="PropertyMaintenance">Property Maintenance</option>
                             <option value="Transportation">Transportation</option>
                             <option value="Incidental">Incidental</option>
@@ -182,18 +174,24 @@
                 </div>
             </div>
 
+
+            @if (validationResults.Any())
+            {
+                <div class="d-flex flex-column justify-content-between mb-3 mt-3">
+                    @foreach (string a in validationResults)
+                    {
+                        <p class="text-danger">@a</p>
+                    }
+                </div>
+            }
+
             <div class="mt-3 @(isAdding ? "d-flex" : "d-none") align-items-center justify-content-center">
                 <p>Saving record.Please wait...</p>
-
-
-                <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
-                    <img src="/img/loading.svg" style="height:50px; width: 50px;" />
-                </div>
             </div>
             
             <div class="d-flex gap-2 mt-4" style="justify-self: end;">
                 <button disabled="@(isAdding)" class="btn border border-1 px-4 py-1" @onclick="ToggleModal">Close</button>
-                <button disabled="@(isAdding)" @onclick="AddFinancialRecord" class="btn btn-primary px-4 py-1 text-white">Create</button>
+                <button disabled="@(isAdding)" @onclick="CheckValidation" class="btn btn-primary px-4 py-1 text-white">Create</button>
             </div>
             
 
@@ -210,15 +208,7 @@
                 </div>
             </div>
 
-            @if (updateValidationResults.Any())
-            {
-                <div class="d-flex flex-column mb-3">
-                    @foreach (string a in updateValidationResults)
-                    {
-                        <p class="text-danger">@a</p>
-                    }
-                </div>
-            }
+            
 
             <!--Type-->
             <div class="inputs mt-3">
@@ -348,18 +338,28 @@
                 </div>
             </div>
 
-            <div class="mt-3 @(isUpdating ? "d-flex" : "d-none") align-items-center justify-content-center">
+            @* <div class="mt-3 @(isUpdating ? "d-flex" : "d-none") align-items-center justify-content-center">
                 <p>Updating record.Please wait...</p>
 
 
                 <div class="d-flex gap-4 align-items-center justify-content-center mt-2 mb-3">
                     <img src="/img/loading.svg" style="height:50px; width: 50px;" />
                 </div>
-            </div>
+            </div> *@
+
+            @if (updateValidationResults.Any())
+            {
+                <div class="d-flex flex-column mb-3 mt-3">
+                    @foreach (string a in updateValidationResults)
+                    {
+                        <p class="text-danger">@a</p>
+                    }
+                </div>
+            }
 
             <div class="d-flex gap-2 mt-4" style="justify-self: end;">
                 <button disabled="@(isAdding)" class="btn border border-1 px-4 py-1" @onclick="ToggleModal">Cancel</button>
-                <button disabled="@(isAdding)" @onclick="UpdateFinancial" class="btn btn-primary px-4 py-1 text-white">Update</button>
+                <button disabled="@(isAdding)" @onclick="CheckValidation2" class="btn btn-primary px-4 py-1 text-white">Update</button>
             </div>
 
 
@@ -505,7 +505,6 @@
             </div>
         </div>
 
-
         <!--Delete Modal-->
         <div @onclick:stopPropagation hidden="@(!isRemoveModal)" class="helperModal">
             <div hidden="@(isRemoving)">
@@ -531,6 +530,34 @@
                     <img src="/img/loading.svg" style="height:50px; width: 50px;" />
                 </div>
             </div>
+        </div>
+
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation hidden="@(!isConfirmModal)" class="helperModal">
+            <div class="confirm">
+                <h1>@confirmTitle</h1>
+                <p>@confirmMessage</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>@updatingMessage</p>
+            </div>
+
+
+            @if (confirmType == "add")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 fs-5" @onclick="AddFinancialRecord" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
+            else if (confirmType == "update")
+            {
+                <div class="actions">
+                    <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 fs-5" @onclick="UpdateFinancial" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                </div>
+            }
         </div>
 
     </div>
@@ -709,6 +736,14 @@
     private string typeOfFund = "General";
 
 
+    //Data
+    private string confirmType = string.Empty;
+    private string confirmTitle = string.Empty;
+    private string confirmMessage = string.Empty;
+    private string updatingMessage = string.Empty;
+    private string data = string.Empty;
+    private bool isConfirmModal = false;
+
 
 
     //modals
@@ -731,6 +766,133 @@
         message = "Fetching data...";
         await GetGeneralFinanceData();
         await GetAllFinanceDataByDataRange();
+    }
+
+    //SHow Confirm
+    private void showConfirm(string type, string info)
+    {
+        confirmType = type;
+        ToggleModal();
+        isConfirmModal = true;
+        data = info;
+        switch (type)
+        {
+            case "add":
+                ToggleModal();
+                isConfirmModal = true;
+                confirmTitle = "Confirm Action";
+                confirmMessage = "You are about to add an entry. Some fields cannot be undone.";
+                updatingMessage = "Adding entry...";
+                break;
+            case "update":
+                ToggleModal();
+                isConfirmModal = true;
+                confirmTitle = "Confirm Action";
+                confirmMessage = "You are about to update an entry";
+                updatingMessage = "Updating entry...";
+                break;
+        }
+
+    }
+
+    //Check Validation
+    private async Task CheckValidation()
+    {
+        validationResults.Clear();
+
+        //Validation
+        if (mensRecord.Type == "Income")
+        {
+            if (string.IsNullOrEmpty(mensRecord.InvoiceNumber))
+            {
+                validationResults.Add("-Invoice Number cannot be empty");
+            }
+            else
+            {
+                var check = await _financeRecordService.CheckReceiptNumber(mensRecord.InvoiceNumber);
+
+                if (check.Success)
+                {
+                    if (!string.IsNullOrEmpty(check.Error))
+                    {
+                        validationResults.Add(check.Error);
+                    }
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", check.Error);
+                }
+            }
+
+            if (mensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
+            {
+                validationResults.Add("-Invoice Date cannot be greater than date today");
+            }
+
+            if (mensRecord.Category == "Offering")
+            {
+                var schedule = scheduleList.FirstOrDefault(u => u.Id == mensRecord.ScheduleId);
+
+                if (schedule != null)
+                {
+                    scheduleDate = schedule.StartDate;
+
+                    if (mensRecord.Date < scheduleDate)
+                    {
+                        validationResults.Add("-Invoice Date cannot be less than event date");
+                    }
+                }
+            }
+
+            if (mensRecord.Category == "Donation" && mensRecord.Amount == 0)
+            {
+                validationResults.Add("-Donation amount must be greater than 0");
+            }
+
+
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(mensRecord.VoucherNumber))
+            {
+                validationResults.Add("-Voucher Number cannot be empty");
+            }
+            else
+            {
+                var check = await _financeRecordService.CheckReceiptNumber(mensRecord.VoucherNumber);
+
+                if (check.Success)
+                {
+                    if (!string.IsNullOrEmpty(check.Error))
+                    {
+                        validationResults.Add(check.Error);
+                    }
+                }
+                else
+                {
+                    await _js.InvokeVoidAsync("alert", check.Error);
+                }
+            }
+
+            if (mensRecord.Amount == 0)
+            {
+                validationResults.Add("-Expense amount must be greater than 0");
+            }
+
+            if (mensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
+            {
+                validationResults.Add("-Voucher Date cannot be greater than date today");
+            }
+        }
+
+
+        if (validationResults.Any())
+        {
+            isAdding = false;
+            return;
+        }
+
+        showConfirm("add","");
     }
 
     //On Fund Change
@@ -854,10 +1016,8 @@
         }
     }
 
-    //Update Financial Record
-    private async Task UpdateFinancial()
+    private void CheckValidation2()
     {
-        isUpdating = true;
         updateValidationResults = new();
 
         //Validation
@@ -912,6 +1072,26 @@
             return;
         }
 
+
+        showConfirm("update","");
+
+    }
+
+    //Update Financial Record
+    private async Task UpdateFinancial()
+    {
+        isUpdating = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
+
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
+        isUpdating = true;
+
+
         DateTime date = DateTime.Now;
         updateMensRecord.DateModified = DateOnly.FromDateTime(date);
         updateMensRecord.ModifiedByUserId = _auth.UserId;
@@ -924,7 +1104,8 @@
             {
                 isUpdating = false;
                 isUpdateModal = false;
-                isFailedToUpdateModal = true;
+                _toast.AddNotification("error", "Something went wrong", "Failed to update an entry");
+                ToggleModal();
                 message = "Fetching data...";
                 await GetGeneralFinanceData();
                 await GetAllFinanceDataByDataRange();
@@ -933,7 +1114,8 @@
             }
             isUpdating = false;
             isUpdateModal = false;
-            isUpdateSuccessModal = true;
+            _toast.AddNotification("success", "Success", "Successfully updated an entry");
+            ToggleModal();
             message = "Fetching data...";
             await GetGeneralFinanceData();
             await GetAllFinanceDataByDataRange();
@@ -941,7 +1123,7 @@
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", result.Error);
+            _toast.AddNotification("error", "Something went wrong", "Try again later");
             message = "Fetching data...";
             await GetGeneralFinanceData();
             await GetAllFinanceDataByDataRange();
@@ -951,14 +1133,15 @@
     //Open update modal
     private async Task OpenUpdateModal(string Id)
     {
-        ToggleModal();
-        updateMensRecord = new();
-        isLoadingModal = true;
+
+        // isLoadingModal = true;
 
         var result = await _financeRecordService.GetFinancialRecordByIdAsync(Id);
 
         if (result.Success)
         {
+            ToggleModal();
+            updateMensRecord = new();
             if (string.IsNullOrEmpty(result.Error))
             {
                 updateMensRecord = result.FinanceMens;
@@ -989,7 +1172,7 @@
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", result.Error);
+            _toast.AddNotification("error", "Something went wrong", "Please try again later");
         }
     }
 
@@ -1019,7 +1202,7 @@
         {
             test = result.Error;
             message = "Failed to fetch data...";
-            await _js.InvokeVoidAsync("alert", result.Error);
+            _toast.AddNotification("error", "Something went wrong", "Please try again.");
         }
     }
 
@@ -1171,105 +1354,23 @@
     //Add Financial Record To Database
     private async Task AddFinancialRecord()
     {
-        isAdding = true;
-        validationResults = new();
+        isUpdating = true;
+        bool isOnline = await _js.InvokeAsync<bool>("networkHelper.isOnline");
 
-        //Validation
-        if (mensRecord.Type == "Income")
+        if (!isOnline)
         {
-            if (string.IsNullOrEmpty(mensRecord.InvoiceNumber))
-            {
-                validationResults.Add("-Invoice Number cannot be empty");
-            }
-            else
-            {
-                var check = await _financeRecordService.CheckReceiptNumber(mensRecord.InvoiceNumber);
-
-                if (check.Success)
-                {
-                    if (!string.IsNullOrEmpty(check.Error))
-                    {
-                        validationResults.Add(check.Error);
-                    }
-                }
-                else
-                {
-                    await _js.InvokeVoidAsync("alert", check.Error);
-                }
-            }
-
-            if (mensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
-            {
-                validationResults.Add("-Invoice Date cannot be greater than date today");
-            }
-
-            if (mensRecord.Category == "Offering")
-            {
-                var schedule = scheduleList.FirstOrDefault(u => u.Id == mensRecord.ScheduleId);
-
-                if (schedule != null)
-                {
-                    scheduleDate = schedule.StartDate;
-
-                    if (mensRecord.Date < scheduleDate)
-                    {
-                        validationResults.Add("-Invoice Date cannot be less than event date");
-                    }
-                }
-            }
-
-            if (mensRecord.Category == "Donation" && mensRecord.Amount == 0)
-            {
-                validationResults.Add("-Donation amount must be greater than 0");
-            }
-
-
-        }
-        else
-        {
-            if (string.IsNullOrEmpty(mensRecord.VoucherNumber))
-            {
-                validationResults.Add("-Voucher Number cannot be empty");
-            }
-            else
-            {
-                var check = await _financeRecordService.CheckReceiptNumber(mensRecord.VoucherNumber);
-
-                if (check.Success)
-                {
-                    if (!string.IsNullOrEmpty(check.Error))
-                    {
-                        validationResults.Add(check.Error);
-                    }
-                }
-                else
-                {
-                    await _js.InvokeVoidAsync("alert", check.Error);
-                }
-            }
-
-            if (mensRecord.Amount == 0)
-            {
-                validationResults.Add("-Expense amount must be greater than 0");
-            }
-
-            if (mensRecord.Date > DateOnly.FromDateTime(DateTime.Now))
-            {
-                validationResults.Add("-Voucher Date cannot be greater than date today");
-            }
-        }
-
-
-        if (validationResults.Any())
-        {
-            isAdding = false;
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
             return;
         }
+
+        isUpdating = true;
+
         if (_auth.UserId != null)
         {
             mensRecord.AddedByUserId = _auth.UserId;
         }
 
+        mensRecord.Department = typeOfFund;
         var result = await _financeRecordService.AddFinancialRecordAsync(mensRecord);
         if (result.Success)
         {
@@ -1286,7 +1387,8 @@
 
             financeId = string.Empty;
             isAddModal = false;
-            isAddedSuccessModal = true;
+            _toast.AddNotification("success", "Success", "Successfully added an entry");
+            ToggleModal();
             message = "Fetching data...";
             await GetGeneralFinanceData();
             await GetAllFinanceDataByDataRange();
@@ -1294,7 +1396,8 @@
         }
         else
         {
-            await _js.InvokeVoidAsync("alert", result.Error);
+            _toast.AddNotification("success", "Success", "Successfully added an entry");
+            ToggleModal();
         }
     }
 
@@ -1315,26 +1418,20 @@
         isFailedToRemoveModal = false;
         isFailedToUpdateModal = false;
         isFailedToFetchModal = false;
-        validationResults = new();
+        validationResults.Clear();
+        isUpdating = false;
+        isConfirmModal = false;
     }
 
     //Open Add Entry
     private async Task ToggleAddEntry()
     {
         mensRecord = new();
-        //shows modals
-        ToggleModal();
-        isLoadingModal = true;
         typeOfFund = "Senior";
         departmentName = "Senior";
-
-        // type = "Donation";
-        // mensRecord.Department = "General";
-        // isAddModal = true;
-
-        //query schedules to populate for offering
         await GetSchedules();
         isIncome = true;
+        ToggleModal();
 
         if (scheduleFinancesList.Any())
         {

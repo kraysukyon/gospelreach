@@ -1614,9 +1614,14 @@
                     }
                 }
             }
+            if (!string.IsNullOrEmpty(serviceSchedule.GroupId))
+            {
+                _ = SendEmail();
+            }
+
             _toast.AddNotification("success", "Success", "Successfully added a schedule");
             ToggleModal();
-            _ = SendEmail();
+
             await getScheduleList();
             serviceSchedule = new();
         }
@@ -1739,7 +1744,11 @@
                 }
             }
 
-            _ = SendEmail();
+            if (!string.IsNullOrEmpty(updateServiceSchedule.GroupId))
+            {
+                _ = SendEmail();
+            }
+            
             _toast.AddNotification("success", "Success", "Successfully updated an event.");
             updateServiceSchedule = new();
             ToggleModal();
@@ -1788,6 +1797,7 @@
         serviceSchedule = new();
         selectedDepartment = "Senior";
         selectedGroup = "None";
+        at = "1234";
         isLoadingModal = false;
         groupMemberId = "None";
         OnChangeRadio(0);

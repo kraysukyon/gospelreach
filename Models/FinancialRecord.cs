@@ -5,7 +5,7 @@
         public string Id { get; set; }
 
         //Commong Fields
-        public string Department { get; set; }
+        public string Department { get; set; } = "Senior";
         public string Type { get; set; } = "Income";
         public string Category { get; set; } = "Offering";
         public decimal Amount { get; set; } = 0;

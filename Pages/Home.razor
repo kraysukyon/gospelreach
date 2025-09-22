@@ -33,7 +33,16 @@
                     <i @onclick="TogglePassword" class="@(!isPasswordShow ? "bi bi-eye" : "bi bi-eye-slash")" style="cursor:pointer"></i>
 
                 </div>
-                @* <a href="" class="text-decoration-none text-primary text-end">Forgot your password?</a> *@
+                
+                @if (validation.Any())
+                {
+                    <div class="d-flex flex-column justify-content-center mt-1">
+                        @foreach (string a in validation)
+                        {
+                            <p class="text-danger text-center">@a</p>
+                        }
+                    </div>
+                }
                 <div class="d-flex flex-column align-items-center justify-content-center">
                     <button disabled="@isLogginIn" class="btn btn-primary w-100 py-2 mt-3 mb-2" @onclick="ValidateLogin">Login</button>
                     <p>or</p>
@@ -181,6 +190,7 @@
     private string email = string.Empty;
     private string password = string.Empty;
     private List<User> accounts = new();
+    private List<string> validation = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -230,6 +240,7 @@
 
     private async Task ValidateLogin()
     {
+        validation.Clear();
         isLogginIn = !isLogginIn;
         bool isOnline = await JSRuntime.InvokeAsync<bool>("networkHelper.isOnline");
 
@@ -240,7 +251,12 @@
             return;
         }
 
-        
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(email))
+        {
+            validation.Add("Please input required fields");
+            isLogginIn = !isLogginIn;
+            return;
+        }
 
         var results = await FirebaseAuthService.LoginAsync(email, password);
         if (results.Success)
@@ -293,19 +309,20 @@
                                             break;
 
                                     }
-                                    await JSRuntime.InvokeVoidAsync("alert", "Login Success");
                                     NavigationManager.NavigateTo("dashboard");
                                     return;
                                 }
                                 else
                                 {
-                                    await JSRuntime.InvokeVoidAsync("alert", "The account is disabled. Please contact administrator");
+                                    validation.Add("The accounts is disabled. Please contact administrator");
+                                    // await JSRuntime.InvokeVoidAsync("alert", "The account is disabled. Please contact administrator");
                                 }
                             }
                             else
                             {
                                 isLogginIn = false;
-                                await JSRuntime.InvokeVoidAsync("alert", "Too many login attempts. Try again later.");
+                                validation.Add("Too many login attempts. Try again later.");
+                                // await JSRuntime.InvokeVoidAsync("alert", "Too many login attempts. Try again later.");
                                 return;
                             }
                         }
@@ -345,38 +362,41 @@
                                         break;
 
                                 }
-                                await JSRuntime.InvokeVoidAsync("alert", "Login Success");
                                 NavigationManager.NavigateTo("dashboard");
                                 return;
                             }
                             else
                             {
                                 isLogginIn = false;
-                                await JSRuntime.InvokeVoidAsync("alert", "The account is disabled. Please contact administrator");
+                                validation.Add("The accounts is disabled. Please contact administrator");
+                                // await JSRuntime.InvokeVoidAsync("alert", "The account is disabled. Please contact administrator");
                                 return;
                             }
                         }
                         else
                         {
                             isLogginIn = false;
-                            await JSRuntime.InvokeVoidAsync("alert", "Too many attempts. Please try again later.");
+                            validation.Add("Too many login attempts. Try again later.");
+                            // await JSRuntime.InvokeVoidAsync("alert", "Too many attempts. Please try again later.");
                             return;
                         }
                     }
                     else
                     {
-                        await JSRuntime.InvokeVoidAsync("alert", "Invalid email or password");
+                        validation.Add("Invalid credentials");
                         return;
                     }
                 }
                 else
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", "No data found");
+                    // validation.Add("Too many login attempts. Try again later.");
+                    // await JSRuntime.InvokeVoidAsync("alert", "No data found");
                 }
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", result.Error);
+                validation.Add("Something went wrong. Try again later.");
+                // await JSRuntime.InvokeVoidAsync("alert", result.Error);
             }
         }
         else
@@ -385,7 +405,8 @@
             switch (results.ErrorCode)
             {
                 case "auth/user-not-found":
-                    await JSRuntime.InvokeVoidAsync("alert", "No user found with this email.");
+                    validation.Add("No user found with this email");
+                    // await JSRuntime.InvokeVoidAsync("alert", "No user found with this email.");
                     break;
                 case "auth/invalid-login-credentials":
                     var accRes = await _accountService.GetUserByEmail(email);
@@ -407,7 +428,8 @@
                         {
                             accRes.User.Attempts = attempt - 1;
                             var updateRes = await _accountService.UpdateAttempt(accRes.User);
-                            await JSRuntime.InvokeVoidAsync("alert", "Invalid Credentials");
+                            validation.Add("Invalid credentials");
+                            // await JSRuntime.InvokeVoidAsync("alert", "Invalid Credentials");
                         }
                         else
                         {   
@@ -417,22 +439,25 @@
                                 accRes.User.LockUntil = DateTime.Now.AddHours(3).ToString();
                                 var res = await _accountService.UpdateAttempt(accRes.User);
                             }
-                            
-                            await JSRuntime.InvokeVoidAsync("alert", "Too many login attempts. Try again later");
+                            validation.Add("Too many login attempts. Try again later");
+                            // await JSRuntime.InvokeVoidAsync("alert", "Too many login attempts. Try again later");
                         }
                     }
                     else
                     {
-                        await JSRuntime.InvokeVoidAsync("alert", "Invalid Credentials.");
+                        validation.Add("Invalid credentials");
+                        // await JSRuntime.InvokeVoidAsync("alert", "Invalid Credentials.");
                     }
                     
 
                     break;
                 case "auth/too-many-requests":
-                    await JSRuntime.InvokeVoidAsync("alert", "Too many attempts. Please try again later.");
+                    validation.Add("Too many attempts. Please try again later");
+                    // await JSRuntime.InvokeVoidAsync("alert", "Too many attempts. Please try again later.");
                     break;
                 default:
-                    await JSRuntime.InvokeVoidAsync("alert", results.Error); // fallback to Firebase message
+                    validation.Add("Invalid credentials");
+                    // await JSRuntime.InvokeVoidAsync("alert", results.Error); fallback to Firebase message
                     break;
             }
             
