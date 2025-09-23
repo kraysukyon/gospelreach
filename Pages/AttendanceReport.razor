@@ -24,7 +24,7 @@
 
             <div>
                 @* <button class="btn btn-primary py-1 px-4 text-white"><i class="bi bi-printer text-white fs-5 me-1"></i> Print Report</button> *@
-                <button @onclick="ReturnToMensPage" class="btn btn-danger py-1 px-4 text-white">Return</button>
+                <button @onclick="ReturnToMensPage" class="btn btn-danger p-2 px-4 text-white">Return</button>
                 <button class="btn p-2 px-4" @onclick:stopPropagation @onclick="GeneratePdf" style="font-size: 13px; border: 1px solid #dee2e6;" title="Download"><i class="bi bi-download fs-6"></i></button>
             </div>
         </div>
@@ -172,7 +172,7 @@
 
         <!--Graphs and Visualization-->
         <div>
-            <h5 class="m-0 fw-bold">Graphs and Visualizations</h5>
+            <h5 class="m-0 mb-4 fw-bold">Graphs and Visualizations</h5>
 
             @* <div class="chart">
                 <div class="d-flex flex-column align-items-center justify-content-center mb-4">
@@ -258,7 +258,7 @@
             var schedResult = await _scheduleService.GetScheduleAsync();
             if (schedResult.Success)
             {
-                var scheduleList = schedResult.Data;
+                var scheduleList = schedResult.Data.Where(u => u.hasAttendance).ToList();
 
                 var join = attendanceList.Join(scheduleList, a => a.ScheduleId, s => s.Id,(a,s) => new ScheduleAttendanceVM
                 {

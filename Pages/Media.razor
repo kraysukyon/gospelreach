@@ -5,11 +5,32 @@
 @inject IJSRuntime _js
 @inject HttpClient Http
 @inject ToastService _toast
+@inject NavigationManager _nav
 
 <PageTitle>Media Files</PageTitle>
 
 
 <div class="sub-page">
+    <div @onclick='() => ToggleModal("")' class="logoutModal @(isAddUserModalVisible ? "show" : "")">
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation class="helperModal">
+            <div class="confirm">
+                <h1>Confirm Delete</h1>
+                <p>You are about to delete a file</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>Logging out...</p>
+            </div>
+
+
+            <div class="actions">
+                <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick='() => ToggleModal("")' style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 fs-5" @onclick='() => ToggleModal("data")' style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <!--Header Section-->
     <div class="header d-block d-md-flex flex-md-row align-items-start justify-content-between mb-5">
         <div>
@@ -27,9 +48,9 @@
 
     @if (uploading)
     {
-        <p class="mb-4 ms-1 @(uploading ? "" : "d-none")"><em>Uploading..</em></p>
-        <div class="progress mt-2">
-            <div class="progress-bar" role="progressbar" style="width: @(uploadProgress)%;" aria-valuenow="@uploadProgress" aria-valuemin="0" aria-valuemax="100">
+        <p class="mb-2 ms-1 @(uploading ? "" : "d-none")"><em>Uploading...</em></p>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: @(uploadProgress)%; padding:5px;" aria-valuenow="@uploadProgress" aria-valuemin="0" aria-valuemax="100">
                 @uploadProgress%
             </div>
         </div>
@@ -83,7 +104,7 @@
                                 <div class="d-flex mt-3 gap-2 align-self-end">
                                 <a href="@GetDownloadUrl(item)" download class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</a>
 @*                                 <button @onclick="() => DownloadFile(item.PublicId)" class="btn btn-light border border-1 px-2 py-1 w-100 text-nowrap" style="font-size: 14px;"><i class="bi bi-download"></i> Download</button>
- *@                                    <button @onclick="() => DeleteFiles(item.PublicId)" class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
+ *@                                    <button @onclick="() => ToggleModal(item.PublicId)" class="btn btn-danger text-white px-2 py-1" style="font-size: 14px;">Delete</button>
                                 </div>
                             </div>
                         }
@@ -102,6 +123,9 @@
     string searchItem = string.Empty;
     int uploadProgress = 0;
     bool uploading = false;
+    private bool isUpdating = false;
+    private bool isAddUserModalVisible = false;
+    private string data = string.Empty;
 
     bool CanUpload => selectedFile != null;
 
@@ -116,6 +140,13 @@
             _toast.AddNotification("error", "Something went wrong", "Please try again later");
         }
 
+    }
+
+    private void ToggleModal(string info)
+    {
+        data = info;
+        isAddUserModalVisible = !isAddUserModalVisible;
+        isUpdating = false;
     }
 
     private void HandleFile(InputFileChangeEventArgs e)
@@ -137,11 +168,12 @@
     {
         if (selectedFile == null) return;
 
-        const long MaxFileSize = 100 * 1024 * 1024; // 100 MB
+        const long MaxFileSize = 40 * 1024 * 1024; // 100 MB
 
         if (selectedFile.Size > MaxFileSize)
         {
-            await _js.InvokeVoidAsync("alert", "File is too large. Maximum size is 100MB.");
+            _toast.AddNotification("error", "Upload failed", "Maximum size is 40mb");
+            // await _js.InvokeVoidAsync("alert", "File is too large. Maximum size is 100MB.");
             return;
         }
 
@@ -168,12 +200,16 @@
 
         if (response.IsSuccessStatusCode)
         {
+            _nav.NavigateTo("/dashboard");
+            _nav.NavigateTo("/media");
             await LoadFiles();
             StateHasChanged();      // 👈 force UI refresh
         }
         else
-            await _js.InvokeVoidAsync("alert", "Upload failed.");
-
+            _toast.AddNotification("error", "Something went wrong", "Upload failed");
+            // await _js.InvokeVoidAsync("alert", "Upload failed.");
+        _nav.NavigateTo("/dashboard");
+        _nav.NavigateTo("/media");
         await LoadFiles();
     }
 
@@ -210,12 +246,14 @@
         var response = await Http.DeleteAsync($"https://localhost:7114/api/media/delete?publicId={Uri.EscapeDataString(publicId)}");
         if (response.IsSuccessStatusCode)
         {
+            _nav.NavigateTo("/dashboard");
+            _nav.NavigateTo("/media");
             await LoadFiles();
         }
         else
         {
             var error = await response.Content.ReadAsStringAsync();
-            await _js.InvokeVoidAsync("alert", $"Failed to delete file: {error}");
+            _toast.AddNotification("error", "Something went wrong", "Failed to remove file");
         }
     }
 

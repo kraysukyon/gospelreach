@@ -156,7 +156,24 @@
     }
 
 
+.logoutModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0,0,0,.5);
+    display: none;
+}
 
+.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+    justify-content: center;
+}
 
 @media (max-width: 768px) {
     .side-parent-content{

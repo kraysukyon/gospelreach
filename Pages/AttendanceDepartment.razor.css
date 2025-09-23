@@ -211,11 +211,12 @@ textarea{
 .table-row {
     border-bottom-width: 1px;
     border-color: rgb(229,231,235);
+    vertical-align: middle;
 }
 
 .table-cell {
     white-space: nowrap;
-    padding: 30px 24px 20px 24px;
+    padding: 24px;
     font-size: .875rem;
     line-height: 1.25rem;
 }

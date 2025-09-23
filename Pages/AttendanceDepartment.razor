@@ -11,6 +11,7 @@
 @inject GospelReachCapstone.Services.AuthState _auth
 @inject NavigationManager _nav
 @inject ToastService _toast
+@using System.Globalization
 
 <PageTitle>Attendance Tracker</PageTitle>
 
@@ -183,6 +184,16 @@
                 <input @bind="visitor.LastName" spellcheck="false" type="text" class="form-control p-2 mt-2" placeholder="Enter Last Name" />
             </div>
 
+            @if (visitorValidation.Any())
+            {
+                <div class="d-flex flex-column justify-content-between mt-3">
+                    @foreach (string a in visitorValidation)
+                    {
+                        <p class="text-danger text-center">@a</p>
+                    }
+                </div>
+            }
+
             <button @onclick="SaveToVistorsList" class="btn btn-primary p-2 text-white w-100 mt-3">Save</button>
         </div>
 
@@ -339,7 +350,9 @@
                                 <td class="table-cell c2">@item.Category</td>
                                 <td class="table-cell c2">@item.Title</td>
                                 <td class="table-cell c2"><p class="fw-bold @(item.isCompleted ? "text-success" : "text-danger")">@(item.isCompleted ? "Complete" : "Missing")</p></td>
-                                <td @onclick="() => OpenAttendance(item.AttendanceId)" @onclick:stopPropagation class="table-cell d-flex gap-2 hover" style="padding: 24px 24px; border-bottom: none; width: auto;">View</td>
+                                <td class="table-cell">
+                                    <button class="btn border border p-2 px-4" @onclick="() => OpenAttendance(item.AttendanceId)">View</button>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -368,6 +381,8 @@
     private string visitorMessage = string.Empty;
     private string DepName = string.Empty;
     private string status = "Ongoing";
+    private List<string> visitorValidation = new();
+    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
 
     private bool isUpdating = false;
     private string confirmType = string.Empty;
@@ -610,6 +625,12 @@
 
                 @foreach (var item in localvisitList)
                 {
+                    item.FirstName = textInfo.ToTitleCase(item.FirstName);
+                    if (!string.IsNullOrEmpty(item.MiddleName))
+                    {
+                        item.MiddleName = textInfo.ToTitleCase(item.MiddleName);
+                    }
+                    item.LastName = textInfo.ToTitleCase(item.LastName);
                     var results = await _visitorsService.AddVisitorAsync(item);
                     visitId = results.Id;
 
@@ -728,8 +749,90 @@
     }
 
     //Save to local list
-    private void SaveToVistorsList()
+    private async Task SaveToVistorsList()
     {
+        visitorValidation.Clear();
+
+        var check = localvisitList;
+        if (localvisitList.Any())
+        {
+            var newFirst = visitor.FirstName.Trim().ToLower();
+            var newMiddle = (visitor.MiddleName ?? "").Trim().ToLower();
+            var newLast = visitor.LastName.Trim().ToLower();
+
+            var exists = check.Any(m =>
+                    m.FirstName.ToLower().Trim() == newFirst &&
+                    (m.MiddleName ?? "").ToLower().Trim() == newMiddle &&
+                    m.LastName.ToLower().Trim() == newLast
+                );
+
+
+            if (exists)
+            {
+                visitorValidation.Add("-Visitor already exist");
+                return;
+            }
+        }
+
+        var getRes = await _memberService.GetMembersAsync();
+        if (getRes.Success)
+        {
+            var newFirst = visitor.FirstName.Trim().ToLower();
+            var newMiddle = (visitor.MiddleName ?? "").Trim().ToLower();
+            var newLast = visitor.LastName.Trim().ToLower();
+
+            var exists = getRes.Data.Any(m =>
+                    m.FirstName.ToLower().Trim() == newFirst &&
+                    (m.MiddleName ?? "").ToLower().Trim() == newMiddle &&
+                    m.LastName.ToLower().Trim() == newLast
+                );
+
+            if (exists)
+            {
+                visitorValidation.Add("-Member cannot be visitor");
+                return;
+            }
+        }
+        else
+        {
+            _toast.AddNotification("error", "Something went wrong", "Error in validating");
+            ToggleModal();
+            return;
+        }
+
+        if (string.IsNullOrEmpty(visitor.FirstName) || string.IsNullOrEmpty(visitor.LastName))
+        {
+            visitorValidation.Add("Enter required fields");
+            return;
+        }
+
+        var getRess = await _visitorsService.GetVisitorsAsync();
+        if (getRess.Success)
+        {
+            var newFirst = visitor.FirstName.Trim().ToLower();
+            var newMiddle = (visitor.MiddleName ?? "").Trim().ToLower();
+            var newLast = visitor.LastName.Trim().ToLower();
+
+            var exists = getRes.Data.Any(m =>
+                    m.FirstName.ToLower().Trim() == newFirst &&
+                    (m.MiddleName ?? "").ToLower().Trim() == newMiddle &&
+                    m.LastName.ToLower().Trim() == newLast
+                );
+
+
+            if (exists)
+            {
+                visitorValidation.Add("-Visitor already exist");
+                return;
+            }
+        }
+        else
+        {
+            _toast.AddNotification("error", "Something went wrong", "Error in validating");
+            ToggleModal();
+            return;
+        }
+
         localvisitList.Add(visitor);
         isInviteVisible = false;
     }

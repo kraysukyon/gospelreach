@@ -3,6 +3,7 @@
 @inject GospelReachCapstone.Services.FirebaseAuthenticationService AuthService
 @inject AuthState auth
 @inherits ProtectedPageBase
+@inject ToastService _toast
 
 <div class="side-parent">
     <div class="side-parent-content">
@@ -128,7 +129,27 @@
             </div>
         </div>
         
-        <button class="btn p-0" @onclick="Logout"><i class="bi bi-box-arrow-right fs-4"></i></button>
+        <button class="btn p-0" @onclick="ToggleModal"><i class="bi bi-box-arrow-right fs-4"></i></button>
+    </div>
+</div>
+
+<div  @onclick="ToggleModal" class="logoutModal @(isAddUserModalVisible ? "show" : "")">
+    <!--Confirm Modal-->
+    <div @onclick:stopPropagation class="helperModal">
+        <div class="confirm">
+            <h1>Confirm Logout</h1>
+            <p>You are about to logout</p>
+        </div>
+
+        <div class="@(isUpdating ? "updating" : "dnone")">
+            <p>Logging out...</p>
+        </div>
+
+
+        <div class="actions">
+            <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+            <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 fs-5" @onclick="Logout" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+        </div>
     </div>
 </div>
 
@@ -139,6 +160,8 @@
     private char initialName = 'A';
     private int activeIndex = 0;
     private bool isSubDepartmentVisible { get; set; } = false;
+    private bool isUpdating = false;
+    private bool isAddUserModalVisible = false;
 
     protected override void OnInitialized()
     {
@@ -251,12 +274,24 @@
 
     private async Task Logout()
     {
-        bool confirm = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to logout?");
+        isUpdating = true;
+        bool isOnline = await JS.InvokeAsync<bool>("networkHelper.isOnline");
 
-        if (!confirm) return;
+        if (!isOnline)
+        {
+            _toast.AddNotification("error", "Connection Error", "Check your internet connection");
+            return;
+        }
+
         await AuthService.LogoutAsync();
         auth = new();
         Navs.NavigateTo("/");
+    }
+
+    private void ToggleModal()
+    {
+        isAddUserModalVisible = !isAddUserModalVisible;
+        isUpdating = false;
     }
 
     // private void GoToDepartmentPage(string name)
