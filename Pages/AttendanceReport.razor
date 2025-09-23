@@ -169,36 +169,55 @@
                 </div>
             </div>
         </div>
+
+        <!--Graphs and Visualization-->
+        <div>
+            <h5 class="m-0 fw-bold">Graphs and Visualizations</h5>
+
+            @* <div class="chart">
+                <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                    <h5 class="fw-bold mb-4">Senior</h5>
+                    <div class="p-4">
+                        <canvas id="seniorAttendance" width="300" height="300"></canvas>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                    <h5 class="fw-bold mb-4">Womens</h5>
+                    <div class="p-4">
+                        <canvas id="womensAttendance" width="300" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart">
+                <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                    <h5 class="fw-bold mb-4">Senior</h5>
+                    <div class="p-4">
+                        <canvas id="mensAttendance" width="300" height="300"></canvas>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                    <h5 class="fw-bold mb-4">Womens</h5>
+                    <div class="p-4">
+                        <canvas id="youthAttendance" width="300" height="300"></canvas>
+                    </div>
+                </div>
+            </div> *@
+
+            <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+                <h5 class="fw-bold mb-4">Overall Attendance</h5>
+                <div class="p-4">
+                    <canvas id="allAttendance" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
         
     </div>
     
 
-    <!--Graphs and Visualization-->
-    @* <div>
-        <h5 class="m-0 fw-bold">Graphs and Visualizations</h5>
-
-        <div class="chart">
-            <div class="d-flex flex-column align-items-center justify-content-center mb-4">
-                <h5 class="fw-bold mb-4">Service</h5>
-                <div class="p-4">
-                    <canvas id="service" width="300" height="300"></canvas>
-                </div>
-                
-            </div>
-
-            <div class="d-flex flex-column align-items-center justify-content-center mb-4">
-                <h5 class="fw-bold mb-4">Department</h5>
-                <div class="p-4">
-                    <canvas id="department" width="300" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-none">
-            <canvas id="incomeExpenseChart" width="400" height="200"></canvas>
-        </div>
-        
-    </div> *@
+    
 </div>
 
 
@@ -259,6 +278,21 @@
 
                 message = string.Empty;
                 isFetching = false;
+                StateHasChanged(); // trigger re-render
+
+                await Task.Delay(50); // give DOM time to render
+
+                var seniorService = join.Where(u => u.Department == "Senior" && u.Category == "Service");
+                var seniorDepartment = join.Where(u => u.Department == "Senior" && u.Category == "Department");
+
+                int totalPresent = filteredService.Sum(u => u.Present) + filteredDepartment.Sum(u => u.Present);
+                int totalAbsent = filteredService.Sum(u => u.Absent) + filteredDepartment.Sum(u => u.Absent);
+                int seniorPresent = seniorService.Sum(u => u.Present) + seniorDepartment.Sum(u => u.Present);
+                int seniorAbsent = seniorService.Sum(u => u.Absent) + seniorDepartment.Sum(u => u.Absent);
+
+                await _js.InvokeVoidAsync("firestoreFunctions.renderDepartmentAttendanceBreakdown", totalPresent, totalAbsent);
+                // await _js.InvokeVoidAsync("firestoreFunctions.renderAttendanceSenior", seniorPresent, seniorAbsent);
+
 
             }
             else

@@ -4,7 +4,7 @@
     {
         public string Id { get; set; }
 
-        //Commong Fields
+        //Common Fields
         public string Department { get; set; } = "Senior";
         public string Type { get; set; } = "Income";
         public string Category { get; set; } = "Offering";
@@ -21,8 +21,8 @@
         public string? VoucherNumber { get; set; }
 
         //Created
-        public DateOnly DateAdded { get; set; } = DateOnly.FromDateTime(DateTime.Now);
-        public DateOnly DateModified { get; set; }
+        public string DateAdded { get; set; } = DateTime.Now.ToString();
+        public string DateModified { get; set; }
         public string AddedByUserId { get; set; }
         public string? ModifiedByUserId { get; set; }
     }

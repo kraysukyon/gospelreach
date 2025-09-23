@@ -37,6 +37,7 @@
                 <select value="@type" class="form-select p-2 mt-2" @onchange="OnTypeChange">
                     <option value="Offering" disabled="@(scheduleFinancesList.Count == 0)">Offering @(scheduleFinancesList.Count == 0 ? "(No schedules)" : "")</option>
                     <option value="Donation">Donation</option>
+                    <option hidden="@(DepName != "Senior")" value="Tithes">Tithes</option>
                     <option value="Expense">Expense</option>
                 </select>
             </div>
@@ -129,8 +130,8 @@
                         </div>
 
                         <select @bind="mensRecord.Category" class="form-select p-2 mt-2">
-                            <option value="Tithes">Tithes</option>
-                            <option value="PropertyMaintenance">Property Maintenance</option>
+                            <option hidden="@(DepName == "Senior")" value="Tithes">Tithes</option>
+                            <option value="Property Maintenance">Property Maintenance</option>
                             <option value="Transportation">Transportation</option>
                             <option value="Incidental">Incidental</option>
                             <option value="Others">Others</option>
@@ -714,10 +715,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (_auth.Department != null)
+        if (_auth.Department != null )
         {
             DepName = _auth.Department;
         }
+
         message = "Fetching data...";
         await GetSchedules();
         await GetDataByDateRange(dateTo, dateFrom, DepName);
@@ -987,7 +989,7 @@
         isUpdating = true;
 
         DateTime date = DateTime.Now;
-        updateMensRecord.DateModified = DateOnly.FromDateTime(date);
+        updateMensRecord.DateModified = date.ToString("MMM dd, yyyy hh:mm tt");
         updateMensRecord.ModifiedByUserId = _auth.UserId;
 
         var result = await _financialMensService.UpdateFinancialRecordAsync(updateMensRecord.Id, updateMensRecord);
@@ -1021,7 +1023,7 @@
     //Open update modal
     private async Task OpenUpdateModal(string Id)
     {
-        
+
         // isLoadingModal = true;
 
         var result = await _financialMensService.GetFinancialRecordByIdAsync(Id);
@@ -1163,7 +1165,7 @@
         var result = await _financialMensService.GetDepartmentFinancialDataByDateRange(date1,date2,department);
         if (result.Success)
         {
-            financeMensList = result.Data;
+            financeMensList = result.Data.OrderByDescending(u => u.DateAdded).ToList();
             //assign to local variables
             totalIncome = financeMensList.Where(u => u.Type == "Income").Sum(u => u.Amount);
             totalExpense = financeMensList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
@@ -1206,7 +1208,7 @@
         isUpdating = true;
 
         DateTime date = DateTime.Now;
-        mensRecord.DateAdded = DateOnly.FromDateTime(date);
+        mensRecord.DateAdded = date.ToString();
         mensRecord.AddedByUserId = _auth.UserId;
 
         mensRecord.Department = DepName;
@@ -1318,9 +1320,18 @@
             }
             else
             {
-                mensRecord.Category = "Donation";
-                isDonation = true;
-                mensRecord.ScheduleId = null;
+                if (DepName == "Senior")
+                {
+                    mensRecord.Category = "Tithes";
+                    mensRecord.ScheduleId = null;
+                }
+                else
+                {
+                    mensRecord.Category = "Donation";
+                    isDonation = true;
+                    mensRecord.ScheduleId = null;
+                }
+                
             }
 
         }
@@ -1328,6 +1339,11 @@
         {
             isIncome = false;
             mensRecord.Category = "Tithes";
+            if (DepName == "Senior")
+            {
+                mensRecord.Category = "Property Maintenance";
+            }
+            
             mensRecord.DonatorName = null;
             mensRecord.ScheduleId = null;
             mensRecord.InvoiceNumber = null;

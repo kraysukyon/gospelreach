@@ -1031,7 +1031,7 @@
             <!--Description-->
             <div hidden="@(string.IsNullOrEmpty(sched.Description))" class="iconText">
                 <i class="bi bi-list-columns fs"></i>
-                <pre class="form-control border border-0 text-wrap" style="max-height: 200px; overflow-y: auto;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
+                <pre class="form-control border border-0" style="max-height: 200px; overflow-y: auto;">@(string.IsNullOrEmpty(sched.Description) ? "N/A" : sched.Description)</pre>
             </div>
             @* || hasAttendee && attDate <= DateOnly.FromDateTime(DateTime.Now) ? "justify-content-between" : "justify-content-end")" *@
             <div class="mt-5 d-flex gap-2 justify-content-end">
@@ -1062,7 +1062,7 @@
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" @onclick="updateService" class="btn btn-danger text-white p-2 fs-5" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" @onclick="updateService" class="btn btn-primary text-white p-2 fs-5" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else if (confirmType == "remove")

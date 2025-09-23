@@ -176,7 +176,7 @@
                         {
                             if (attRes.Data != null)
                             {
-                                var sun = attRes.Data.FirstOrDefault(u => u.Date == lastSundayDate);
+                                var sun = attRes.Data.FirstOrDefault(u => u.Date == lastSundayDate && u.isCompleted);
                                 if (sun != null)
                                 {
                                     lastSundayAttendance = sun.TotalAttendee;

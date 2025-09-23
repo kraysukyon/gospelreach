@@ -1,4 +1,7 @@
-﻿window.firestoreFunctions = {
+﻿let attendanceChartInstance = null;
+let seniorChartInstance = null;
+
+window.firestoreFunctions = {
 
     //============================================User Section============================================//
 
@@ -1695,7 +1698,7 @@
                 plugins: {
                     legend: { position: 'bottom' },
                     datalabels: {
-                        color: '#fff',
+                        color: '#000000',
                         font: { weight: 'bold', size: 14 },
                         formatter: (value, ctx) => {
                             // Show both value and percentage
@@ -1811,6 +1814,90 @@
                     }
                 }
             }
+        });
+    },
+
+    async renderDepartmentAttendanceBreakdown(present, absent) {
+        const ctx = document.getElementById('allAttendance').getContext('2d');
+
+        // 🔸 Destroy previous chart if it exists
+        if (attendanceChartInstance) {
+            attendanceChartInstance.destroy();
+            attendanceChartInstance = null;
+        }
+
+        // 🔸 Create a new chart instance and store it
+        attendanceChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Present', 'Absent'],
+                datasets: [{
+                    data: [present, absent],
+                    backgroundColor: [
+                        '#f28749', // orange
+                        '#4473ca' // blue
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#000000',
+                        font: { weight: 'bold', size: 14 },
+                        formatter: (value, ctx) => {
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            let percentage = (value * 100 / sum).toFixed(1) + "%";
+                            return value + " (" + percentage + ")";
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels] // ✅ enable datalabels plugin
+        });
+    },
+
+    async renderAttendanceSenior(present, absent) {
+        const ctx = document.getElementById('seniorAttendance').getContext('2d');
+
+        // 🔸 Destroy previous chart if it exists
+        if (seniorChartInstance) {
+            seniorChartInstance.destroy();
+            seniorChartInstance = null;
+        }
+
+        // 🔸 Create a new chart instance and store it
+        seniorChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Present', 'Absent'],
+                datasets: [{
+                    data: [present, absent],
+                    backgroundColor: [
+                        '#f28749', // orange
+                        '#4473ca' // blue
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#000000',
+                        font: { weight: 'bold', size: 14 },
+                        formatter: (value, ctx) => {
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            let percentage = (value * 100 / sum).toFixed(1) + "%";
+                            return value + " (" + percentage + ")";
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels] // ✅ enable datalabels plugin
         });
     },
 }

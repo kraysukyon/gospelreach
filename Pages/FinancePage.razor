@@ -132,7 +132,7 @@
 
                         <select @bind="mensRecord.Category" class="form-select p-2 mt-2">
                             <option hidden="@(typeOfFund == "Senior")" value="Tithes">Tithes</option>
-                            <option value="PropertyMaintenance">Property Maintenance</option>
+                            <option value="Property Maintenance">Property Maintenance</option>
                             <option value="Transportation">Transportation</option>
                             <option value="Incidental">Incidental</option>
                             <option value="Others">Others</option>
@@ -1093,7 +1093,7 @@
 
 
         DateTime date = DateTime.Now;
-        updateMensRecord.DateModified = DateOnly.FromDateTime(date);
+        updateMensRecord.DateModified = date.ToString();
         updateMensRecord.ModifiedByUserId = _auth.UserId;
 
 
@@ -1183,7 +1183,7 @@
         var result = await _financeRecordService.GetFinancialDataByDateRange(dateTo, dateFrom);
         if (result.Success)
         {
-            financeList = result.Data;
+            financeList = result.Data.OrderByDescending(u => u.DateAdded).ToList() ;
             //assign to local variables
             partialIncome = financeList.Where(u => u.Type == "Income").Sum(u => u.Amount);
             partialExpense = financeList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
@@ -1323,7 +1323,7 @@
         var result = await _financeRecordService.GetDepartmentFinancialDataByDateRange(date1,date2,department);
         if (result.Success)
         {
-            financeList = result.Data;
+            financeList = result.Data.OrderByDescending(u => u.DateAdded).ToList();
             //assign to local variables
             partialIncome = financeList.Where(u => u.Type == "Income").Sum(u => u.Amount);
             partialExpense = financeList.Where(u => u.Type == "Expense").Sum(u => u.Amount);
@@ -1479,9 +1479,18 @@
             }
             else
             {
-                mensRecord.Category = "Donation";
-                isDonation = true;
-                mensRecord.ScheduleId = null;
+                if (typeOfFund == "Senior")
+                {
+                    mensRecord.Category = "Tithes";
+                    mensRecord.ScheduleId = null;
+                }
+                else
+                {
+                    mensRecord.Category = "Donation";
+                    isDonation = true;
+                    mensRecord.ScheduleId = null;
+                }
+
             }
 
         }
@@ -1489,6 +1498,11 @@
         {
             isIncome = false;
             mensRecord.Category = "Tithes";
+            if (typeOfFund == "Senior")
+            {
+                mensRecord.Category = "Property Maintenance";
+            }
+            
             mensRecord.DonatorName = null;
             mensRecord.ScheduleId = null;
             mensRecord.InvoiceNumber = null;
