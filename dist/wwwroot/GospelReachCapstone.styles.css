@@ -5036,6 +5036,100 @@ a[b-7a688qs3l3] {
         gap: 10px;
     }
 }
+/* /Pages/NotificationPage.razor.rz.scp.css */
+*[b-vrr811vmht] {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: black;
+    font-family: "Inter", sans-serif;
+}
+
+.page[b-vrr811vmht] {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    height: 100%;
+}
+
+.c2[b-vrr811vmht] {
+    color: #4b5563;
+}
+
+.mainDiv[b-vrr811vmht] {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    gap:.5rem;
+}
+
+    .mainDiv .cards[b-vrr811vmht] {
+        border-radius: .75rem;
+        box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+        transition: box-shadow 0.3s ease, filter 0.3s ease;
+        border: solid .3px rgb(128, 128, 128, 0.08);
+        height: 100px;
+        display: grid;
+        grid-template-columns:1fr 200px;
+        gap: 1rem;
+        padding:1rem;
+    }
+
+        .mainDiv .cards:hover[b-vrr811vmht] {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        .mainDiv .cards .dateTime[b-vrr811vmht]{
+            display: flex;
+            gap: .5rem;
+        }
+
+        .mainDiv .cards .dateTime p[b-vrr811vmht] {
+            font-size:13px;
+        }
+        .mainDiv .cards .cardContent[b-vrr811vmht]{
+            display: flex;
+            flex-direction:column;
+        }
+
+
+@media (max-width: 768px) {
+    .page[b-vrr811vmht] {
+        display: block;
+    }
+
+    .header a[b-vrr811vmht] {
+    width: 100%;
+    margin-top: 1rem;
+    }
+
+    .cards[b-vrr811vmht]{
+    padding: 0;
+    }
+
+    .searchLayout[b-vrr811vmht]{
+    display: block;
+    }
+
+    .searchBtn[b-vrr811vmht]{
+    display:flex;
+    flex-direction: column;
+    gap: .3rem;
+    margin-top: .3rem;
+    }
+
+    .searchBtn button[b-vrr811vmht]{
+    padding: 8px;
+    }
+
+    .playlist[b-vrr811vmht]{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    }
+}
 /* /Pages/SchedulePage - Copy.razor.rz.scp.css */
 *[b-5a9yl4w3ae] {
     padding: 0;

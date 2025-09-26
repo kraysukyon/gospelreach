@@ -48,5 +48,74 @@
     logout: async function () {
         const auth = firebase.auth();
         await auth.signOut();
-    }
+    },
+
+    // Listen for auth state changes (optional)
+    onAuthStateChanged: function (dotNetRef) {
+        firebase.auth().onAuthStateChanged(user => {
+            dotNetRef.invokeMethodAsync('OnAuthStateChanged', user ? user.uid : null);
+        });
+    },
+
+    // Real-time listener for messages in a chat room
+    listenToMessages: function (chatRoomId, dotNetRef) {
+        // Unsubscribe previous listener if any
+        if (!window._messageListeners) window._messageListeners = {};
+        if (window._messageListeners[chatRoomId]) {
+            window._messageListeners[chatRoomId]();
+        }
+
+        const unsubscribe = firebase.firestore()
+            .collection('Notifications')
+            .doc(chatRoomId)
+            .collection('messages')
+            .orderBy('createdAt')
+            .onSnapshot(snapshot => {
+                const messages = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    messages.push({
+                        id: doc.id,
+                        chatRoomId: data.chatRoomId,
+                        senderId: data.senderId,
+                        receiverRole: data.receiverRole,
+                        category: data.category,
+                        message: data.message,
+                        isRead: data.isRead,
+                        createdAt: data.createdAt,
+                    });
+                });
+
+                dotNetRef.invokeMethodAsync('ReceiveMessages', messages);
+            });
+
+        window._messageListeners[chatRoomId] = unsubscribe;
+    },
+
+    // Add a message to Firestore
+    sendMessage: async function (chatRoomId, notif) {
+        try {
+            if (!notif.senderId) {
+                console.error("Cannot send message: userId is null");
+                return {success: false, error: "User id is null"};
+            }
+            await firebase.firestore()
+                .collection('Notifications')
+                .doc(chatRoomId)
+                .collection('messages')
+                .add({
+                    chatRoomId: notif.chatRoomId,
+                    senderId: notif.senderId,
+                    receiverRole: notif.receiverRole,
+                    category: notif.category,
+                    message: notif.message,
+                    isRead: notif.isRead,
+                    createdAt: notif.createdAt,
+                });
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: error.message }
+        }
+        
+    },
 }

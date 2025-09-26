@@ -38,5 +38,6 @@ builder.Services.AddScoped<AttendanceVisitorRecordService>();
 builder.Services.AddScoped<FinancialRecordService>();
 builder.Services.AddScoped<FinanceScheduleService>();
 builder.Services.AddSingleton<ToastService>();
+builder.Services.AddSingleton<NotifServices>();
 
 await builder.Build().RunAsync();

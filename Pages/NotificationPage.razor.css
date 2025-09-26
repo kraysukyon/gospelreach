@@ -1,0 +1,93 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: black;
+    font-family: "Inter", sans-serif;
+}
+
+.page {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    height: 100%;
+}
+
+.c2 {
+    color: #4b5563;
+}
+
+.mainDiv {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    gap:.5rem;
+}
+
+    .mainDiv .cards {
+        border-radius: .75rem;
+        box-shadow: 0 4px 8px rgb(0, 0, 0, 0.08);
+        transition: box-shadow 0.3s ease, filter 0.3s ease;
+        border: solid .3px rgb(128, 128, 128, 0.08);
+        height: 100px;
+        display: grid;
+        grid-template-columns:1fr 200px;
+        gap: 1rem;
+        padding:1rem;
+    }
+
+        .mainDiv .cards:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        .mainDiv .cards .dateTime{
+            display: flex;
+            gap: .5rem;
+        }
+
+        .mainDiv .cards .dateTime p {
+            font-size:13px;
+        }
+        .mainDiv .cards .cardContent{
+            display: flex;
+            flex-direction:column;
+        }
+
+
+@media (max-width: 768px) {
+    .page {
+        display: block;
+    }
+
+    .header a {
+    width: 100%;
+    margin-top: 1rem;
+    }
+
+    .cards{
+    padding: 0;
+    }
+
+    .searchLayout{
+    display: block;
+    }
+
+    .searchBtn{
+    display:flex;
+    flex-direction: column;
+    gap: .3rem;
+    margin-top: .3rem;
+    }
+
+    .searchBtn button{
+    padding: 8px;
+    }
+
+    .playlist{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    }
+}

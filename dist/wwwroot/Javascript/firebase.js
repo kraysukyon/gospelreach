@@ -11,7 +11,7 @@
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const messaging = firebase.messaging();
+//const messaging = firebase.messaging();
 window.myFirebase = { app, db }; // expose to Blazor
 //window.initializeFirebase = function (config) {
 //    window.firebase = firebase.initializeApp(config);

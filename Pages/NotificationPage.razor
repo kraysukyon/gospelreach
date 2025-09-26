@@ -1,0 +1,176 @@
+﻿@page "/notifications"
+@layout LandingLayout
+@using GospelReachCapstone.Models
+@inject IJSRuntime _js
+@inject GospelReachCapstone.Services.MusicService _musicService
+@inject GospelReachCapstone.Services.AuthState _auth
+@inject NavigationManager _nav
+@inject ToastService _toast
+@inject GospelReachCapstone.Services.NotifServices _notifService
+@inject GospelReachCapstone.Services.UserService _userService
+
+<PageTitle>Notification Page</PageTitle>
+
+
+<div class="page">
+    <!--Background Modal-->
+    @* <div @onclick="ToggleModal" class="bgModal @(!isBackgroundModalVisible ? "" : "showModal")">
+        <!--Confirm Modal-->
+        <div @onclick:stopPropagation class="helperModal">
+            <div class="confirm">
+                <h1>Confirm Delete</h1>
+                <p>You are about to remove this song</p>
+            </div>
+
+            <div class="@(isUpdating ? "updating" : "dnone")">
+                <p>Removing song...</p>
+            </div>
+
+
+            <div class="actions">
+                <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 fs-5" @onclick="DeleteSong" style="font-size: 13px; border: 1px solid #dee2e6;">Delete</button>
+            </div>
+
+        </div>
+    </div> *@
+
+    <!--Header Section-->
+    <div class="header d-block d-md-flex flex-md-row align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="m-0 fw-bold">Notification</h4>
+            <p class="m-0 c2" style="font-size: 14px">Manage notifications.</p>
+        </div>
+    </div>
+
+    <div class="d-flex gap-1">
+        <input @bind="message" class="form-control p-2"/>
+        <button @onclick="SendMessage" class="btn btn-primary p-2 px-4">Send</button>
+    </div>
+
+    <div class="mainDiv">
+
+        @foreach (var item in notificationsList)
+        {
+            <div class="cards">
+                <div class="cardContent">
+                    <p>@item.Name - @item.Department</p>
+                    <p>@item.Category</p>
+                    <p>@item.Message</p>
+                </div>
+
+                <div class="dateTime">
+                    <i class="bi bi-clock"></i>
+                    <p>@item.CreatedAt</p>
+                </div>
+            </div>
+        }
+        
+    </div>
+</div>
+
+
+@code{
+    string searchNotif = string.Empty;
+    string message = string.Empty;
+    Notification notification = new();
+    List<NotifMemberVM> notificationsList { get; set; } = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Listen to auth changes first
+            await _js.InvokeVoidAsync("firebaseAuth.onAuthStateChanged",
+                DotNetObjectReference.Create(this));
+
+            // Start listening to messages immediately
+            await _js.InvokeVoidAsync("firebaseAuth.listenToMessages",
+                "Admin",
+                DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnAuthStateChanged(string uid)
+    {
+        _auth.UserId = uid;
+
+        // Optionally listen to messages only after login
+        if (!string.IsNullOrEmpty(_auth.UserId))
+        {
+            await _js.InvokeVoidAsync("firebaseAuth.listenToMessages",
+                "Admin",
+                DotNetObjectReference.Create(this));
+        }
+
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task ReceiveMessages(List<Notification> messages)
+    {
+        var m = messages;
+        var res = await _userService.GetUserAccountsAsync();
+        if (res.Success)
+        {
+            var ids = messages.Select(u => u.SenderId).ToHashSet();
+
+            var users = res.Data.Where(u => ids.Contains(u.Id)).ToList();
+
+            notificationsList = messages.Join(users, m => m.SenderId, u => u.Id, (m, u) => new NotifMemberVM
+            {
+                Id = m.Id,
+                ChatRoomId = m.ChatRoomId,
+                SenderId = m.SenderId,
+                ReceiverRole = m.ReceiverRole,
+                Category = m.Category,
+                Message = m.Message,
+                IsRead = m.IsRead,
+                CreatedAt = m.CreatedAt,
+                Name = u.FirstName,
+                Department = u.Role
+            }).ToList();
+        }
+
+
+
+        await InvokeAsync(StateHasChanged); // UI refresh
+    }
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrEmpty(message))
+        {
+            notification.ChatRoomId = "Admin";
+            notification.SenderId = _auth.UserId;
+            notification.ReceiverRole = "Administrator";
+            notification.IsRead = false;
+            notification.Category = "General";
+            notification.Message = message;
+            var result = await _notifService.SendMessageAsync(notification);
+            if (result.Success)
+            {
+                _toast.AddNotification("success", "Success", "Successfully send notification");
+            }
+            else
+            {
+                _toast.AddNotification("error", "Something went wrong", result.Error);
+            }
+        }
+    }
+
+    private class NotifMemberVM
+    {
+        public string Id { get; set; }
+        public string ChatRoomId { get; set; }
+        public string SenderId { get; set; }
+        public string ReceiverRole { get; set; }
+        public string Category { get; set; }
+        public string Message { get; set; }
+        public bool IsRead { get; set; } = false;
+        public string CreatedAt { get; set; } = DateTime.Now.ToString();
+        public string Name { get; set; }
+        public string Department { get; set; }
+    }
+}
