@@ -122,35 +122,35 @@
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 fs-5" @onclick="ResetPassword" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else if (confirmType == "disable")
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="DisableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 fs-5" @onclick="DisableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else if (confirmType == "enable")
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="EnableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 fs-5" @onclick="EnableUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else if(confirmType == "user")
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="AddUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 fs-5" @onclick="AddUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else
             {
                 <div class="actions">
                     <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="UpdateUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 fs-5" @onclick="UpdateUser" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
 
             }

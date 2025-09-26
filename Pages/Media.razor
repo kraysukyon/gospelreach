@@ -26,7 +26,7 @@
 
             <div class="actions">
                 <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick='() => ToggleModal("")' style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 fs-5" @onclick='() => ToggleModal("data")' style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 fs-5" @onclick='() => DeleteFiles(data)' style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
             </div>
         </div>
     </div>
@@ -88,11 +88,11 @@
                         {
                             <div class="card p-4 cards d-flex flex-column align-items-start justify-content-center">
                                 <div class="d-flex gap-3">
-                                    <div class="flex-shrink-0">
-                                        <div class="p-2" style="background-color: lavender; border-radius: 6px;">
-                                            <i class="bi bi-film text-primary d-none"></i>
-                                        </div>
-                                    </div>
+                                    @* <div class="flex-shrink-0"> *@
+                                    @*     <div class="p-2" style="background-color: lavender; border-radius: 6px;"> *@
+                                    @*         <i class="bi bi-film text-primary"></i> *@
+                                    @*     </div> *@
+                                    @* </div> *@
 
                                     <div class="flex-grow-1">
                                         <a href="@item.Url" target="_blank" class="weblink">@item.PublicId.Split("/").Last()</a>

@@ -16,7 +16,7 @@
     </NotFound>
 </Router>
 
-@code {
+@* @code {
     protected override async Task OnInitializedAsync()
     {
         bool isOnline = await JS.InvokeAsync<bool>("networkHelper.isOnline");
@@ -30,4 +30,4 @@
         await FirebaseService.LoadConfig(Http);
         await JS.InvokeVoidAsync("initializeFirebase", FirebaseService.Config);
     }
-}
+} *@

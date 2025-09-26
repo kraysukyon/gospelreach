@@ -5,9 +5,9 @@
 @inherits ProtectedPageBase
 @inject ToastService _toast
 
-<div class="side-parent">
-    <div class="side-parent-content">
-        <nav class="w-100">
+<div @onclick:stopPropagation class="side-parent">
+    <div @onclick:stopPropagation class="side-parent-content">
+        <nav @onclick:stopPropagation class="w-100">
 
             <!--Pages Section-->
             <div class="@GetClass(0, "link")" @onclick="() => SetActive(0)">
@@ -133,7 +133,7 @@
     </div>
 </div>
 
-<div  @onclick="ToggleModal" class="logoutModal @(isAddUserModalVisible ? "show" : "")">
+<div @onclick:stopPropagation @onclick="ToggleModal" class="logoutModal @(isAddUserModalVisible ? "show" : "")">
     <!--Confirm Modal-->
     <div @onclick:stopPropagation class="helperModal">
         <div class="confirm">

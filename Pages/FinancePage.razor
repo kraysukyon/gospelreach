@@ -576,27 +576,6 @@
         </div>
 
         <p>@test</p>
-        
-
-        <!--Quick Stats Section-->
-        @* <div class="d-flex flex-column mt-4">
-            <div class="d-md-flex d-block justify-content-evenly gap-4">
-                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                    <p class="c2 mb-2" style="font-size:14px;">General Income</p>
-                    <h3 class="m-0 c2 text-success fw-bold">₱@totalIncome.ToString("N2")</h3>
-                </div>
-
-                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                    <p class="c2 mb-2" style="font-size:14px;">General Expenses</p>
-                    <h3 class="m-0 c2 text-danger fw-bold">₱@totalExpense.ToString("N2")</h3>
-                </div>
-
-                <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                    <p class="c2 mb-2" style="font-size:14px;">General Balance</p>
-                    <h3 class="m-0 c2 text-primary fw-bold">₱@currentBalance.ToString("N2")</h3>
-                </div>
-            </div>
-        </div> *@
 
         <!--Quick Stats Section-->
         <div class="d-flex flex-column mt-4">
@@ -680,7 +659,7 @@
                                 <td class="table-cell c2 fw-bold @(item.Type == "Income" ? "text-success" : "text-danger")">@(item.Type == "Income" ? "+" : "-")₱@item.Amount.ToString("N2")</td>
                                 <td  class="table-cell d-flex gap-2" style="padding: 24px 24px; border-bottom: none;">
                                     <!--Edit-->
-                                    <button @onclick:stopPropagation @onclick="() => OpenUpdateModal(item.Id)" class="btn btn-outline-light px-2 py-1 border border-1" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Update</button>
+                                    <button @onclick:stopPropagation @onclick="() => OpenUpdateModal(item.Id)" class="btn border border-1 p-2 px-4" style="font-size: 13px;"><span><i class="bi bi-pencil-square"></i></span> Update</button>
                                     <!--Delete-->
                                     @* <button @onclick:stopPropagation @onclick="() => OpenRemoveModal(item.Id)" class="btn btn-danger px-2 py-1 text-white" style="font-size:13px;"><span><i class="bi bi-trash text-white"></i></span>Delete</button> *@
                                 </td>

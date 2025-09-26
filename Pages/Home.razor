@@ -5,6 +5,7 @@
 @inject GospelReachCapstone.Services.AuthState Auth
 @inject GospelReachCapstone.Services.UserService _accountService
 @inject ToastService _toast
+@inject HttpClient Http
 @using GospelReachCapstone.Models;
 @using System.Globalization
 
@@ -115,9 +116,7 @@
             </p>
 
             <p class="fw-light">
-                The Salvation Army Mandaue Outpost is a faith-driven community committed to worship, discipleship, and service, carrying forward the mission of the worldwide Salvation Army: to preach the gospel of Jesus Christ and meet human needs in His name without discrimination. Rooted in compassion and integrity, the Outpost serves both the spiritual and practical needs of its congregation and community, providing a place of worship, fellowship, and outreach.
-
-                To strengthen its ministry and ensure more effective operations, the Outpost has adopted the GospelReach Church Management System. This web-based platform streamlines core church functions such as attendance tracking, member management, and event coordination, ensuring accurate and transparent records. More than just a digital tool, GospelReach empowers church leaders with real-time insights into member engagement, fosters stronger communication, and supports the Outpost’s mission of accountability, growth, and faithful service.
+                With the integration of GospelReach, the Salvation Army Mandaue Outpost embraces a modern approach to church administration while staying true to its spiritual foundation. By reducing manual processes and centralizing data, the system not only saves time for leaders but also minimizes errors, enhances decision-making, and encourages active participation from members. This balance of technology and faith ensures that the Outpost can remain focused on its higher calling—serving God and the community—while maintaining organized, efficient, and transparent operations. records. More than just a digital tool, GospelReach empowers church leaders with real-time insights into member engagement, fosters stronger communication, and supports the Outpost’s mission of accountability, growth, and faithful service.
             </p>
         </div>
     </div>
@@ -311,6 +310,7 @@
                                             break;
 
                                     }
+                                    await RegisterPushNotifications();
                                     NavigationManager.NavigateTo("dashboard");
                                     return;
                                 }
@@ -398,7 +398,7 @@
             else
             {
                 validation.Add("Something went wrong. Try again later.");
-                // await JSRuntime.InvokeVoidAsync("alert", result.Error);
+                await JSRuntime.InvokeVoidAsync("alert", result.Error);
             }
         }
         else
@@ -480,6 +480,18 @@
         Auth.Role = "Guest";
         Auth.DisplayName = textInfo.ToTitleCase("Guest");
         NavigationManager.NavigateTo("dashboard");
+    }
+
+    //Request Notification Permission
+    private async Task RegisterPushNotifications()
+    {
+        // Ask for permission and get FCM token
+        var token = await JSRuntime.InvokeAsync<string>("requestNotificationPermission");
+        if (!string.IsNullOrEmpty(token))
+        {
+            await Http.PostAsJsonAsync("api/notifications/register",
+                new { Token = token, UserId = "AdminUser" });
+        }
     }
 
 }

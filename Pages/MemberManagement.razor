@@ -151,7 +151,7 @@
                     <p>Status</p>
                     <select @bind="member.Status" class="form-select p-2 mt-2">
                         <option value="Active">Active</option>
-                        <option value="InActive">InActive</option>
+                        <option value="Inactive">Inactive</option>
                     </select>
                 </div>
             </div>
@@ -200,15 +200,15 @@
             @if (confirmType == "add")
             {
                 <div class="actions">
-                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 px-5 fs-5" @onclick="addMember" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 fs-5" @onclick="addMember" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
             else
             {
                 <div class="actions">
-                    <button disabled="@(isUpdating)" class="btn p-2 px-5 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
-                    <button disabled="@(isUpdating)" class="btn btn-danger text-white p-2 px-5 fs-5" @onclick="UpdateMember" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
+                    <button disabled="@(isUpdating)" class="btn p-2 fs-5" @onclick="ToggleModal" style="font-size: 13px; border: 1px solid #C7C7C7;">Cancel</button>
+                    <button disabled="@(isUpdating)" class="btn btn-primary text-white p-2 fs-5" @onclick="UpdateMember" style="font-size: 13px; border: 1px solid #dee2e6;">Confirm</button>
                 </div>
             }
         </div>
@@ -242,7 +242,7 @@
                 </div>
 
                 <div class="card w-100 p-4 mb-3 cards d-flex flex-column align-items-center justify-content-center">
-                    <p class="c2 mb-2" style="font-size:14px;">New This Month</p>
+                    <p class="c2 mb-2" style="font-size:14px;">Inactive Members</p>
                     <h3 class="m-0 c2 text-danger fw-bold">@newMembers</h3>
                 </div>
             </div>
@@ -370,6 +370,7 @@
         {
             membersList = result.Data;
             activeMembers = membersList.Count(u => u.Status == "Active");
+            newMembers = membersList.Count(u => u.Status == "Inactive");
             totalMembers = membersList.Count;
         }
         else
